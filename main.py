@@ -6,7 +6,6 @@ les commentaires en bas de ce fichier sont des mémos de choses a faire
 bibliotheque à installer :
     - pygame
     - pytmx
-    - sqlite3
     - pyscroll
 """
 import os
