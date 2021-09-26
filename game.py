@@ -414,9 +414,6 @@ class Game:
             #self.group.center(self.current_rect_center)
             self.group.center(self.player.rect)
             self.group.draw(self.screen)
-            for texte in self.all_text:
-                if - self.screen.get_width()/2 < self.player.position[0] - texte.x < self.screen.get_width()/2 and - self.screen.get_height()/2 < self.player.position[0] - texte.x < self.screen.get_height()/2:
-                    self.screen.blit(texte.image, (self.screen.get_width()/2 + (texte.x - self.player.position[0]) * self.zoom, self.screen.get_height()/2 + (texte.y - self.player.position[1])* self.zoom))     
             #pygame.display.update(self.player.rect)
             pygame.display.flip()
 
