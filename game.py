@@ -67,6 +67,8 @@ class Game:
         self.cooldown_changement_centre = 0.5
         self.current_rect_center = self.centre_camera["top"]
         self.timer_cooldown_changement_centre = 0 
+        
+        self.pressed_up = False
        
     def joueur_sur_sol(self):
         """renvoie True si les pieds du joueur est sur une plateforme ou sur le sol.
