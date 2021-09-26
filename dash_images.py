@@ -15,6 +15,8 @@ class Dash_images(pygame.sprite.Sprite):
         self.t1 = time.time()
         # temps d'apparition
         self.cooldown = 0.5 + c
+        self.body = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height)
         
     def update(self):
         self.rect.topleft = self.position
+        self.body.midbottom = self.rect.midbottom
