@@ -30,13 +30,14 @@ class Game:
         # initialization joueur
         player_position = self.tmx_data.get_object_by_name("spawn_player") 
         self.player = Player(player_position.x, player_position.y, directory)
+        self.all_players = [self.player.body]
         
         # creation groupe de sprite 
         self.group = pyscroll.PyscrollGroup(map_layer = self.map_layer, default_layer = 7)
         self.group.add(self.player)
         
         # particule lors de mouvement du joueur
-        self.particule = Particule(directory)
+        self.particule = Particule(directory, self.player.body.h, self.player.body.w)
         self.direction_joueur = ""
         self.action_joueur = ""
         
