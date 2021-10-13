@@ -1,13 +1,12 @@
 import pygame
 import os
 import time
-from math import ceil
 from player import Player
 from pygame.locals import *
-from dash_images import Dash_images
-from particule import Particule
-from textSprite import TextSprite
-from toucheSprite import ToucheSprite
+from entities_sprite.dash_images import Dash_images
+from entities_sprite.particule import Particule
+from map_sprite.textSprite import TextSprite
+from map_sprite.toucheSprite import ToucheSprite
 from tileMap import TileMap
 
 directory = os.path.dirname(os.path.realpath(__file__))
@@ -66,10 +65,27 @@ class Game:
         
         self.pressed_up = False
         
+        # gestion camera
         self.scroll=[0,0]
         self.scroll_rect = Rect(self.player.position[0],self.player.position[1],1,1)
         
+        self.dico_action_functions = {
+            "fall":self.player.chute,
+            "up_to_fall":self.player.chute,
+            "jump":self.player.saut,
+            "dash":self.player.dash,
+            "jump_edge":self.player.saut_edge,
+            "Wall_slide":self.player.sliding,
+            "Edge_Idle":self.player.sliding,
+            "Edge_grab":self.player.sliding,
+            "ground_slide":self.player.slide_ground
+            
+        }
+        
     def spawn_phrase(self, name, x, y):
+        """creer des objets des classes TextSprite et ToucheSprite pour afficher des phrases à l'écran
+        en fonction d'objet spawn dans la map tiled sous la forme :
+        0nom;1;nom => 0 : on creer TextSprite; 1 => on creer ToucheSprite """
         text_id = name.split(";")
         for id in text_id:
             # c'est un text
@@ -156,11 +172,12 @@ class Game:
     def handle_input(self):
         """agit en fonction des touches appuye par le joueur"""
         pressed = pygame.key.get_pressed()
-        
+        # si on change de direction pendant un slide_ground on l'arretes
         if pressed[pygame.K_LEFT] and self.player.is_sliding_ground and self.player.slide_ground_direction_x == 'right':
             self.player.fin_slide_ground()
         elif pressed[pygame.K_RIGHT] and self.player.is_sliding_ground and self.player.slide_ground_direction_x == 'left':
             self.player.fin_slide_ground()
+            
         if pressed[pygame.K_UP]:
             if self.pressed_up == False and self.player.is_grabing_edge:
                 self.player.fin_grab_edge()
@@ -169,6 +186,7 @@ class Game:
                     dir_x = "left"
                 elif pressed[pygame.K_RIGHT]:
                     dir_x = "right"
+                # si les pieds sont sur le mur des particles apparaissent
                 if self.check_pieds_collide_wall():
                     self.player.debut_saut_edge(direction_x=dir_x)
                     self.particule.pieds_collide_jump_edge = True
@@ -180,7 +198,8 @@ class Game:
                 else:
                     self.player.debut_saut_edge(direction_x=dir_x)
                     self.particule.pieds_collide_jump_edge = False
-                    
+            # pressed_up sert à savoir si le joueur viens d'appyuer sur la touche
+            # il pourrait juste rester appuyer       
             self.pressed_up = True
         else:
             self.pressed_up = False
@@ -242,8 +261,8 @@ class Game:
                 self.check_grab()
         else:
             # si le joueur avance pas, il deviens idle
-            if self.player.action != "fall" and self.player.action != "up_to_fall" and not self.player.is_sliding_ground:
-                if self.player.action == "run" and self.player.ralentit_bool == False:
+            if self.player.action_image != "fall" and self.player.action_image != "up_to_fall" and not self.player.is_sliding_ground:
+                if self.player.action_image == "run" and self.player.ralentit_bool == False:
                     self.player.debut_ralentissement()
                 # si self.player.ralentissement na pas ete appele, self.player.ralentissement aura aucun effet
                 # => donc le ralentissement a lieu que quand le joueur arrete de courir
@@ -252,8 +271,6 @@ class Game:
         if pressed[pygame.K_DOWN]:
             # le joueur passe a travers les plateformes pendant X secondes
             self.player.t1_passage_a_travers_plateforme = time.time()
-            # if self.player.is_grabing_edge:
-            #     self.player.fin_grab_edge(mouvement = False)
         elif pressed[pygame.K_UP]:
             # saut
             if (self.joueur_sur_sol() or time.time() - self.player.timer_cooldown_able_to_jump < self.player.cooldown_able_to_jump) \
@@ -293,6 +310,7 @@ class Game:
                 return collide_wall
     
     def check_tombe_ou_grab(self):
+        """stop le grab edge si on est plus en collision avce un mur"""
         for sprite in self.group.sprites():
             if sprite.id == 'player':
                 # si le joueur est en collision avec un mur
@@ -304,20 +322,17 @@ class Game:
                     sprite.fin_grab_edge()
     
     def blit_texte(self):
-        """blit les textes presents sur l'écran et ensuite blit le joueur par dessus si les rect se collide"""
+        """blit les images des textes sur la surface self.bg"""
         for texte in self.all_text:
             texte.update()
-            if self.screen.get_width()/2 > self.player.position[0] - texte.x + texte.image.get_width() < self.screen.get_width()/2 and - self.screen.get_height()/2 < self.player.position[0] - texte.x < self.screen.get_height()/2:
-                # les images doivent etre agrandis en fonction du zoom
-                image = pygame.transform.scale(texte.image, (round(texte.rect.w*self.zoom),round(texte.rect.h*self.zoom)))
-                image.set_colorkey(texte.image.get_at((0,0)))
-                self.screen.blit(image, (self.screen.get_width()/2 + (texte.x - self.player.position[0]) * self.zoom, self.screen.get_height()/2 + (texte.y - self.player.position[1])* self.zoom))     
-                image_p = pygame.transform.scale(self.player.image, (round(self.player.rect.w*self.zoom),round(self.player.rect.h*self.zoom)))
-                image_p.set_colorkey(image_p .get_at((0,0)))
-                if self.player.body.collidelist([texte.rect]) > -1:
-                    self.screen.blit(image_p, (self.screen.get_width()/2,self.screen.get_height()/2))
+            if self.scroll_rect.x - (self.screen.get_width()/2) - texte.image.get_width() <= texte.position[0] <= self.scroll_rect.x + (self.screen.get_width()/2)  + texte.image.get_width() and \
+                self.scroll_rect.y - (self.screen.get_height()/2) - texte.image.get_height() <= texte.position[1] <= self.scroll_rect.y + (self.screen.get_height()/2)  + texte.image.get_height():
+                    new_x = self.screen.get_width()/2 + texte.position[0] - self.scroll_rect.x
+                    new_y = self.screen.get_height()/2 + texte.position[1] - self.scroll_rect.y
+                    self.bg.blit(texte.image, (new_x,new_y))
 
     def blit_group(self):
+        """blit les images des sprites des groupes sur la surface self.bg"""
         for group in self.all_groups:
             for sprite in group.sprites():
                 if self.scroll_rect.x - (self.screen.get_width()/2) - sprite.image.get_width() <= sprite.position[0] <= self.scroll_rect.x + (self.screen.get_width()/2)  + sprite.image.get_width() and \
@@ -325,10 +340,8 @@ class Game:
                         new_x = self.screen.get_width()/2 + sprite.position[0] - self.scroll_rect.x
                         new_y = self.screen.get_height()/2 + sprite.position[1] - self.scroll_rect.y
                         self.bg.blit(sprite.image, (new_x,new_y))
-                    
-    def update(self):
-        """ fonction qui update les informations du jeu"""   
-        
+   
+    def suppr_dash_image(self):
         for sprite in self.group.sprites():      
             # suppression des images dash apres le cooldown
             if sprite.id == "image_dash":
@@ -336,47 +349,9 @@ class Game:
                     self.group.remove(sprite)
                 if sprite.body.collidelist(self.all_players) > -1 and self.player.is_grabing_edge:
                     self.group.remove(sprite)
-        
-        # le joueur ne peut pas de cogner pendant 2 ticks car sinon il ne peut pas sauter si il tiens un wall du bout des doigts
-        if self.joueur_se_cogne() and self.player.is_jumping_edge and self.player.compteur_jump_edge >= self.player.compteur_jump_edge_min + self.player.increment_jump_edge*1:
-            print(self.player.compteur_jump_edge, self.player.compteur_dash_min)
-            self.player.fin_saut_edge()
-        
-        if self.joueur_se_cogne() and self.player.is_jumping:
-            self.player.fin_saut()
-            
-        if self.joueur_se_cogne() and self.player.is_dashing:
-            self.player.fin_dash()
-        
-        if self.joueur_sur_sol() and self.player.is_dashing:
-            self.player.fin_dash()
-            self.player.debut_crouch()
-        
-        if self.joueur_sur_sol() and self.player.is_sliding:
-            self.player.fin_grab_edge()
-            if self.player.direction == "right":
-                self.player.change_direction("idle", "left")
-            elif self.player.direction == "left":
-                self.player.change_direction("idle", "right")
-        
-        self.player.save_location()    
-            
-        if self.player.is_jumping_edge and self.stop_if_collide(self.player.direction_jump_edge):
-            self.player.fin_saut_edge()
-            self.check_grab()
-        
-        if self.player.is_sliding_ground and self.stop_if_collide(self.player.slide_ground_direction_x):
-            self.player.fin_slide_ground()
-            self.check_grab()
-            
-        if self.player.is_dashing and self.stop_if_collide(self.player.dash_direction_x):
-            self.player.fin_dash()
-            self.check_grab()
-        
-        if self.player.is_jumping and self.player.compteur_jump > self.player.compteur_jump_min * 0.4 and self.stop_if_collide(self.player.direction):
-            self.player.fin_saut()
-            self.check_grab()
-        
+    
+    def gestion_chute(self):
+        # si le j saut ou dash la chute prends fin
         if (self.player.is_jumping or self.player.is_dashing) and self.player.is_falling:
             self.player.fin_chute(jump_or_dash = True) 
         
@@ -389,39 +364,14 @@ class Game:
         else:
             # sinon on stop la chute si il y en a une
             if self.player.is_falling:
-                self.player.fin_chute() 
-        
-        if not self.player.is_jumping and not self.player.is_jumping_edge and self.player.action == 'jump' and self.joueur_sur_sol():
-            self.player.change_direction("idle", self.player.direction)       
-        
-        if self.player.is_sliding:
-            self.check_tombe_ou_grab()
-        
-        self.player.chute()
-        self.player.saut()
-        self.player.dash()
-        self.player.saut_edge()
-        self.player.sliding()
-        self.player.slide_ground()
-        
-        if self.player.images_dash != []:
-            # [x,y, image_modifié, cooldown]
-            im = Dash_images(self.player.images_dash[0][0], self.player.images_dash[0][1], self.player.images_dash[0][2], self.player.images_dash[0][3])
-            self.group.add(im)
-            del self.player.images_dash[:]
-        
-        # particle
-        
-        temp_action = self.player.action
-        if temp_action == "jump" and self.player.is_dashing:
-            temp_action = 'dash'
-        elif temp_action == "jump" and self.player.is_jumping_edge:
-            temp_action = "jump_edge"
-        
+                self.player.fin_chute()
+    
+    def update_particle(self):
+        """update les infos concernant les particles, ajoute ou en supprime """
         # si l'action du joueur a changer on l'update dans la classe particule
-        if self.action_joueur != temp_action:
-            self.action_joueur = temp_action
-            self.particule.action_joueur = temp_action
+        if self.action_joueur != self.player.action:
+            self.action_joueur = self.player.action
+            self.particule.action_joueur = self.player.action
             
         # si la direction du joueur a changer on l'update dans la classe particule    
         if self.direction_joueur != self.player.direction:
@@ -452,8 +402,9 @@ class Game:
                 for sprite in self.group_particle.sprites():
                     if sprite.id == f"particule{id}":
                         self.group_particle.remove(sprite)
-            self.particule.remove_particle.clear()      
-        
+            self.particule.remove_particle.clear()
+            
+    def update_camera(self):
         self.scroll[0] = ((self.player.position[0] - self.scroll_rect.x) // 15)*self.zoom*self.player.speed_dt
         self.scroll_rect.x += self.scroll[0] 
         self.scroll[1] = ((self.player.position[1] - self.scroll_rect.y) // 15)*self.zoom*self.player.speed_dt
@@ -461,7 +412,78 @@ class Game:
         if self.scroll_rect.x < self.screen.get_width()/2 : self.scroll_rect.x = self.screen.get_width()/2
         if self.scroll_rect.y < self.screen.get_height()/2 : self.scroll_rect.y = self.screen.get_height()/2
         if self.scroll_rect.x > self.map.width - self.screen.get_width()/2 : self.scroll_rect.x = self.map.width - self.screen.get_width()/2
-        if self.scroll_rect.y > self.map.height - self.screen.get_height()/2 : self.scroll_rect.y = self.map.height - self.screen.get_height()/2
+        if self.scroll_rect.y > self.map.height - self.screen.get_height()/2 : self.scroll_rect.y = self.map.height - self.screen.get_height()/2        
+                    
+    def update(self):
+        """ fonction qui update les informations du jeu"""   
+        self.player.update_action()
+        self.suppr_dash_image()
+        
+        # gestion collision avec les plafonds
+        
+        # le joueur ne peut pas de cogner pendant 2 ticks car sinon il ne peut pas sauter si il tiens un wall du bout des doigts
+        if self.joueur_se_cogne() and self.player.is_jumping_edge and self.player.compteur_jump_edge >= self.player.compteur_jump_edge_min + self.player.increment_jump_edge*1:
+            self.player.fin_saut_edge()
+        
+        if self.joueur_se_cogne() and self.player.is_jumping:
+            self.player.fin_saut()
+            
+        if self.joueur_se_cogne() and self.player.is_dashing:
+            self.player.fin_dash()
+        
+        # gestion collision avec les sols
+        
+        if self.joueur_sur_sol() and self.player.is_dashing:
+            self.player.fin_dash()
+            self.player.debut_crouch()
+        
+        if self.joueur_sur_sol() and self.player.is_sliding:
+            self.player.fin_grab_edge()
+            if self.player.direction == "right":
+                self.player.change_direction("idle", "left")
+            elif self.player.direction == "left":
+                self.player.change_direction("idle", "right")
+        
+        # gestion collision avec les murs
+        
+        self.player.save_location()    
+            
+        if self.player.is_jumping_edge and self.stop_if_collide(self.player.direction_jump_edge):
+            self.player.fin_saut_edge()
+            self.check_grab()
+        
+        if self.player.is_sliding_ground and self.stop_if_collide(self.player.slide_ground_direction_x):
+            self.player.fin_slide_ground()
+            self.check_grab()
+            
+        if self.player.is_dashing and self.stop_if_collide(self.player.dash_direction_x):
+            self.player.fin_dash()
+            self.check_grab()
+        
+        # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
+        if self.player.is_jumping and self.player.compteur_jump > self.player.compteur_jump_min * 0.4 and self.stop_if_collide(self.player.direction):
+            self.player.fin_saut()
+            self.check_grab()
+        
+        self.gestion_chute() 
+        
+        if self.player.is_sliding:
+            self.check_tombe_ou_grab()
+        
+        self.player.update_action()
+            
+        if self.player.action in self.dico_action_functions.keys():
+            self.dico_action_functions[self.player.action]()
+        
+        if self.player.images_dash != []:
+            # [x,y, image_modifié, cooldown]
+            im = Dash_images(self.player.images_dash[0][0], self.player.images_dash[0][1], self.player.images_dash[0][2], self.player.images_dash[0][3])
+            self.group.add(im)
+            del self.player.images_dash[:]
+        
+        self.update_particle()      
+        
+        self.update_camera()
         
     def run(self):
         """boucle du jeu"""
@@ -478,8 +500,6 @@ class Game:
             self.update()
             self.bg.fill((255,155,155))
             self.map.render(self.bg, self.scroll_rect.x, self.scroll_rect.y)
-            #self.bg.blit(self.image_bg,(0,0))
-            #self.bg.blit(self.map_img,(-(self.scroll_rect.x - self.screen.get_width()/2) ,-(self.scroll_rect.y - self.screen.get_height()/2)))
             self.blit_group()
             self.screen.blit(self.bg, (0,0))
             

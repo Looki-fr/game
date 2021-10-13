@@ -15,6 +15,7 @@ class TileMap:
         self.liste_tile.append([[] for _ in range(self.tm.height)])
         c=0
         ti = self.tmxdata.get_tile_image_by_gid
+        # creation d'un tableau contenant toutes images de tiles
         for layer in self.tmxdata.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, gid, in layer:
@@ -28,10 +29,13 @@ class TileMap:
         self.liste_tile = self.liste_tile[:-1]
 
     def render(self, surface, cam_x, cam_y):
+        """appeler a chaque tick => blit les tiles"""
+        # calcul des coordonnees max que doivent avoir les tiles pour qu'elles soient presentes sur lecran
         y_min = ceil((cam_y-self.screen_height/2)/(self.tm.tileheight* self.zoom))-2
         y_max = ceil((cam_y+self.screen_height/2)/(self.tm.tileheight* self.zoom))+1
         x_min = ceil((cam_x-self.screen_width/2)/(self.tm.tilewidth* self.zoom))-2
         x_max = ceil((cam_x+self.screen_width/2)/(self.tm.tilewidth* self.zoom))+1
+        # la camera se bloque en fin de map, donc les positions des tiles doivent être ajustes
         if y_min < 0:
             y_min = 0
         if x_min < 0:

@@ -15,6 +15,7 @@ class Player(pygame.sprite.Sprite):
         self.zoom = zoom
         self.dt = 17
         self.speed_dt=17/self.dt
+        self.action = "idle"
         
         self.images = {}
         # enregistrement des images dans un dictionnaire :     
@@ -156,7 +157,7 @@ class Player(pygame.sprite.Sprite):
         
         # images
         self.time_cooldown_ralentissement = 0
-        self.action = "idle"
+        self.action_image = "idle"
         self.direction = "right"
         self.compteur_image = 0
         self.current_image = 1
@@ -257,10 +258,14 @@ class Player(pygame.sprite.Sprite):
         self.timer_cooldown_slide_ground = 0
   
     def update_tick(self, dt):
+        """i created a multiplicator for the mouvements that based on 60 fps (clock.tick() = 17) because the original
+        frame rate is 60, and so the mouvements are speeder when the game is lagging so when
+        the game has a lower frame rate, same for animations but it doesnt work perfectly for animations"""
         self.dt = dt
         self.speed_dt = round(self.dt/17)
   
     def debut_crouch(self):
+        """very simple"""
         self.change_direction("crouch", self.direction)
   
     def debut_slide_ground(self, slide_ground_direction_x):
@@ -270,19 +275,19 @@ class Player(pygame.sprite.Sprite):
         self.slide_ground_direction_x = slide_ground_direction_x
     
     def slide_ground(self):
-        if self.is_sliding_ground :
-            if self.compteur_slide_ground < self.compteur_slide_ground_max:
-                self.update_speed_slide_ground()
-                if self.slide_ground_direction_x == "right":
-                    self.position[0] += (self.speed_slide_ground + self.speed *0.5) * self.zoom * self.speed_dt 
-                elif self.slide_ground_direction_x == "left":
-                    self.position[0] -= (self.speed_slide_ground + self.speed *0.5) * self.zoom * self.speed_dt 
-                self.compteur_slide_ground += self.compteur_slide_ground_increment* self.speed_dt
-            else:
-                self.fin_slide_ground()
+        if self.compteur_slide_ground < self.compteur_slide_ground_max:
+            self.update_speed_slide_ground()
+            if self.slide_ground_direction_x == "right":
+                self.position[0] += (self.speed_slide_ground + self.speed *0.5) * self.zoom * self.speed_dt 
+            elif self.slide_ground_direction_x == "left":
+                self.position[0] -= (self.speed_slide_ground + self.speed *0.5) * self.zoom * self.speed_dt 
+            self.compteur_slide_ground += self.compteur_slide_ground_increment* self.speed_dt
+        else:
+            self.fin_slide_ground()
     
     def update_speed_slide_ground(self):
         self.speed_slide_ground = (self.compteur_slide_ground**2) * 0.5
+        # the base speed is also increasing
         if self.speed < self.max_speed_run:
             self.speed += (self.speed*0.003 + self.origin_speed_run*0.010)
     
@@ -290,10 +295,12 @@ class Player(pygame.sprite.Sprite):
         self.is_sliding_ground = False
         self.slide_ground_direction_x = ""
         self.compteur_slide_ground = self.compteur_slide_ground_min
+        # the player was running before the slide so he should run after
         self.change_direction("run", self.direction)
         self.timer_cooldown_slide_ground = time.time()
         
     def debut_grab_edge(self, head_only=False):
+        # if only the head collide with the wall
         self.head_only_edge = head_only
         self.timer_slide = time.time()
         self.is_grabing_edge = True
@@ -312,6 +319,7 @@ class Player(pygame.sprite.Sprite):
         self.is_grabing_edge = False
         self.is_sliding = False
         if mouvement:
+            # petit decalage necessaires pour eviter des bug a causes des images d'animations ou des collision
             if self.direction == "right":
                 self.position[0] -= 15*self.zoom
             elif self.direction == "left":
@@ -326,43 +334,39 @@ class Player(pygame.sprite.Sprite):
             # aumentation du speed
             self.speed += self.speed*0.002 + self.origin_speed_run*0.01
             if self.speed > self.max_speed_run*0.6:
-                if self.action != "idle":
-                    self.images[self.action]["compteur_image_max"] = 6
+                if self.action_image != "idle":
+                    self.images[self.action_image]["compteur_image_max"] = 6
         # vitesse maximal du defilement des images
-        if self.action != "idle":
-            self.images[self.action]["compteur_image_max"] = 4                    
+        if self.action_image != "idle":
+            self.images[self.action_image]["compteur_image_max"] = 4                    
         
     def move_right(self, pieds_sur_sol = False): 
         self.is_mouving_x = True
         self.update_speed()
-        if self.action == "crouch":
-            self.position[0] += self.speed * self.zoom * self.speed_dt * 1
-        else:
-            self.position[0] += self.speed * self.zoom * self.speed_dt
+        self.position[0] += self.speed * self.zoom * self.speed_dt
         if pieds_sur_sol:
-            if self.action != "run" and self.action != "jump" and self.action != "crouch":
+            if self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch":
                 self.change_direction("run","right") 
         if self.direction != "right":
-            if self.action == "crouch":
-                self.change_direction(self.action,"right",compteur_image=self.compteur_image, current_image=self.current_image)
+            if self.action_image == "crouch":
+                # we dont want the crouch animation du re start from the biggining
+                self.change_direction(self.action_image,"right",compteur_image=self.compteur_image, current_image=self.current_image)
             else:
-                self.change_direction(self.action,"right")        
+                self.change_direction(self.action_image,"right")        
 
     def move_left(self, pieds_sur_sol = False): 
         self.is_mouving_x = True
         self.update_speed()
-        if self.action == "crouch":
-            self.position[0] -= self.speed * self.zoom * self.speed_dt * 1
-        else:
-            self.position[0] -= self.speed * self.zoom * self.speed_dt
+        self.position[0] -= self.speed * self.zoom * self.speed_dt
         if pieds_sur_sol:
-            if self.action != "run" and self.action != "jump" and self.action != "crouch":
+            if self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch":
                 self.change_direction("run","left") 
         if self.direction != "left":
-            if self.action == "crouch":
-                self.change_direction(self.action,"left",compteur_image=self.compteur_image, current_image=self.current_image)
+            if self.action_image == "crouch":
+                # we dont want the crouch animation du re start from the biggining
+                self.change_direction(self.action_image,"left",compteur_image=self.compteur_image, current_image=self.current_image)
             else:
-                self.change_direction(self.action,"left")  
+                self.change_direction(self.action_image,"left")  
 
     def debut_dash(self, dash_direction_x, dash_direction_y):
         #penser à bien utiliser .copy() parce que sinon la valeur est la meme que self.position tous le temps
@@ -373,48 +377,48 @@ class Player(pygame.sprite.Sprite):
         self.dash_direction_y = dash_direction_y
     
     def dash(self):
-        if self.is_dashing :
-            #enregistrement des images transparentes lors su dash
-            if self.compteur_dash >-9 and not self.image1_dash:
-                self.image1_dash = True
-                self.images_dash.append((self.position[0], self.position[1], self.image.copy(), 0))
-            elif self.compteur_dash >-7.75 and not self.image2_dash:
-                self.image2_dash = True
-                self.images_dash.append((self.position[0], self.position[1], self.image.copy(), self.dash_cooldown_image))
-            elif self.compteur_dash >-6.25 and not self.image3_dash:
-                self.image3_dash = True
-                self.images_dash.append((self.position[0], self.position[1], self.image.copy(), self.dash_cooldown_image*2))
-            elif self.compteur_dash >-4.25 and not self.image4_dash:
-                self.image4_dash = True
-                self.images_dash.append((self.position[0], self.position[1], self.image.copy(), self.dash_cooldown_image*3))
-            
-            # le dash commence par un "mouvement immobile"
-            if self.compteur_dash_immobile < self.compteur_dash_immobile_max:
-                self.compteur_dash_immobile += 1* self.speed_dt
+        #enregistrement des images transparentes lors su dash
+        #i should have calculated the distance in term of the speed but i got lazy x)
+        if self.compteur_dash >-9 and not self.image1_dash:
+            self.image1_dash = True
+            self.images_dash.append((self.position[0], self.position[1], self.image.copy(), 0))
+        elif self.compteur_dash >-7.75 and not self.image2_dash:
+            self.image2_dash = True
+            self.images_dash.append((self.position[0], self.position[1], self.image.copy(), self.dash_cooldown_image))
+        elif self.compteur_dash >-6.25 and not self.image3_dash:
+            self.image3_dash = True
+            self.images_dash.append((self.position[0], self.position[1], self.image.copy(), self.dash_cooldown_image*2))
+        elif self.compteur_dash >-4.25 and not self.image4_dash:
+            self.image4_dash = True
+            self.images_dash.append((self.position[0], self.position[1], self.image.copy(), self.dash_cooldown_image*3))
+        
+        # le dash commence par un "mouvement immobile"
+        if self.compteur_dash_immobile < self.compteur_dash_immobile_max:
+            self.compteur_dash_immobile += 1* self.speed_dt
+        else:
+            # utilisation de la fonction carre avec un compteur qui commence en negatif et finis à 0
+            # => le mouvement est RALLENTIT
+            if self.compteur_dash < self.compteur_dash_max:
+                self.update_speed_dash()
+                speed_dash = self.speed_dash
+                if self.dash_direction_y != "" and self.dash_direction_x != "":
+                    speed_dash *= 1
+                elif self.dash_direction_x == 'up' or self.dash_direction_x == "right" or self.dash_direction_x == "left":
+                    speed_dash *= 1.3
+                if self.dash_direction_x == "right":
+                    self.position[0] += speed_dash
+                elif self.dash_direction_x == "left":
+                    self.position[0] -= speed_dash
+                if self.dash_direction_y == "down":
+                    self.position[1] += speed_dash
+                elif self.dash_direction_y == "up":
+                    self.position[1] -= speed_dash
+                self.compteur_dash += self.compteur_dash_increment* self.speed_dt
             else:
-                # utilisation de la fonction carre avec un compteur qui commence en negatif et finis à 0
-                # => le mouvement est RALLENTIT
-                if self.compteur_dash < self.compteur_dash_max:
-                    self.update_speed_dash()
-                    speed_dash = self.speed_dash
-                    if self.dash_direction_y != "" and self.dash_direction_x != "":
-                        speed_dash *= 1
-                    elif self.dash_direction_x == 'up' or self.dash_direction_x == "right" or self.dash_direction_x == "left":
-                        speed_dash *= 1.3
-                    if self.dash_direction_x == "right":
-                        self.position[0] += speed_dash
-                    elif self.dash_direction_x == "left":
-                        self.position[0] -= speed_dash
-                    if self.dash_direction_y == "down":
-                        self.position[1] += speed_dash
-                    elif self.dash_direction_y == "up":
-                        self.position[1] -= speed_dash
-                    self.compteur_dash += self.compteur_dash_increment* self.speed_dt
-                else:
-                    self.fin_dash()
+                self.fin_dash()
     
     def fin_dash(self):
-        """reinitialisation des vvariables du dash"""
+        """reinitialisation des variables du dash"""
         # sinon le joueur va sauter immediatement en arrivant sur une plateforme apres un dash
         self.timer_cooldown_next_jump = time.time()
         self.coord_debut_dash = [-999,-999]
@@ -436,7 +440,6 @@ class Player(pygame.sprite.Sprite):
         self.speed_dash = (self.compteur_dash**2) * 0.3 * self.zoom * self.speed_dt
 
     def debut_saut_edge(self, pieds = False, direction_x = ""):
-        
         self.jump_edge_pieds = pieds
         self.coord_debut_jump_edge = self.position.copy()
         self.is_jumping_edge = True
@@ -463,17 +466,16 @@ class Player(pygame.sprite.Sprite):
     def saut_edge(self):
         # utilisation de la fonction carre avec un compteur qui commence en negatif et finis à 0
         # => le mouvement est RALLENTIT        
-        if self.is_jumping_edge :
-            if self.compteur_jump_edge < self.compteur_jump_edge_max:
-                self.update_speed_jump_edge()
-                self.position[1] -= self.speed_jump_edge
-                if self.direction_jump_edge == "right":
-                    self.position[0] += self.speed_jump_edge*1.2
-                elif self.direction_jump_edge == "left":
-                    self.position[0] -= self.speed_jump_edge*1.2
-                self.compteur_jump_edge += self.increment_jump_edge* self.speed_dt
-            else:
-                self.fin_saut_edge()
+        if self.compteur_jump_edge < self.compteur_jump_edge_max:
+            self.update_speed_jump_edge()
+            self.position[1] -= self.speed_jump_edge
+            if self.direction_jump_edge == "right":
+                self.position[0] += self.speed_jump_edge*1.2
+            elif self.direction_jump_edge == "left":
+                self.position[0] -= self.speed_jump_edge*1.2
+            self.compteur_jump_edge += self.increment_jump_edge* self.speed_dt
+        else:
+            self.fin_saut_edge()
     
     def fin_saut_edge(self):
         """reinitialisation des vvariables du saut"""
@@ -499,13 +501,12 @@ class Player(pygame.sprite.Sprite):
     def saut(self):
         # utilisation de la fonction carre avec un compteur qui commence en negatif et finis à 0
         # => le mouvement est RALLENTIT        
-        if self.is_jumping :
-            if self.compteur_jump < self.compteur_jump_max:
-                self.update_speed_jump()
-                self.position[1] -= self.speed_jump
-                self.compteur_jump += self.increment_jump*self.speed_dt
-            else:
-                self.fin_saut()
+        if self.compteur_jump < self.compteur_jump_max:
+            self.update_speed_jump()
+            self.position[1] -= self.speed_jump
+            self.compteur_jump += self.increment_jump*self.speed_dt
+        else:
+            self.fin_saut()
     
     def fin_saut(self):
         """reinitialisation des vvariables du saut"""
@@ -524,12 +525,12 @@ class Player(pygame.sprite.Sprite):
         self.change_direction('up_to_fall', self.direction)
         
     def chute(self):
-        if self.is_falling:
-            self.update_speed_gravity()
-            self.position[1] += self.speed_gravity * self.zoom * self.speed_dt
+        self.update_speed_gravity()
+        self.position[1] += self.speed_gravity * self.zoom * self.speed_dt
     
     def fin_chute(self, jump_or_dash = False):
         self.is_falling = False
+        self.speed_gravity = self.original_speed_gravity
         if not jump_or_dash:
             self.debut_crouch()
     
@@ -539,12 +540,12 @@ class Player(pygame.sprite.Sprite):
             self.speed_gravity += self.speed_gravity*0.005 + self.original_speed_gravity*0.005
             # reduction de la vitesse de defilement des images quand la vitesse augmente
             if self.speed_gravity > 5:
-                self.images[self.action]["compteur_image_max"] = 4
+                self.images[self.action_image]["compteur_image_max"] = 4
             elif self.speed_gravity > 6.5:
-                self.images[self.action]["compteur_image_max"] = 3
+                self.images[self.action_image]["compteur_image_max"] = 3
         # vitesse maximal du defilement des images
-        elif self.images[self.action]["compteur_image_max"] != 2:
-            self.images[self.action]["compteur_image_max"] = 2  
+        elif self.images[self.action_image]["compteur_image_max"] != 2:
+            self.images[self.action_image]["compteur_image_max"] = 2  
 
     def debut_ralentissement(self):
         """methode appele quand je joueur arretes de courir"""
@@ -554,10 +555,10 @@ class Player(pygame.sprite.Sprite):
             self.ralentit_bool = True
             self.compteur_ralentissement = 0
             # augmentation du compteur pour que le ralentissement soit visible
-            self.images[self.action]["compteur_image_max"] = 6
+            self.images[self.action_image]["compteur_image_max"] = 6
         else:
             # si le joueur arrete davancer mais est contre un mur
-            if self.action == "run":
+            if self.action_image == "run":
                 self.change_direction("idle", self.direction)
 
     def ralentissement(self):
@@ -567,7 +568,7 @@ class Player(pygame.sprite.Sprite):
             if self.compteur_ralentissement in tab:
                 # la vitesse diminue 3 fois tous les 4 frames + on fait avancer le joueur
                 self.speed = self.speed*0.7*self.zoom * self.speed_dt
-                if self.action == "run":
+                if self.action_image == "run":
                     if self.direction == "right":
                         self.position[0] += self.speed  * self.zoom
                     elif self.direction == "left":
@@ -578,7 +579,7 @@ class Player(pygame.sprite.Sprite):
             # arret du ralentissement au bout de 8 frames
             if self.compteur_ralentissement > 8 + 1:
                 self.ralentit_bool = False
-                if self.action == "run":
+                if self.action_image == "run":
                     if self.direction == "right":
                         self.change_direction("idle", "right")
                     elif self.direction == "left":
@@ -596,7 +597,7 @@ class Player(pygame.sprite.Sprite):
     def update_animation(self):
         """change les animations du joueurs, appelé toutes les frames"""
         # changement de l'image tout les X ticks
-        if self.compteur_image < self.images[self.action]["compteur_image_max"]:
+        if self.compteur_image < self.images[self.action_image]["compteur_image_max"]:
             self.compteur_image += 1*self.speed_dt
         else:
             # temp sert a faire en sorte que l'image ne soit pas update si on passe de 'uptofall' à 'fall'
@@ -604,45 +605,45 @@ class Player(pygame.sprite.Sprite):
             # changement de l'image
             self.compteur_image = 0
             # si l'image en cours est la derniere on re passe a la 1ere, sinon on passe a la suivante
-            if self.current_image < self.images[self.action]["nbr_image"]:
+            if self.current_image < self.images[self.action_image]["nbr_image"]:
                 self.current_image += 1
             else:
-                if self.action == "up_to_fall":
+                # pour ces actions on passe a une autre animation quand l'animation respeective est finis
+                if self.action_image == "up_to_fall":
                     temp = True
                     self.change_direction("fall", self.direction)
-                elif self.action == "crouch":
+                elif self.action_image == "crouch":
                     temp = True
                     if self.is_mouving_x:
                         self.change_direction("run", self.direction)
                     else:
                         self.change_direction("idle", self.direction)
-                elif self.action == "Edge_grab":
+                elif self.action_image == "Edge_grab":
                     temp = True
                     self.change_direction("Edge_Idle", self.direction)
                 else:
                     self.current_image = 1
             
             if not temp:
-                self.image = self.images[self.action][self.direction][str(self.current_image)]
+                self.image = self.images[self.action_image][self.direction][str(self.current_image)]
                 transColor = self.image.get_at((0,0))
                 self.image.set_colorkey(transColor)
         
     def change_direction(self, action, direction, compteur_image=0, current_image=0):
         """change la direction et / ou l'action en cours"""
         # ralentissement si le joueur cours et continue de courir dans lautre sens
-        if self.action == "run" and action == "run":
+        if self.action_image == "run" and action == "run":
             self.speed *= 0.7
         # reset du compteur d'image si le joueur ne va pas chuter, sion il garde sa vitesse
-        if self.action == "run" and action != "fall" and action != "up_to_fall":
+        if self.action_image == "run" and action != "fall" and action != "up_to_fall":
             self.images["run"]["compteur_image_max"] = self.origin_compteur_image_run
-        elif self.action == "fall":
+        elif self.action_image == "fall":
             self.images["fall"]["compteur_image_max"] = self.origin_compteur_image_fall
-        self.speed_gravity = self.original_speed_gravity
-        self.action = action
+        self.action_image = action
         self.direction = direction
         self.compteur_image = compteur_image
         self.current_image = current_image
-        self.image = self.images[self.action][self.direction]["1"]
+        self.image = self.images[self.action_image][self.direction]["1"]
         transColor = self.image.get_at((0,0))
         self.image.set_colorkey(transColor)
         
@@ -650,16 +651,32 @@ class Player(pygame.sprite.Sprite):
         """methode appele a chaque tick"""
         if self.speed > self.max_speed_run:
             self.speed = self.max_speed_run
+            
         self.update_animation()
+        
+        # update des coordonees des rect
         self.rect.topleft = self.position
         self.body.midbottom = self.rect.midbottom
         self.feet.midbottom = self.rect.midbottom
         self.head.midtop = self.body.midtop
         
         # la vitesse de course du joueur ne ralentit pas tant qu'il coure ou chute
-        if self.action == "run" or self.action == "fall" or self.action == "up_to_fall":
+        if self.action_image == "run" or self.action_image == "fall" or self.action_image == "up_to_fall" or self.action_image == "jump":
             self.time_cooldown_ralentissement = time.time()
         
-        if self.action == "idle" and time.time() - self.time_cooldown_ralentissement > self.cooldown_ralentissement:
+        if self.action_image == "idle" and time.time() - self.time_cooldown_ralentissement > self.cooldown_ralentissement:
             self.speed = self.origin_speed_run
         
+    def update_action(self):
+        """sometimes actions and actions image are differents :
+        when the player dash self.action = 'dash' and self.action_image = 'jump'
+        because its has the same image, so we update it here"""
+        if self.action_image in ["run", "idle", "fall","up_to_fall","Edge_Idle","Edge_grab","Wall_slide","ground_slide","crouch"]:
+            self.action = self.action_image
+        elif self.action_image == "jump":
+            if self.is_dashing:
+                self.action = "dash"
+            elif self.is_jumping_edge:
+                self.action = "jump_edge"   
+            elif self.is_jumping:
+                self.action = "jump"   

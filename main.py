@@ -9,7 +9,7 @@ bibliotheque à installer :
     - sqlite3
     
 les noms de variables / fonctions peuvent paraître inutilement long, mais ça à un GROS avantage:
-si vous rajouter un mouvement par exemple et donc qu'il faut faire en sorte que les autres mouvements ne declenche pas pendant qu'il est actif
+si vous rajouter un mouvement par exemple et donc qu'il faut faire en sorte que les autres mouvements ne declenchent pas pendant qu'il est actif
 faites juste ctrl + f 'debut' et en 2s c'est plié
 """
 import os
@@ -27,12 +27,15 @@ if __name__ == "__main__":
     
 # TODO
 
-# COMMENTAIRE
+# particle crouch atterissage comme jump
 
-# reduire update => more method
+# BUG saut plafond sur edge => traverser plafond
 
-# dictionnaire de methode avec self.player.action en key:
-# { "chute":self.player.chute}
+# BUG stop grab wall if cogne => dont checkgrab if cogne
+
+# refaire courbe jump edge diagonal
+
+# add un Licence.txt avec liens vers assets
 
 # REFAIRE MOUVEMENT => good sound effects
 
@@ -43,14 +46,4 @@ if __name__ == "__main__":
 # en cours : map tutoriel
 # => 'fantome' + REFAIRE MAP
 
-
-
-
-
-
-
-# commentaire en anglais
-
 # implementer mannette
-
-# idee bloc note tel
