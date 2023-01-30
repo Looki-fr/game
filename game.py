@@ -1,479 +1,422 @@
 import pygame
 import os
 import time
-from player import Player
+from mobs.player import Player
+from mobs.crab import Crab
+from mobs.mob_functions import *
+from mobs.bot import *
+from mobs.collision import Collision
 from pygame.locals import *
 from entities_sprite.dash_images import Dash_images
 from entities_sprite.particule import Particule
-from map_sprite.textSprite import TextSprite
-from map_sprite.toucheSprite import ToucheSprite
-from tileMap import TileMap
-
-directory = os.path.dirname(os.path.realpath(__file__))
+from map.render_map import RenderMap
+from map.object_map import Object_map
 
 class Game:
     def __init__(self):
+        self.directory = os.path.dirname(os.path.realpath(__file__))
+        
         info_screen = pygame.display.Info()
-        # créer la fenetre du jeu
-        #flags = FULLSCREEN | DOUBLEBUF | NOFRAME | SCALED
-        #flags = HWSURFACE|DOUBLEBUF
-        flags = FULLSCREEN | DOUBLEBUF # + 16 in args
-        self.screen = pygame.display.set_mode((round(info_screen.current_w*0.7),round(info_screen.current_h*0.7)))
-        self.bg = pygame.Surface((self.screen.get_width(), self.screen.get_height()))
-        pygame.event.set_allowed([QUIT, KEYDOWN, KEYUP])
-        pygame.display.set_caption(f"Looki's aventure")
-        self.zoom = 2
+        self.screen = pygame.display.set_mode((round(info_screen.current_w*1),round(info_screen.current_h*1)))
+        self.screen.fill((200,100,100))       
+        self.bg = pygame.Surface((self.screen.get_width(), self.screen.get_height()), flags=SRCALPHA)
+        self.minimap = pygame.Surface((400, 400), flags=SRCALPHA)
         self.dt = 1/30
         
-        # chargement map
-        self.map = TileMap(f"{directory}\\assets\\maps\\Test_map2.tmx", self.screen.get_width(), self.screen.get_height(), self.zoom)
         
-        # initialization joueur
-        player_position = self.map.tm.get_object_by_name("spawn_player") 
-        self.player = Player(player_position.x*self.zoom, player_position.y*self.zoom, directory, self.zoom)
-        self.all_players = [self.player.body]
-        
-        # creation groupe de sprite 
+        self.all_mobs=[]
+        self.all_mobs_wave=[]
         self.group = pygame.sprite.Group()
-        self.group.add(self.player)
         self.group_particle = pygame.sprite.Group()
-        self.all_groups = [self.group, self.group_particle]
+        self.group_object=pygame.sprite.Group()
+        self.group_wave=pygame.sprite.Group()
+        self.all_groups = [self.group_object,self.group, self.group_particle]
         
-        # particule lors de mouvement du joueur
-        self.particule = Particule(directory, self.player.body.h, self.player.body.w, self.zoom)
-        self.direction_joueur = ""
-        self.action_joueur = ""
+        self.render=RenderMap(self.screen.get_width(), self.screen.get_height(), self.directory)
+        self.map_height=self.render.get_height()
+        self.map_width=self.render.get_width()
+        self.first_map=self.render.get_first_map()
+        player_position = self.first_map["spawn_player"]
         
-        # chaque element de walls / etc est sous la forme : [x, y, [rect]]
-        self.walls = []
-        self.grounds = []
-        self.ceillings = []
-        self.plateformes = []
-        self.all_text = []
-        for obj in self.map.tm.objects:
-            if obj.type == "collision":
-                if obj.name == "wall":
-                    self.walls.append((obj.x * self.zoom ,obj.y * self.zoom ,[pygame.Rect(obj.x * self.zoom , obj.y * self.zoom , obj.width * self.zoom , obj.height * self.zoom )]))
-                elif obj.name == "ground":
-                    self.grounds.append((obj.x * self.zoom ,obj.y * self.zoom ,[pygame.Rect(obj.x * self.zoom , obj.y * self.zoom , obj.width * self.zoom , obj.height * self.zoom )]))
-                elif obj.name == "ceilling":
-                    self.ceillings.append((obj.x * self.zoom ,obj.y * self.zoom ,[pygame.Rect(obj.x * self.zoom , obj.y * self.zoom , obj.width * self.zoom , obj.height * self.zoom )]))
-                elif obj.name == 'plateforme':
-                    self.plateformes.append((obj.x * self.zoom ,obj.y * self.zoom ,[pygame.Rect(obj.x * self.zoom , obj.y * self.zoom , obj.width * self.zoom , obj.height * self.zoom )]))
-            elif obj.type == 'spawn_phrase':
-                self.spawn_phrase(obj.name, obj.x * self.zoom , obj.y * self.zoom )
+        self.image_pp=pygame.image.load(f'{self.directory}\\assets\\pp.png').convert_alpha()
+        self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
+        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule)
         
-        self.pressed_up = False
+        self.pressed_up_bool = [False]
+        self.last_player_position=self.player.position.copy()
         
-        # gestion camera
         self.scroll=[0,0]
         self.scroll_rect = Rect(self.player.position[0],self.player.position[1],1,1)
         
-        self.dico_action_functions = {
-            "fall":self.player.chute,
-            "up_to_fall":self.player.chute,
-            "jump":self.player.saut,
-            "dash":self.player.dash,
-            "jump_edge":self.player.saut_edge,
-            "Wall_slide":self.player.sliding,
-            "Edge_Idle":self.player.sliding,
-            "Edge_grab":self.player.sliding,
-            "ground_slide":self.player.slide_ground
-            
-        }
+        pygame.joystick.init()
+        self.joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
+        self.motion = [0, 0]
         
-    def spawn_phrase(self, name, x, y):
-        """creer des objets des classes TextSprite et ToucheSprite pour afficher des phrases à l'écran
-        en fonction d'objet spawn dans la map tiled sous la forme :
-        0nom;1;nom => 0 : on creer TextSprite; 1 => on creer ToucheSprite """
-        text_id = name.split(";")
-        for id in text_id:
-            # c'est un text
-            if id[0] == "0":
-                self.all_text.append(TextSprite(x, y, id[1::], directory))
-                x += self.all_text[-1].image.get_width() + 15
-            elif id[0] == "1":
-                self.all_text.append(ToucheSprite(x, y, id[1::], directory))
-                x += self.all_text[-1].image.get_width() + 15
+        self.total_friendly_mob=0
+        self.add_mob_to_game(self.player, "solo_clavier")
+        self.add_mob_to_game(self.player, "solo_clavier", group="wave")
+        
+        self.collision=Collision(self.render.zoom, self.render.matrix_map) 
+        i=1  
+        for line in self.render.matrix_map:
+            for map in line:
+                if map != None:      
+                    self.add_mob_to_game(Crab(map["spawn_player"][0], map["spawn_player"][1]+1, self.directory, self.render.zoom, i, self.checkpoint.copy(), Particule, self.player), "bot")
+                    i+=1
+        
+        self.all_controls={}
+        self.all_controls["solo_clavier"]={"perso":[],"touches":[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP,pygame.K_DOWN, pygame.K_q, pygame.K_a, pygame.K_d, pygame.K_z, pygame.K_e]}  
     
-    def joueur_sur_sol(self):
-        """renvoie True si les pieds du joueur est sur une plateforme ou sur le sol.
-        De plus, place la coordonee en y du joueur juste au dessus de la plateforme / du sol"""
-        for sprite in self.group.sprites():
-            if sprite.id == 'player':
-                passage_a_travers = time.time() - sprite.t1_passage_a_travers_plateforme < sprite.cooldown_passage_a_travers_plateforme
-                # si le joueur est en collision avec un mur
-                for ground in self.grounds:
-                    if sprite.feet.collidelist(ground[2]) > -1:
-                        sprite.position[1] = ground[1] - sprite.image.get_height() + 1
-                        # comme le joueur est sur le sol, il peut de nouveau dash / sauter
-                        sprite.a_sauter = False
-                        sprite.a_dash = False
-                        return True
-                for plateforme in self.plateformes:
-                    # and not sprite.is_sliding
-                    if not passage_a_travers:
-                        if sprite.feet.collidelist(plateforme[2]) > -1:
-                            if sprite.position[1] + self.player.image.get_height() - plateforme[1] < 20:
-                                sprite.position[1] = plateforme[1] - sprite.image.get_height() + 1
-                                # comme le joueur est sur une plateforme, il peut de nouveau dash / sauter
-                                sprite.a_sauter = False
-                                sprite.a_dash = False
-                                return True
-        return False
+        for i,line in enumerate(self.render.matrix_map):
+            for y, map in enumerate(line):
+                self.load_object_map(y, i)
     
-    def joueur_se_cogne(self):
-        """renvoie True si la tete du joueur est en collision avec un plafond"""
-        for sprite in self.group.sprites():
-            if sprite.id == 'player':
-                for ceilling in self.ceillings:
-                    if sprite.head.collidelist(ceilling[2]) > -1:
-                        return True
-       
-    def stop_if_collide(self, direction, head = False):
-        """fait en sorte que le joueur avance plus lorsque qu'il vance dans un mur"""
-        for sprite in self.group.sprites():
-            if sprite.id == 'player':
-                if head:
-                    rect = sprite.head
-                else:
-                    rect = sprite.body
-                # si le joueur est en collision avec un mur
-                for wall in self.walls:
-                    if rect.collidelist(wall[2]) > -1:
-                        # si le joueur va a droite en etant a gauche du mur
-                        # limage est plus grande que la partie visible du joueur, d'où self.player.image.get_width()/2
-                        if direction == 'right' and wall[0] > self.player.position[0] + self.player.image.get_width()/3:
-                            sprite.move_back()   
-                            return True
-                        # si le joueur va a gauche en etant a droite du mur
-                        if direction == 'left' and wall[0] < self.player.position[0] + self.player.image.get_width()/2:
-                            sprite.move_back()  
-                            return True
+    def load_object_map(self, c, d):
+        if self.render.type_objects_map[d][c]=="wave":
+            coord=self.render.matrix_map[d][c]["object_map"]
+            self.group_object.add(Object_map(self.render.zoom, "wave", coord[0], coord[1], self.directory, 5, 8, "assets\\flag", "flag_", 2, 30, 5, c, d))
 
-    def stick_to_wall(self):
-        if self.player.direction == "right":
-            self.player.position[0] += 30
-            for sprite in self.group.sprites():
-                if sprite.id == 'player':
-                    # si le joueur est en collision avec un mur
-                    for wall in self.walls:
-                        if sprite.body.collidelist(wall[2]) > -1:
-                            self.player.position[0] = wall[0] - self.player.body.w * 1.8
-        elif self.player.direction == "left":
-            self.player.position[0] -= 30
-            for sprite in self.group.sprites():
-                if sprite.id == 'player':
-                    # si le joueur est en collision avec un mur
-                    for wall in self.walls:
-                        if sprite.body.collidelist(wall[2]) > -1:
-                            self.player.position[0] = wall[0] - self.player.body.w * 1.8 + wall[2][0].w
-        
-    def handle_input(self):
-        """agit en fonction des touches appuye par le joueur"""
-        pressed = pygame.key.get_pressed()
-        # si on change de direction pendant un slide_ground on l'arretes
-        if pressed[pygame.K_LEFT] and self.player.is_sliding_ground and self.player.slide_ground_direction_x == 'right':
-            self.player.fin_slide_ground()
-        elif pressed[pygame.K_RIGHT] and self.player.is_sliding_ground and self.player.slide_ground_direction_x == 'left':
-            self.player.fin_slide_ground()
-            
-        if pressed[pygame.K_UP]:
-            if self.pressed_up == False and self.player.is_grabing_edge:
-                self.player.fin_grab_edge()
-                dir_x = ""
-                if pressed[pygame.K_LEFT]:
-                    dir_x = "left"
-                elif pressed[pygame.K_RIGHT]:
-                    dir_x = "right"
-                # si les pieds sont sur le mur des particles apparaissent
-                if self.check_pieds_collide_wall():
-                    self.player.debut_saut_edge(direction_x=dir_x)
-                    self.particule.pieds_collide_jump_edge = True
-                    self.particule.y_debut_jump_edge = self.player.coord_debut_jump_edge[1] + self.player.body.h
-                    if self.player.direction == "right":
-                        self.particule.x_debut_jump_edge = self.player.coord_debut_jump_edge[0] + self.player.body.w * 2 - 10
-                    elif self.player.direction == "left":
-                        self.particule.x_debut_jump_edge = self.player.coord_debut_jump_edge[0] + self.player.body.w *2 -10
-                else:
-                    self.player.debut_saut_edge(direction_x=dir_x)
-                    self.particule.pieds_collide_jump_edge = False
-            # pressed_up sert à savoir si le joueur viens d'appyuer sur la touche
-            # il pourrait juste rester appuyer       
-            self.pressed_up = True
-        else:
-            self.pressed_up = False
-        
-        # dash
-        if not self.player.is_jumping and not self.player.is_dashing and not self.player.a_dash and not self.player.is_sliding_ground and not self.player.is_grabing_edge and not self.player.is_jumping_edge:
-            if not self.joueur_sur_sol() and pressed[pygame.K_q]:    
-                dir_y = ""
-                dir_x = ""
-                if pressed[pygame.K_DOWN]:
-                    dir_y = "down"
-                if pressed[pygame.K_UP]:
-                    dir_y = "up"
-                if pressed[pygame.K_RIGHT]:
-                    dir_x = "right"
-                if pressed[pygame.K_LEFT]:
-                    dir_x = "left"
-                if dir_y == "" and dir_x == "":
-                    dir_y = "up"
-                    
-                self.player.debut_dash(dir_x, dir_y)
-                
-                self.particule.debut_dash_y = self.player.coord_debut_dash[1]+ self.player.body.h
-                self.particule.dir_dash_x = self.player.dash_direction_x
-                self.particule.dir_dash_y = self.player.dash_direction_y    
-                if self.player.direction == "right":    
-                    self.particule.debut_dash_x = self.player.coord_debut_dash[0] + self.player.body.w + 10
-                elif self.player.direction == "left":
-                    self.particule.debut_dash_x = self.player.coord_debut_dash[0] + self.player.body.w + 26
-            elif self.joueur_sur_sol() and pressed[pygame.K_LEFT] and not pressed[pygame.K_RIGHT] and pressed[pygame.K_DOWN] and time.time() - self.player.timer_cooldown_slide_ground > self.player.cooldown_slide_ground :
-                if self.player.is_falling: self.player.fin_chute()
-                self.player.debut_slide_ground("left")
-            elif self.joueur_sur_sol() and pressed[pygame.K_RIGHT] and not pressed[pygame.K_LEFT] and pressed[pygame.K_DOWN] and time.time() - self.player.timer_cooldown_slide_ground > self.player.cooldown_slide_ground :
-                if self.player.is_falling: self.player.fin_chute()
-                self.player.debut_slide_ground("right")
-        
-        # aller a gauche
-        if pressed[pygame.K_LEFT] and not self.player.is_jumping_edge and not self.player.is_grabing_edge and not self.player.is_sliding_ground and not self.player.is_dashing:
-            self.player.save_location()
-            bool = self.joueur_sur_sol()
-            if bool:
-                self.player.move_left(pieds_sur_sol=True)
-            # si le joueur ne dash pas et est en lair
-            else:
-                self.player.move_left()
-            if self.stop_if_collide("left") and not bool and not self.player.is_jumping:
-                self.check_grab()
-            
-        # aller a droite    
-        elif pressed[pygame.K_RIGHT] and not self.player.is_jumping_edge and not self.player.is_grabing_edge and not self.player.is_sliding_ground and not self.player.is_dashing:
-            self.player.save_location()
-            bool = self.joueur_sur_sol()
-            if bool:
-                self.player.move_right(pieds_sur_sol=True)
-            # si le joueur ne dash pas et est en lair
-            else:
-                self.player.move_right()
-            if self.stop_if_collide("right") and not bool and not self.player.is_jumping:
-                self.check_grab()
-        else:
-            # si le joueur avance pas, il deviens idle
-            if self.player.action_image != "fall" and self.player.action_image != "up_to_fall" and not self.player.is_sliding_ground:
-                if self.player.action_image == "run" and self.player.ralentit_bool == False:
-                    self.player.debut_ralentissement()
-                # si self.player.ralentissement na pas ete appele, self.player.ralentissement aura aucun effet
-                # => donc le ralentissement a lieu que quand le joueur arrete de courir
-                self.player.ralentissement()
-            
-        if pressed[pygame.K_DOWN]:
-            # le joueur passe a travers les plateformes pendant X secondes
-            self.player.t1_passage_a_travers_plateforme = time.time()
-        elif pressed[pygame.K_UP]:
-            # saut
-            if (self.joueur_sur_sol() or time.time() - self.player.timer_cooldown_able_to_jump < self.player.cooldown_able_to_jump) \
-                and not self.player.a_sauter and not self.player.is_jumping_edge\
-                and time.time() - self.player.timer_cooldown_next_jump > self.player.cooldown_next_jump \
-                and not self.player.is_jumping_edge and not self.player.is_dashing:
-                if self.player.is_sliding_ground:
-                    self.player.fin_slide_ground()
-                self.player.debut_saut()
-                self.particule.y_debut_jump = self.player.coord_debut_jump[1]+ self.player.body.h
-                if self.player.direction == "right":
-                    self.particule.x_debut_jump = self.player.coord_debut_jump[0] + self.player.body.w - 15
-                elif self.player.direction == "left":
-                    self.particule.x_debut_jump = self.player.coord_debut_jump[0] + self.player.body.w + 56
+    def blit_health_bar(self, bg, all_mobs):
+        i=1
+        for mob in all_mobs:
+            bg.blit(self.image_pp, (10*self.render.zoom, self.screen.get_height() - self.image_pp.get_height()*i - 15*self.render.zoom*i))
+            new_x = 10*self.render.zoom+100/(mob.max_health/(mob.health+1))
+            new_y = self.screen.get_height() - 12.5*self.render.zoom*(i+1) -self.image_pp.get_height()*i
+            pygame.draw.line(bg, (255,0,0), (10*self.render.zoom, new_y), (new_x, new_y), 2*self.render.zoom)
+            i+=1
     
-    def check_grab(self):
-        """Grab SSI head collide"""
-        
-        for sprite in self.group.sprites():
-            if sprite.id == 'player':
-                # si le joueur est en collision avec un mur
-                for wall in self.walls:
-                    if sprite.body.collidelist(wall[2]) > -1 and sprite.head.collidelist(wall[2]) > -1:
-                        if not self.player.is_jumping_edge:
-                            sprite.fin_chute()
-                            sprite.debut_grab_edge()
-                        self.stick_to_wall()
-                          
-    def check_pieds_collide_wall(self):
-        for sprite in self.group.sprites():
-            if sprite.id == 'player':
-                # si le joueur est en collision avec un mur
-                collide_wall = False
-                for wall in self.walls:
-                    if sprite.feet.collidelist(wall[2]) > -1:
-                        collide_wall = True
-                return collide_wall
-    
-    def check_tombe_ou_grab(self):
-        """stop le grab edge si on est plus en collision avce un mur"""
-        for sprite in self.group.sprites():
-            if sprite.id == 'player':
-                # si le joueur est en collision avec un mur
-                collide_wall = False
-                for wall in self.walls:
-                    if (sprite.body.collidelist(wall[2]) > -1 or sprite.head.collidelist(wall[2]) > -1) and sprite.is_sliding:
-                        collide_wall = True
-                if not collide_wall:
-                    sprite.fin_grab_edge()
-    
-    def blit_texte(self):
-        """blit les images des textes sur la surface self.bg"""
-        for texte in self.all_text:
-            texte.update()
-            if self.scroll_rect.x - (self.screen.get_width()/2) - texte.image.get_width() <= texte.position[0] <= self.scroll_rect.x + (self.screen.get_width()/2)  + texte.image.get_width() and \
-                self.scroll_rect.y - (self.screen.get_height()/2) - texte.image.get_height() <= texte.position[1] <= self.scroll_rect.y + (self.screen.get_height()/2)  + texte.image.get_height():
-                    new_x = self.screen.get_width()/2 + texte.position[0] - self.scroll_rect.x
-                    new_y = self.screen.get_height()/2 + texte.position[1] - self.scroll_rect.y
-                    self.bg.blit(texte.image, (new_x,new_y))
-
-    def blit_group(self):
-        """blit les images des sprites des groupes sur la surface self.bg"""
-        for group in self.all_groups:
+    def blit_group(self, bg, all_groups):
+        """blit les images des sprites des groupes sur la surface bg"""
+        for group in all_groups:
             for sprite in group.sprites():
                 if self.scroll_rect.x - (self.screen.get_width()/2) - sprite.image.get_width() <= sprite.position[0] <= self.scroll_rect.x + (self.screen.get_width()/2)  + sprite.image.get_width() and \
                     self.scroll_rect.y - (self.screen.get_height()/2) - sprite.image.get_height() <= sprite.position[1] <= self.scroll_rect.y + (self.screen.get_height()/2)  + sprite.image.get_height():
-                        new_x = self.screen.get_width()/2 + sprite.position[0] - self.scroll_rect.x
+                        if "arbre" in sprite.id :new_x = self.screen.get_width()/2 + sprite.position[0] - self.scroll_rect.x - sprite.image.get_width()/2
+                        else:new_x=self.screen.get_width()/2 + sprite.position[0] - self.scroll_rect.x
+                        
                         new_y = self.screen.get_height()/2 + sprite.position[1] - self.scroll_rect.y
-                        self.bg.blit(sprite.image, (new_x,new_y))
-   
+                        bg.blit(sprite.image, (new_x,new_y))
+                        
+    def update_camera(self, playerx, playery, player_speed_dt):
+        self.scroll[0] = ((playerx - self.scroll_rect.x) // 15)*self.render.zoom*player_speed_dt
+        self.scroll_rect.x += self.scroll[0] 
+        self.scroll[1] = ((playery - self.scroll_rect.y) // 15)*self.render.zoom*player_speed_dt
+        self.scroll_rect.y += self.scroll[1] 
+        # if self.scroll_rect.x < self.screen.get_width()/2 : self.scroll_rect.x = self.screen.get_width()/2
+        # if self.scroll_rect.y < self.screen.get_height()/2 : self.scroll_rect.y = self.screen.get_height()/2
+        # if self.scroll_rect.x > self.map_width - self.screen.get_width()/2 : self.scroll_rect.x = self.map_width - self.screen.get_width()/2
+        # if self.scroll_rect.y > self.map_height - self.screen.get_height()/2 : self.scroll_rect.y = self.map_height - self.screen.get_height()/2 
+    
+    def add_mob_to_game(self, mob, input, group="base"):
+        if group=="base":
+            self.all_mobs.append([mob, input])
+            self.group.add(mob)
+        else:
+            self.all_mobs_wave.append([mob, input])
+            self.group_wave.add(mob)
+        if input=="manette":
+            mob.motion=self.motion
+      
+    def end_wave_map(self):
+        self.render.current_map_is_wave=False  
+        self.collision.current_map_is_wave=False
+        self.player.reset_actions(chute=True)
+        self.player.position, self.player.position_wave_map = self.player.position_wave_map, self.player.position
+        self.scroll_rect.x=self.player.position[0]
+        self.scroll_rect.y=self.player.position[1]
+        player_position = self.first_map["spawn_player"]
+        self.checkpoint=[player_position[0], player_position[1]]
+        self.player.checkpoint=[player_position[0], player_position[1]]
+        self.all_groups.remove(self.group_wave)
+        self.all_groups.insert(1, self.group)
+      
+    def interact_object_map(self, id):
+        if id =="wave":
+            self.render.load_map_wave()
+            self.collision.dico_map_wave=self.render.current_map_objects  
+            self.collision.current_map_is_wave=True
+            self.player.reset_actions(chute=True)
+            self.player.checkpoint=[self.collision.dico_map_wave['spawn_player'][0], self.collision.dico_map_wave['spawn_player'][1]]
+            self.player.position_wave_map=[self.collision.dico_map_wave['spawn_player'][0], self.collision.dico_map_wave['spawn_player'][1]-self.player.image.get_height()+1]
+            self.player.position, self.player.position_wave_map = self.player.position_wave_map, self.player.position
+            self.checkpoint=[self.collision.dico_map_wave['spawn_player'][0], self.collision.dico_map_wave['spawn_player'][1]]
+            for i, coord in enumerate(self.collision.dico_map_wave["spawn_crab"]):
+                self.add_mob_to_game(Crab(coord[0], coord[1]+1, self.directory, self.render.zoom, str(i+1), self.checkpoint.copy(), Particule, self.player), "bot", group="wave")  
+            self.all_groups.remove(self.group)
+            self.all_groups.insert(1, self.group_wave)
+        
+    def handle_input(self):
+        """agit en fonction des touches appuye par le joueur"""
+             
+        pressed = pygame.key.get_pressed()
+        self.all_controls["solo_clavier"]["perso"]=[]
+        perso_manette=[]
+        if pressed:
+            for mob in self.get_all_mob():
+                if mob[0].action_image!="dying":
+                    #le joueur joue au clavier
+                    # elif player[1]=="manette":
+                    #     perso_manette.append(player[0])
+                    if mob[1] in self.all_controls.keys():
+                        self.all_controls[mob[1]]["perso"].append(mob[0])
+                    elif mob[1]=="manette":
+                        perso_manette.append(mob[0])
+                    elif mob[1]=="bot":
+                        if mob[0].bot.get_distance_target()<750*self.render.zoom:
+                            mob[0].bot.make_mouvement(self.collision)
+                        else:
+                            mob[0].reset_actions()
+            
+            for control in self.all_controls.values():
+                if pressed[control["touches"][0]]: pressed_left(control["perso"], self.collision)
+                elif pressed[control["touches"][1]]: pressed_right(control["perso"], self.collision)
+                if not pressed[control["touches"][0]] and not pressed[control["touches"][1]]:
+                    for mob in control["perso"]:
+                        handle_input_ralentissement(mob)
+                if pressed[control["touches"][2]]:pressed_up(control["perso"], pressed[control["touches"][3]], pressed[control["touches"][0]], pressed[control["touches"][1]], self.pressed_up_bool, self.collision)
+                if pressed[control["touches"][3]]:pressed_down(control["perso"])
+                if pressed[control["touches"][4]]:pressed_dash(control["perso"], pressed[control["touches"][0]], pressed[control["touches"][1]], pressed[control["touches"][3]], pressed[control["touches"][2]], self.collision.joueur_sur_sol, self.render.zoom)
+                if pressed[control["touches"][5]]:pressed_attack(control["perso"])
+                if pressed[control["touches"][6]]:pressed_heavy_attack(control["perso"])     
+                if pressed[control["touches"][7]]:pressed_pary(control["perso"])                                                    
+                if pressed[control["touches"][8]]: 
+                    id = pressed_interact(control["perso"], self.group_object)
+                    if id !=None:
+                        self.interact_object_map(id)
+                
+        # joystick :
+            # down : self.motion[1]>0.1:
+            # haut : self.motion[1]<-0.1:
+            # right : self.motion[0]>0.1:
+            # left :  self.motion[0]<-0.1:
+                
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            if event.type == JOYAXISMOTION:
+                if event.axis < 2:
+                    self.motion[event.axis] = event.value
+                    if abs(self.motion[0]) < 0.01:
+                        self.motion[0] = 0
+                    if abs(self.motion[1]) < 0.01:
+                        self.motion[1] = 0
+            if event.type == JOYBUTTONDOWN or event.type==JOYBUTTONUP:
+                if event.button == 0:
+                    down,left,right=False,False,False
+                    if self.motion[0]<-0.2: left=True
+                    if self.motion[0]>0.2: right=True
+                    if self.motion[1]>0.4: down=True
+                    pressed_up(perso_manette, down, left, right, self.pressed_up_bool, self.collision, self.particule)
+
+                if event.button == 1:
+                    down,up,left,right=False,False,False,False
+                    if self.motion[1]>0.4:down=True
+                    if self.motion[1]<-0.4:up=True
+                    if self.motion[0]>0.4:right=True
+                    if self.motion[0]<-0.4:left=True
+                    pressed_dash(perso_manette, left, right, down, up, self.collision.joueur_sur_sol, self.particule, self.render.zoom)
+                if event.button == 2:    
+                    pressed_attack(perso_manette)   
+                if event.button == 3:
+                    pressed_heavy_attack(perso_manette)
+                                
+        if self.motion[0]<-0.1:
+            pressed_left(perso_manette, self.collision)
+        elif self.motion[0]>0.1:
+            pressed_right(perso_manette, self.collision)
+        else:
+            for mob in perso_manette:
+                handle_input_ralentissement(mob)
+        
+        if self.motion[1]>0.8:
+            pressed_down(perso_manette)
+    
     def suppr_dash_image(self):
         for sprite in self.group.sprites():      
             # suppression des images dash apres le cooldown
             if sprite.id == "image_dash":
                 if time.time() - sprite.t1 > sprite.cooldown:
                     self.group.remove(sprite)
-                if sprite.body.collidelist(self.all_players) > -1 and self.player.is_grabing_edge:
+                if sprite.body.collidelist([tuple[0] for tuple in self.get_all_mob()]) > -1 and self.player.is_grabing_edge:
                     self.group.remove(sprite)
     
-    def gestion_chute(self):
+    def gestion_chute(self, mob):
         # si le j saut ou dash la chute prends fin
-        if (self.player.is_jumping or self.player.is_dashing) and self.player.is_falling:
-            self.player.fin_chute(jump_or_dash = True) 
+        if (mob.is_jumping or mob.is_dashing) and mob.is_falling:
+            mob.fin_chute(jump_or_dash = True) 
         
         # si le joueur n'est pas sur un sol et ne chute pas on commence la chute
-        if not self.joueur_sur_sol():
-            if not self.player.is_falling and not self.player.is_jumping and not self.player.is_dashing and not self.player.is_grabing_edge and not self.player.is_jumping_edge:
-                if self.player.is_sliding_ground:
-                    self.player.fin_slide_ground()
-                self.player.debut_chute()
+        if not self.collision.joueur_sur_sol(mob):
+            if not mob.is_falling and not mob.is_jumping and not mob.is_dashing and not mob.is_grabing_edge and not mob.is_jumping_edge:
+                if mob.is_sliding_ground:
+                    mob.fin_slide_ground()
+                if mob.is_attacking or mob.is_dashing_attacking:
+                    mob.debut_chute(attack=True)
+                else:
+                    mob.debut_chute()
         else:
             # sinon on stop la chute si il y en a une
-            if self.player.is_falling:
-                self.player.fin_chute()
+            if mob.is_falling:
+                mob.fin_chute()
     
     def update_particle(self):
         """update les infos concernant les particles, ajoute ou en supprime """
         # si l'action du joueur a changer on l'update dans la classe particule
-        if self.action_joueur != self.player.action:
-            self.action_joueur = self.player.action
-            self.particule.action_joueur = self.player.action
-            
-        # si la direction du joueur a changer on l'update dans la classe particule    
-        if self.direction_joueur != self.player.direction:
-            self.direction_joueur = self.player.direction
-            self.particule.direction_joueur = self.player.direction
         
-        self.group.update() 
-        self.group_particle.update()
-        
-        y = self.player.body.y + self.player.body.h
-        
-        # ajustement de la position en x du joueur pour que les particle spawn au bon endroit puis update de la position du joueur dans lobjet de la classe particle
-        if self.player.direction == "right":
-            x = self.player.body.x - 20
-            self.particule.update(x, y)
-        elif self.player.direction == "left":
-            x = self.player.body.x + self.player.body.w + 20
-            self.particule.update(x, y)
-            
-        # transmition de donnee a travers des tableau de lobjet de la classe particle vers la clsse game    
-        if self.particule.new_particle != []:
-            for i in self.particule.new_particle:
-                self.group_particle.add(i)
-            self.particule.new_particle.clear()
-        
-        if self.particule.remove_particle != []:
-            for id in self.particule.remove_particle:
-                for sprite in self.group_particle.sprites():
-                    if sprite.id == f"particule{id}":
-                        self.group_particle.remove(sprite)
-            self.particule.remove_particle.clear()
-            
-    def update_camera(self):
-        self.scroll[0] = ((self.player.position[0] - self.scroll_rect.x) // 15)*self.zoom*self.player.speed_dt
-        self.scroll_rect.x += self.scroll[0] 
-        self.scroll[1] = ((self.player.position[1] - self.scroll_rect.y) // 15)*self.zoom*self.player.speed_dt
-        self.scroll_rect.y += self.scroll[1] 
-        if self.scroll_rect.x < self.screen.get_width()/2 : self.scroll_rect.x = self.screen.get_width()/2
-        if self.scroll_rect.y < self.screen.get_height()/2 : self.scroll_rect.y = self.screen.get_height()/2
-        if self.scroll_rect.x > self.map.width - self.screen.get_width()/2 : self.scroll_rect.x = self.map.width - self.screen.get_width()/2
-        if self.scroll_rect.y > self.map.height - self.screen.get_height()/2 : self.scroll_rect.y = self.map.height - self.screen.get_height()/2        
-                    
-    def update(self):
-        """ fonction qui update les informations du jeu"""   
-        self.player.update_action()
-        self.suppr_dash_image()
-        
-        # gestion collision avec les plafonds
+        for mob in [i[0] for i in self.get_all_mob()]:
+            mob.particule.update()
+                
+            # transmition de donnee a travers des tableau de lobjet de la classe particle vers la clsse game    
+            if mob.particule.new_particle != []:
+                for i in mob.particule.new_particle:
+                    self.group_particle.add(i)
+                mob.particule.new_particle.clear()
+                
+            if mob.particule.remove_particle != []:
+                for id in mob.particule.remove_particle:
+                    for sprite in self.group_particle.sprites():
+                        if sprite.id == f"particule{id}":
+                            self.group_particle.remove(sprite)
+                mob.particule.remove_particle.clear() 
+    
+    def handle_is_attacking(self, attacking_mob):
+        try:
+            if attacking_mob.current_image in attacking_mob.attack_damage[attacking_mob.action_image][0]:
+                for mob in [tuple[0] for tuple in self.get_all_mob()]:
+                    if mob.id != attacking_mob.id and mob.is_mob != attacking_mob.is_mob:
+                        if mob.body.collidelist([attacking_mob.rect_attack]) > -1 and mob.action_image!="dying":
+                            if not mob.is_parying or attacking_mob.is_dashing_attacking:
+                                if not attacking_mob.is_falling and attacking_mob.has_air_attack:
+                                    mob.health -= attacking_mob.attack_damage[attacking_mob.action_image][1]
+                                else:
+                                    mob.health -= attacking_mob.attack_damage[attacking_mob.action_image][1]*1.5
+                                if mob.action_image != "hurt":
+                                    mob.take_damage()
+                                if mob.health <=0:
+                                    if mob.id != "player1":
+                                        if self.render.current_map_is_wave:
+                                            self.group_wave.remove(mob)
+                                            self.all_mobs_wave.remove([mob, "bot"])
+                                            if len(self.group_wave)==1:
+                                                self.end_wave_map()
+                                        else:
+                                            self.group.remove(mob)
+                                            self.all_mobs.remove([mob, "bot"])
+                                    else:
+                                        mob.start_dying()
+                            else:
+                                attacking_mob.take_damage()
+                                mob.is_parying=False
+                                if not mob.is_falling:
+                                    mob.change_direction("idle", mob.direction)
+                                else:
+                                    mob.change_direction("up_to_fall", mob.direction)
+        except KeyError:
+            print("KEY ERROR handle_is_attacking :", attacking_mob.action_image)
+            attacking_mob.is_attacking=False
+            if "dash_attack" in attacking_mob.actions:
+                attacking_mob.fin_dash_attack()
+    
+    def handle_action(self, mob):
+        if mob.is_dashing_attacking:
+            mob.dash_attack()
         
         # le joueur ne peut pas de cogner pendant 2 ticks car sinon il ne peut pas sauter si il tiens un wall du bout des doigts
-        if self.joueur_se_cogne() and self.player.is_jumping_edge and self.player.compteur_jump_edge >= self.player.compteur_jump_edge_min + self.player.increment_jump_edge*1:
-            self.player.fin_saut_edge()
+        if mob.is_jumping_edge and self.collision.joueur_se_cogne(mob) and mob.compteur_jump_edge >= mob.compteur_jump_edge_min + mob.increment_jump_edge*4:
+            mob.fin_saut_edge()
         
-        if self.joueur_se_cogne() and self.player.is_jumping:
-            self.player.fin_saut()
-            
-        if self.joueur_se_cogne() and self.player.is_dashing:
-            self.player.fin_dash()
-        
+        if mob.is_jumping and self.collision.joueur_se_cogne(mob):
+            mob.fin_saut()
+              
+        if mob.is_dashing and self.collision.joueur_se_cogne(mob):
+            mob.fin_dash()
+    
         # gestion collision avec les sols
         
-        if self.joueur_sur_sol() and self.player.is_dashing:
-            self.player.fin_dash()
-            self.player.debut_crouch()
-        
-        if self.joueur_sur_sol() and self.player.is_sliding:
-            self.player.fin_grab_edge()
-            if self.player.direction == "right":
-                self.player.change_direction("idle", "left")
-            elif self.player.direction == "left":
-                self.player.change_direction("idle", "right")
+        if mob.is_dashing and self.collision.joueur_sur_sol(mob):
+            mob.fin_dash()
+            mob.debut_crouch()
+                
+        if mob.is_sliding and self.collision.joueur_sur_sol(mob):
+            mob.fin_grab_edge()
+            if mob.direction == "right":
+                mob.change_direction("idle", "left")
+            elif mob.direction == "left":
+                mob.change_direction("idle", "right")
         
         # gestion collision avec les murs
         
-        self.player.save_location()    
-            
-        if self.player.is_jumping_edge and self.stop_if_collide(self.player.direction_jump_edge):
-            self.player.fin_saut_edge()
-            self.check_grab()
+        mob.save_location()    
         
-        if self.player.is_sliding_ground and self.stop_if_collide(self.player.slide_ground_direction_x):
-            self.player.fin_slide_ground()
-            self.check_grab()
+        if mob.is_dashing_attacking and self.collision.stop_if_collide(mob.direction, mob):
+            mob.fin_dash_attack()
             
-        if self.player.is_dashing and self.stop_if_collide(self.player.dash_direction_x):
-            self.player.fin_dash()
-            self.check_grab()
+        if mob.is_jumping_edge and self.collision.stop_if_collide(mob.direction_jump_edge, mob):
+            mob.fin_saut_edge()
+            self.collision.check_grab(mob)
+        
+        if mob.is_sliding_ground and self.collision.stop_if_collide(mob.slide_ground_direction_x, mob):
+            mob.fin_slide_ground()
+            self.collision.check_grab(mob)
+            
+        if mob.is_dashing and self.collision.stop_if_collide(mob.dash_direction_x, mob):
+            mob.fin_dash()
+            self.collision.check_grab(mob)
+            if not mob.is_grabing_edge:
+                mob.debut_chute()
         
         # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
-        if self.player.is_jumping and self.player.compteur_jump > self.player.compteur_jump_min * 0.4 and self.stop_if_collide(self.player.direction):
-            self.player.fin_saut()
-            self.check_grab()
+        if mob.is_jumping and mob.compteur_jump > mob.compteur_jump_min * 0.4 and self.collision.stop_if_collide(mob.direction, mob):
+            mob.fin_saut()
+            self.collision.check_grab(mob)
         
-        self.gestion_chute() 
+        if mob.position[1] > self.map_height + 100:
+            mob.position = [mob.checkpoint[0], mob.checkpoint[1]-mob.image.get_height()]
         
-        if self.player.is_sliding:
-            self.check_tombe_ou_grab()
+        self.gestion_chute(mob) 
         
-        self.player.update_action()
+        if (mob.is_attacking or mob.is_dashing_attacking) and mob.action_image!="up_to_attack":
+            self.handle_is_attacking(mob)
+        
+        if mob.is_sliding:
+            self.collision.check_tombe_ou_grab(mob)
             
-        if self.player.action in self.dico_action_functions.keys():
-            self.dico_action_functions[self.player.action]()
+        # if mob.id == "player1":
+        #     if not self.render.current_map_is_wave and not self.render.is_current_map_beated(self.scroll_rect.x, self.scroll_rect.y) and self.collision.need_change_map(mob):
+        #         self.load_wave()
+        
+        mob.update_action()
+    
+    def get_all_mob(self):
+        if not self.render.current_map_is_wave:
+            return self.all_mobs
+        else:
+            return self.all_mobs_wave
+    
+    def update(self):
+        """ fonction qui update les informations du jeu"""   
+        self.suppr_dash_image()
+        
+        if not self.render.current_map_is_wave:
+            for mob in [tuple[0] for tuple in self.all_mobs]:
+                tu=self.render.get_coord_tile_matrix(mob.position[0], mob.position[1])
+                mob.coord_map=(tu[-2], tu[-1])
+                
+        for group in self.all_groups:
+            group.update()
+            
+        for mob in [tuple[0] for tuple in self.get_all_mob()]:
+            if mob.bot == None or mob.bot.get_distance_target()<750*self.render.zoom:
+                mob.update_action()
+                self.handle_action(mob)
+                
+                if mob.action in mob.dico_action_functions.keys():
+                    mob.dico_action_functions[mob.action]()
+                    
+                if mob.is_jumping and mob.action=="run":
+                    mob.is_jumping=False
+            else:
+                mob.reset_actions()
         
         if self.player.images_dash != []:
             # [x,y, image_modifié, cooldown]
@@ -483,8 +426,19 @@ class Game:
         
         self.update_particle()      
         
-        self.update_camera()
-        
+        self.update_camera(self.player.position[0], self.player.position[1], self.player.speed_dt)
+
+    def update_ecran(self):     
+        self.bg.fill((255,155,155))
+        self.minimap.fill((200, 155,155))
+        self.render.render(self.bg,self.minimap, self.scroll_rect.x, self.scroll_rect.y)
+        self.blit_group(self.bg, self.all_groups)
+        self.blit_health_bar(self.bg, [tuple[0] for tuple in self.get_all_mob()])
+        if not self.render.current_map_is_wave:
+            self.bg.blit(self.minimap, (self.screen.get_width()-self.minimap.get_width(), 0))
+        self.screen.blit(self.bg, (0,0))
+        self.last_player_position=self.player.position.copy()
+    
     def run(self):
         """boucle du jeu"""
 
@@ -492,25 +446,17 @@ class Game:
 
         self.running = True
         while self.running:
-            
-            # appelle de la methode gerant les inputs
             self.player.is_mouving_x = False
             self.handle_input()
             
             self.update()
-            self.bg.fill((255,155,155))
-            self.map.render(self.bg, self.scroll_rect.x, self.scroll_rect.y)
-            self.blit_group()
-            self.screen.blit(self.bg, (0,0))
             
-            pygame.display.update()
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
+            self.update_ecran()
+            
+            pygame.display.update()      
             
             self.dt = clock.tick(60)
-            self.player.update_tick(self.dt)
-            self.particule.update_tick(self.dt)
+            for mob in [tuple[0] for tuple in self.get_all_mob()]:
+                mob.update_tick(self.dt)
 
         pygame.quit()
