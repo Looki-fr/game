@@ -418,7 +418,6 @@ class MOB(pygame.sprite.Sprite):
         self.image.set_colorkey(transColor)
         
     def update(self):
-        if "player" in self.id : print(self.is_attacking)
         """methode appele a chaque tick"""
         if self.speed > self.max_speed_run:
             if self.action != "jump_edge" and self.action != "chute":

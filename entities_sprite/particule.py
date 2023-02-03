@@ -69,7 +69,7 @@ class Particule:
         """action : (str) the action of the player
         add particles to the dictionnarie that is in self.all_particles"""
         # pour eviter des chiffres trop grands qui prendrait trop de memoire
-        if self.number_particule > 1500:
+        if self.number_particule > 50000:
             self.number_particule = 0
         
         if self.player.direction=="right":x=self.player.position[0]+15*self.zoom

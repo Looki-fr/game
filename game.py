@@ -1,6 +1,7 @@
 import pygame
 import os
 import time
+from math import ceil
 from mobs.player import Player
 from mobs.crab import Crab
 from mobs.mob_functions import *
@@ -31,7 +32,12 @@ class Game:
         self.group_object=pygame.sprite.Group()
         self.group_wave=pygame.sprite.Group()
         self.all_groups = [self.group_object,self.group, self.group_particle]
+        self.all_coords_mobs_screen = []
+        self.all_coords_particule = []
         
+        self.radiusL=80
+        self.radiusLInc=40
+
         self.render=RenderMap(self.screen.get_width(), self.screen.get_height(), self.directory)
         self.map_height=self.render.get_height()
         self.map_width=self.render.get_width()
@@ -79,14 +85,19 @@ class Game:
     def blit_health_bar(self, bg, all_mobs):
         i=1
         for mob in all_mobs:
-            bg.blit(self.image_pp, (10*self.render.zoom, self.screen.get_height() - self.image_pp.get_height()*i - 15*self.render.zoom*i))
-            new_x = 10*self.render.zoom+100/(mob.max_health/(mob.health+1))
-            new_y = self.screen.get_height() - 12.5*self.render.zoom*(i+1) -self.image_pp.get_height()*i
-            pygame.draw.line(bg, (255,0,0), (10*self.render.zoom, new_y), (new_x, new_y), 2*self.render.zoom)
-            i+=1
+            if "player" in mob.id:
+                
+                new_y = 12.5*self.render.zoom*(i)
+                bg.blit(self.image_pp, (15*self.render.zoom, new_y +5*self.render.zoom*i+ self.image_pp.get_height()*(i-1)))
+                new_x = 15*self.render.zoom+80/(mob.max_health/(mob.health+1))
+                
+                pygame.draw.line(bg, (200,50,50), (15*self.render.zoom, new_y), (new_x, new_y), 2*self.render.zoom)
+                i+=1
     
     def blit_group(self, bg, all_groups):
         """blit les images des sprites des groupes sur la surface bg"""
+        self.all_coords_mobs_screen = []
+        self.all_coords_particule = []
         for group in all_groups:
             for sprite in group.sprites():
                 if self.scroll_rect.x - (self.screen.get_width()/2) - sprite.image.get_width() <= sprite.position[0] <= self.scroll_rect.x + (self.screen.get_width()/2)  + sprite.image.get_width() and \
@@ -95,6 +106,29 @@ class Game:
                         else:new_x=self.screen.get_width()/2 + sprite.position[0] - self.scroll_rect.x
                         
                         new_y = self.screen.get_height()/2 + sprite.position[1] - self.scroll_rect.y
+                        if "player" in sprite.id: 
+                            new_x_=self.screen.get_width()/2 + sprite.body.centerx - self.scroll_rect.x  
+                            new_y_ = self.screen.get_height()/2 + sprite.body.centery - self.scroll_rect.y 
+                            self.all_coords_mobs_screen.append((new_x_, new_y_, 3))
+                        elif "crab" in sprite.id:
+                            new_x_ = self.screen.get_width()/2 + sprite.body.centerx - self.scroll_rect.x  
+                            new_y_ = self.screen.get_height()/2 + sprite.body.centery - self.scroll_rect.y 
+                            nbr = 3
+                            for co in self.all_coords_mobs_screen:
+                                if new_x_-(self.radiusL) <= co[0] <= new_x_+(self.radiusL) and new_y_-(self.radiusL) <= co[1] <= new_y_+(self.radiusL) : 
+                                    nbr=0
+                                    break
+                                elif new_x_-(self.radiusL+self.radiusLInc) <= co[0] <= new_x_+(self.radiusL+self.radiusLInc) and new_y_-(self.radiusL+self.radiusLInc) <= co[1] <= new_y_+(self.radiusL+self.radiusLInc) : nbr=min(nbr, 1)
+                                elif new_x_-(self.radiusL+self.radiusLInc*2) <= co[0] <= new_x_+(self.radiusL+self.radiusLInc*2) and new_y_-(self.radiusL+self.radiusLInc*2) <= co[1] <= new_y_+(self.radiusL+self.radiusLInc*2) : nbr=min(nbr, 2)
+                            if nbr>0:
+                                self.all_coords_mobs_screen.append((new_x_, new_y_, nbr))
+                        elif "particule" in sprite.id: 
+                            new_x_=self.screen.get_width()/2 + sprite.rect.centerx - self.scroll_rect.x  
+                            new_y_ = self.screen.get_height()/2 + sprite.rect.centery - self.scroll_rect.y 
+                            bool=False
+                            for co in self.all_coords_mobs_screen:
+                                if new_x_-5 <= co[0] <= new_x_+5 and new_y_-5 <= co[1] <= new_y_+5 : bool=True
+                            if not bool:self.all_coords_particule.append((new_x_, new_y_, sprite.rect.w*2))
                         bg.blit(sprite.image, (new_x,new_y))
                         
     def update_camera(self, playerx, playery, player_speed_dt):
@@ -426,15 +460,40 @@ class Game:
         
         self.update_camera(self.player.position[0], self.player.position[1], self.player.speed_dt)
 
+    def circle_surf(self, radius, color):
+        surf = pygame.Surface((radius * 2, radius * 2))
+        pygame.draw.circle(surf, color, (radius, radius), radius)
+        surf.set_colorkey((0, 0, 0))
+        return surf
+
+    def fullscreen_surf(self, color):
+        surf = pygame.Surface((self.screen.get_width(), self.screen.get_height()))
+        surf.fill(color)
+        return surf
+
+    def add_lightning(self, surface):
+        #surface.blit(self.fullscreen_surf((10,10,10)), (0,0), special_flags=BLEND_RGB_SUB)
+        for co in self.all_coords_mobs_screen:
+            for i in range(co[2]):
+                r=self.radiusL+self.radiusLInc*i
+                surface.blit(self.circle_surf(r, (4,3,3)), (int(co[0] - r), int(co[1] - r)), special_flags=BLEND_RGB_ADD)
+        for co in self.all_coords_particule:
+            surface.blit(self.circle_surf(co[2], (15, 7, 7)), (int(co[0] - co[2]), int(co[1] - co[2])), special_flags=BLEND_RGB_ADD)
+
+
     def update_ecran(self):     
-        self.bg.fill((255,155,155))
+        self.bg.fill((155,100,100))
         self.minimap.fill((200, 155,155))
         self.render.render(self.bg,self.minimap, self.scroll_rect.x, self.scroll_rect.y)
         self.blit_group(self.bg, self.all_groups)
         self.blit_health_bar(self.bg, [tuple[0] for tuple in self.get_all_mob()])
         if not self.render.current_map_is_wave:
             self.bg.blit(self.minimap, (self.screen.get_width()-self.minimap.get_width(), 0))
+
+        self.add_lightning(self.bg)
+
         self.screen.blit(self.bg, (0,0))
+
         self.last_player_position=self.player.position.copy()
     
     def run(self):

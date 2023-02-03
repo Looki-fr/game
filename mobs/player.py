@@ -69,8 +69,8 @@ class Player(MOB):
         self.feet = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.1)
         self.head = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.2)
         self.body = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.7)
-        self.rect_attack = pygame.Rect(0,0,self.rect.width * 0.6, self.rect.height*0.5)
-        self.rect_air_attack = pygame.Rect(0,0,self.rect.width * 0.6, self.rect.height*0.3)
+        self.rect_attack = pygame.Rect(0,0,self.rect.width * 0.8, self.rect.height*1)
+        self.rect_air_attack = pygame.Rect(0,0,self.rect.width * 0.8, self.rect.height*0.5)
         self.rect_attack_update_pos="left_right"
         self.complement_collide_wall_right = self.body.w
         self.complement_collide_wall_left = self.body.w
