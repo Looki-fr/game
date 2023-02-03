@@ -17,7 +17,7 @@ class Game:
         self.directory = os.path.dirname(os.path.realpath(__file__))
         
         info_screen = pygame.display.Info()
-        self.screen = pygame.display.set_mode((round(info_screen.current_w*1),round(info_screen.current_h*1)))
+        self.screen = pygame.display.set_mode((round(info_screen.current_w*0.7),round(info_screen.current_h*0.7)))
         self.screen.fill((200,100,100))       
         self.bg = pygame.Surface((self.screen.get_width(), self.screen.get_height()), flags=SRCALPHA)
         self.minimap = pygame.Surface((400, 400), flags=SRCALPHA)
@@ -61,7 +61,7 @@ class Game:
         for line in self.render.matrix_map:
             for map in line:
                 if map != None:      
-                    self.add_mob_to_game(Crab(map["spawn_player"][0], map["spawn_player"][1]+1, self.directory, self.render.zoom, i, self.checkpoint.copy(), Particule, self.player), "bot")
+                    self.add_mob_to_game(Crab(map["spawn_player"][0], map["spawn_player"][1]+1, self.directory, self.render.zoom, i, self.checkpoint.copy(), Particule, self.player, handle_input_ralentissement), "bot")
                     i+=1
         
         self.all_controls={}
@@ -141,7 +141,7 @@ class Game:
             self.player.position, self.player.position_wave_map = self.player.position_wave_map, self.player.position
             self.checkpoint=[self.collision.dico_map_wave['spawn_player'][0], self.collision.dico_map_wave['spawn_player'][1]]
             for i, coord in enumerate(self.collision.dico_map_wave["spawn_crab"]):
-                self.add_mob_to_game(Crab(coord[0], coord[1]+1, self.directory, self.render.zoom, str(i+1), self.checkpoint.copy(), Particule, self.player), "bot", group="wave")  
+                self.add_mob_to_game(Crab(coord[0], coord[1]+1, self.directory, self.render.zoom, str(i+1), self.checkpoint.copy(), Particule, self.player, handle_input_ralentissement), "bot", group="wave")  
             self.all_groups.remove(self.group)
             self.all_groups.insert(1, self.group_wave)
         
@@ -284,12 +284,10 @@ class Game:
             if attacking_mob.current_image in attacking_mob.attack_damage[attacking_mob.action_image][0]:
                 for mob in [tuple[0] for tuple in self.get_all_mob()]:
                     if mob.id != attacking_mob.id and mob.is_mob != attacking_mob.is_mob:
-                        if mob.body.collidelist([attacking_mob.rect_attack]) > -1 and mob.action_image!="dying":
+                        if (mob.body.collidelist([attacking_mob.rect_attack]) > -1 or (attacking_mob.has_air_attack and mob.body.collidelist([attacking_mob.rect_air_attack]) > -1)) and mob.action_image!="dying":
                             if not mob.is_parying or attacking_mob.is_dashing_attacking:
-                                if not attacking_mob.is_falling and attacking_mob.has_air_attack:
-                                    mob.health -= attacking_mob.attack_damage[attacking_mob.action_image][1]
-                                else:
-                                    mob.health -= attacking_mob.attack_damage[attacking_mob.action_image][1]*1.5
+                                mob.health -= attacking_mob.attack_damage[attacking_mob.action_image][1]
+
                                 if mob.action_image != "hurt":
                                     mob.take_damage()
                                 if mob.health <=0:

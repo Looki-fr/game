@@ -11,33 +11,55 @@ class Player(MOB):
                 - y : coordonne en y du joueur
                 - directory : chemin absolu vers le dossier du jeu"""
         # initialisation de la classe mere permettant de faire de cette classe un sprite
-        MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule, directory, "assets\\character\\Individual_Sprite")
+        MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule, directory, "assets\\Bounty Hunter\\Individual Sprite")
 
-        
-        action=["up_to_fall", "Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack", "pary"]
+        #"up_to_fall", 
+        action=["Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack", "pary"]
         for a in action:
             self.actions.append(a)
         
-        self._get_images("idle", 6, 5, "idle_right", "Warrior_Idle_")
-        self.origin_compteur_image_run=8
-        self._get_images('run', 8, self.origin_compteur_image_run, "Run_right","Warrior_Run_")
-        self.origin_compteur_image_fall = 6
-        self._get_images("fall", 3, self.origin_compteur_image_fall, "Fall_right", "Warrior_Fall_")
-        self._get_images("up_to_fall", 2, 4, "UptoFall_right", "Warrior_UptoFall_")    
-        self._get_images("jump", 3, 4, "Jump_right", "Warrior_Jump_")  
-        self._get_images("Edge_Idle", 6, 4, "Edge-Idle_right", "Warrior_Edge-Idle_")  
-        self._get_images("Edge_grab", 5, 4, "EdgeGrab_right", "Warrior_Edge-Grab_")  
-        self._get_images("Wall_slide", 3, 4, "WallSlide_right", "Warrior_WallSlide_")  
-        self._get_images("ground_slide", 5, 3, "Slide_right", "Warrior-SlideNoEffect_") 
-        self._get_images("crouch", 5, 1, "Crouch_right", "Warrior_Crouch_") 
-        self._get_images("attack1", 8, 2, "Attack1", "Warrior_Attack_") 
-        self._get_images("attack2", 4, 2, "Attack2", "Warrior_Attack_") 
-        self._get_images("dash_attack", 12, 3, "Dash_Attack", "Warrior_Dash-Attack_") 
-        self._get_images("hurt", 4, 4, "HurtnoEffect", "Warrior_hurt_") 
-        self._get_images("dying", 11, 4, "Death-Effect", "Warrior_Death_") 
-        self._get_images("pary", 4, 6, "pary", "pary_")
+        coefficient=2
+        self.weapon="shotgun"
+        for w in ["shotgun", "crossbow", "gun"]:
+            self._get_images("idle", 8, 5, "Idle", "Idle_", w, coefficient=coefficient)
+            self.origin_compteur_image_run=8
+            self._get_images('run', 8, self.origin_compteur_image_run, "Run","Run_", w, coefficient=coefficient)
+            self.origin_compteur_image_fall = 6
+            self._get_images("fall", 3, self.origin_compteur_image_fall, "Fall", "Fall_", w, coefficient=coefficient)
+            self._get_images("jump", 4, 4, "Jump", "Jump_", w, coefficient=coefficient) 
+            self._get_images("hurt", 3, 4, "Hurt", "Hurt_", w, coefficient=coefficient) 
+            self._get_images("dying", 7, 4, "Death", "Death_", w, coefficient=coefficient) 
+            self._get_images("ground_slide", 4, 3, "Slide", "Slide_", w, coefficient=coefficient) 
+            self._get_images("dash_attack", 10, 3, "Dash Attack", "Dash-Attack_", w, coefficient=coefficient)
+            self._get_images("crouch", 5, 1, "Croush", "Croush_", w, coefficient=coefficient) 
+            self._get_images("Edge_climb", 3, 50, "Edge Climb", "Edge-Climb_", w, coefficient=coefficient) 
+            self._get_images("Edge_grab", 4, 5, "Edge Grab", "Edge-Grab_", w, coefficient=coefficient) 
+            self._get_images("Wall_slide", 3, 4, "WallSlide", "WallSlide_", w, coefficient=coefficient, reverse=True) 
+            self._get_images("air attack", 5, 3, "Air Attack", "Air-Attack_", w, coefficient=coefficient) 
+            self._get_images("attack1", 8, 2, "Attack", "Attack_", w, coefficient=coefficient) 
+            self._get_images("attack2", 6, 2, "Attack2", "Attack_", w, coefficient=coefficient)
+            self._get_images("pary", 7, 6, "Roll", "Roll_", w, coefficient=coefficient)
+
+        # self._get_images("idle", 6, 5, "idle_right", "Warrior_Idle_")
+        # self.origin_compteur_image_run=8
+        # self._get_images('run', 8, self.origin_compteur_image_run, "Run_right","Warrior_Run_")
+        # self.origin_compteur_image_fall = 6
+        # self._get_images("fall", 3, self.origin_compteur_image_fall, "Fall_right", "Warrior_Fall_")
+        # self._get_images("up_to_fall", 2, 4, "UptoFall_right", "Warrior_UptoFall_")    
+        # self._get_images("jump", 3, 4, "Jump_right", "Warrior_Jump_")  
+        # self._get_images("Edge_Idle", 6, 4, "Edge-Idle_right", "Warrior_Edge-Idle_")  
+        # self._get_images("Edge_grab", 5, 4, "EdgeGrab_right", "Warrior_Edge-Grab_")  
+        # self._get_images("Wall_slide", 3, 4, "WallSlide_right", "Warrior_WallSlide_")  
+        # self._get_images("ground_slide", 5, 3, "Slide_right", "Warrior-SlideNoEffect_") 
+        # self._get_images("crouch", 5, 1, "Crouch_right", "Warrior_Crouch_") 
+        # self._get_images("attack1", 8, 2, "Attack1", "Warrior_Attack_") 
+        # self._get_images("attack2", 4, 2, "Attack2", "Warrior_Attack_") 
+        # self._get_images("dash_attack", 12, 3, "Dash_Attack", "Warrior_Dash-Attack_") 
+        # self._get_images("hurt", 4, 4, "HurtnoEffect", "Warrior_hurt_") 
+        # self._get_images("dying", 11, 4, "Death-Effect", "Warrior_Death_") 
+        # self._get_images("pary", 4, 6, "pary", "pary_")
         
-        self.image = self.images["idle"]["right"]["1"]
+        self.image = self.images[self.weapon]["idle"]["right"]["1"]
         
         self.position = [x,y - self.image.get_height()]
         self.position_wave_map=[0,0]
@@ -45,9 +67,10 @@ class Player(MOB):
         
         # creation d'un rect pour les pieds et le corps
         self.feet = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.1)
-        self.head = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.1)
-        self.body = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.8)
-        self.rect_attack = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.8)
+        self.head = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.2)
+        self.body = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.7)
+        self.rect_attack = pygame.Rect(0,0,self.rect.width * 0.6, self.rect.height*0.5)
+        self.rect_air_attack = pygame.Rect(0,0,self.rect.width * 0.6, self.rect.height*0.3)
         self.rect_attack_update_pos="left_right"
         self.complement_collide_wall_right = self.body.w
         self.complement_collide_wall_left = self.body.w
@@ -69,8 +92,6 @@ class Player(MOB):
         self.jump_edge_pieds = False
         
         # edge grab / idle
-        self.timer_slide = 0
-        self.cooldown_slide = 0.25
         self.is_sliding = False
         self.is_grabing_edge = False
         self.direction_wall = ""
@@ -103,7 +124,7 @@ class Player(MOB):
         self.compteur_slide_ground = self.compteur_slide_ground_min
         self.compteur_slide_ground_increment = 0.25
         # le mouvement doit durer exactement le temps necessaire à passer toutes les images de wall slide
-        self.compteur_slide_ground_max = self.compteur_slide_ground_min + self.compteur_slide_ground_increment*self.images["ground_slide"]["compteur_image_max"]*self.images["ground_slide"]["nbr_image"]
+        self.compteur_slide_ground_max = self.compteur_slide_ground_min + self.compteur_slide_ground_increment*self.images["shotgun"]["ground_slide"]["compteur_image_max"]*self.images["shotgun"]["ground_slide"]["nbr_image"]
         self.speed_slide_ground = 0
         self.slide_ground_direction_x = ""
         self.cooldown_slide_ground = 0.4
@@ -111,10 +132,11 @@ class Player(MOB):
         
         #attack
         self.attack_damage={}
-        self.attack_damage["attack1"]=([6,7,8], 5)
-        self.attack_damage["attack2"]=([2,3,4],5)
-        self.attack_damage["dash_attack"]=([6,7],7)
-        
+        self.attack_damage["attack1"]=([6,7,8], 100)
+        self.attack_damage["attack2"]=([2,3,4],100)
+        self.attack_damage["dash_attack"]=([6,7],100)
+        self.attack_damage["air attack"]=([3,4,5],100)
+
         self.has_air_attack = True
         self.is_attacking = False
         self.a_attaquer2=False
@@ -143,7 +165,7 @@ class Player(MOB):
         self.compteur_dash_attack_min=-5
         self.compteur_dash_attack=self.compteur_dash_attack_min
         self.increment_dash_attack=0.1
-        self.compteur_dash_attack_max = self.compteur_dash_attack_min + self.increment_dash_attack*self.images["dash_attack"]["compteur_image_max"]*self.images["dash_attack"]["nbr_image"] - 8*self.increment_dash_attack
+        self.compteur_dash_attack_max = self.compteur_dash_attack_min + self.increment_dash_attack*self.images["shotgun"]["dash_attack"]["compteur_image_max"]*self.images["shotgun"]["dash_attack"]["nbr_image"] - 8*self.increment_dash_attack
         
         self.is_friendly=True
         
@@ -225,17 +247,20 @@ class Player(MOB):
         self.direction_attack=self.direction
         self.timer_pary=time.time()
         
-    def debut_attack(self, fast=False):
-        self.compteur_attack=0
+    def debut_attack(self, air=False):
         self.is_attacking = True
-        self.change_direction("attack1", self.direction)
         self.a_attaquer2=False
-        if fast:
-            self.timer_attack_aerienne=time.time()
-            self.a_attaquer2=False
-            self.current_image=4
         self.timer_attack=time.time()
         self.direction_attack=self.direction
+        self.compteur_attack=0
+        if air:
+            self.timer_attack_aerienne=time.time()
+            self.change_direction("air attack", self.direction)
+        else :
+            self.change_direction("attack1", self.direction)
+            self.a_attaquer2=False
+        
+            
     
     def attack2(self):
         self.compteur_attack=0
@@ -314,10 +339,6 @@ class Player(MOB):
     def sliding(self):
         if self.is_sliding:
             self.position[1] += self.speed_sliding * self.zoom * self.speed_dt
-        elif self.is_grabing_edge:
-            if time.time() - self.timer_slide > self.cooldown_slide:
-                self.is_sliding = True
-                self.change_direction("Wall_slide", self.direction)
         
     def fin_grab_edge(self, mouvement = True):
         self.is_grabing_edge = False
@@ -419,9 +440,9 @@ class Player(MOB):
                 self.direction_jump_edge == ""
                 self.change_direction('jump',self.direction)
                 if self.direction_wall == "right":
-                    self.position[0] -= 5*self.zoom
-                elif self.direction_wall == "left":
                     self.position[0] += 5*self.zoom
+                elif self.direction_wall == "left":
+                    self.position[0] -= 5*self.zoom
         else:
             self.direction_jump_edge == ""
             self.change_direction('jump',self.direction)

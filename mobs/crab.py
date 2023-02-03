@@ -5,7 +5,7 @@ from mobs.bot import Bot
 
 class Crab(MOB):
 
-    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, player):
+    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, player, handle_input_ralentissement):
         """parametres : 
                 - x : coordonne en x du joueur
                 - y : coordonne en y du joueur
@@ -32,7 +32,7 @@ class Crab(MOB):
         self._get_images("hurt", 4, 4, "08-Hit", "Hit 0", reverse=True, coefficient=self.coefficient) 
         self._get_images("dying", 4, 4, "09-Dead Hit", "Dead Hit 0", reverse=True, coefficient=self.coefficient) 
         
-        self.image = self.images["idle"]["right"]["1"]
+        self.image = self.images[self.weapon]["idle"]["right"]["1"]
         
         self.position = [x,y - self.image.get_height()]
         self.rect = self.image.get_rect()
@@ -67,9 +67,9 @@ class Crab(MOB):
             "jump":self.saut
         }       
         
-        self.range_attack=self.rect_attack.w*0.5
+        self.range_attack=self.rect_attack.w
         
-        self.bot=Bot(self, player)
+        self.bot=Bot(self, player, handle_input_ralentissement)
     
     def debut_crouch(self):
         """very simple"""

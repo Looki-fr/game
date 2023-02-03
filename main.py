@@ -11,13 +11,23 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# idee : memo tel
+#https://youtu.be/NGFk44fY0O4
 
-# en cours : rajouter range trigger pour bot => utiliser distance vecteur
-#            ajouter spawn de mob dans toute la map
-#            add more mob to gameaa
+# if head collide sol and not collide plafond then edge climb
 
-# zoom dans bot and range attack
+# fleche du bas qd edge grab => edge slide
+
+# BUG se faire attaquer en etant en edge grab
+
+# add effet dash attack
+
+# en cours : rajouter nv perso
+#            reparer mvm
+#            reparer roulade + grab edge + remonter edge
+
+# BUG on peut sortir de la map à cause du saut edge => timer qd on se cogne
+
+# BUG  crab coin qd on est en bas il arete davancer
 
 # BUG target forward bot
 

@@ -112,15 +112,11 @@ class Collision:
         elif mob.direction == "left":
                 mob.position[0] -= 15*self.zoom
         for dico in self._get_dico(mob.coord_map):
-            if mob.direction == "right":
-                for wall in dico["wall"]:
-                    if mob.body.collidelist(wall) > -1:
-                        mob.position[0] = wall[0].x - mob.body.w * 1.8
-            elif mob.direction == "left":
-                for wall in dico["wall"]:
-                    if mob.body.collidelist(wall) > -1:
-                        mob.position[0] = wall[0].x - mob.body.w * 1.8 + wall[0].w
-    
+            for wall in dico["wall"]:
+                if mob.body.collidelist(wall) > -1:
+                    if mob.direction=="left": mob.position[0] = wall[0].x + wall[0].w - 1.26 * mob.body.w
+                    elif mob.direction=="right": mob.position[0] = wall[0].x - 2.11 * mob.body.w
+                        
     def check_grab(self, mob):
         """Grab SSI head collide"""
         for dico in self._get_dico(mob.coord_map):

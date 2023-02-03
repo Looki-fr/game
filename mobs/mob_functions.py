@@ -101,8 +101,8 @@ def pressed_attack(liste_mob):
                         mob.attack2()
                     else:
                         mob.debut_attack()
-                # elif time.time() - mob.timer_attack_aerienne > mob.cooldown_attack_aerienne:
-                #     mob.debut_attack(fast=True)
+                elif time.time() - mob.timer_attack_aerienne > mob.cooldown_attack_aerienne:
+                    mob.debut_attack(air=True)
 
 def pressed_pary(liste_mob):
     for mob in liste_mob:

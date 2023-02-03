@@ -22,8 +22,19 @@ class MOB(pygame.sprite.Sprite):
         self.dt = 17
         self.speed_dt=17/self.dt
         
-        self.images = {}
+        if "player" in id :
+            self.images = {
+                "shotgun":{},
+                "gun":{},
+                "crossbow":{},
+            }
+        elif "crab" in id:
+            self.images = {
+                "default":{}
+            }
         
+        self.weapon="default"
+
         # images
         self.time_cooldown_ralentissement = 0
         self.action_image = "idle"
@@ -103,20 +114,21 @@ class MOB(pygame.sprite.Sprite):
             if c >= choice:
                 return i[0]
     
-    def _get_images(self, action, nbr_image, compteur_image_max, directory_name, image_name, coefficient=1, reverse=False):
-        #pary
-        self.images[action] = {
+    def _get_images(self, action, nbr_image, compteur_image_max, directory_name, image_name, weapon="default", coefficient=1, reverse=False):
+        
+        self.images[weapon][action] = {
             "nbr_image":nbr_image,
             "compteur_image_max":compteur_image_max,
             "right":{},
             "left":{}
         }
+        s="\\"
         for i in range(1,nbr_image+1):
-            self.images[action]["right"][str(i)] = pygame.image.load(f'{self.directory}\\{self.directory_assets}\\{directory_name}\\{image_name}{i}.png').convert_alpha()
-            self.images[action]["right"][str(i)] = pygame.transform.scale(self.images[action]["right"][str(i)], (round(self.images[action]["right"][str(i)].get_width()*self.zoom*coefficient), round(self.images[action]["right"][str(i)].get_height()*self.zoom*coefficient))).convert_alpha()
-            self.images[action]["left"][str(i)] = pygame.transform.flip(self.images[action]["right"][str(i)], True, False).convert_alpha()
-            if reverse: self.images[action]["right"][str(i)], self.images[action]["left"][str(i)] = self.images[action]["left"][str(i)], self.images[action]["right"][str(i)]
-    
+            self.images[weapon][action]["right"][str(i)] = pygame.image.load(f'{self.directory}\\{self.directory_assets}{s+weapon if weapon != "default" else ""}\\{directory_name}\\{image_name}{i}.png').convert_alpha()
+            self.images[weapon][action]["right"][str(i)] = pygame.transform.scale(self.images[weapon][action]["right"][str(i)], (round(self.images[weapon][action]["right"][str(i)].get_width()*self.zoom*coefficient), round(self.images[weapon][action]["right"][str(i)].get_height()*self.zoom*coefficient))).convert_alpha()
+            self.images[weapon][action]["left"][str(i)] = pygame.transform.flip(self.images[weapon][action]["right"][str(i)], True, False).convert_alpha()
+            if reverse: self.images[weapon][action]["right"][str(i)], self.images[weapon][action]["left"][str(i)] = self.images[weapon][action]["left"][str(i)], self.images[weapon][action]["right"][str(i)]
+
     def start_dying(self):
         self.reset_actions()
         self.change_direction("dying", self.direction)
@@ -162,10 +174,10 @@ class MOB(pygame.sprite.Sprite):
             self.speed += (self.speed*0.002 + self.origin_speed_run*0.01)*abs(self.motion[0])
             if self.speed > self.max_speed_run*0.6*abs(self.motion[0]):
                 if self.action_image != "idle" and self.action_image != "attack1" and self.action_image != "attack2":
-                    self.images[self.action_image]["compteur_image_max"] = 6
+                    self.images[self.weapon][self.action_image]["compteur_image_max"] = 6
         # vitesse maximal du defilement des images
         if self.action_image != "idle" and self.action_image != "attack1" and self.action_image != "attack2":
-            self.images[self.action_image]["compteur_image_max"] = 4                    
+            self.images[self.weapon][self.action_image]["compteur_image_max"] = 4                    
         
     def move_right(self, pieds_sur_sol = False): 
         self.is_mouving_x = True
@@ -250,7 +262,8 @@ class MOB(pygame.sprite.Sprite):
         
     def chute(self):
         self.update_speed_gravity()
-        self.position[1] += self.speed_gravity * self.zoom * self.speed_dt
+        if self.action_image != "air attack" : self.position[1] += self.speed_gravity * self.zoom * self.speed_dt
+        else : self.position[1] += self.speed_gravity * self.zoom * self.speed_dt * 0.5
     
     def fin_chute(self, jump_or_dash = False):
         self.is_falling = False
@@ -267,13 +280,13 @@ class MOB(pygame.sprite.Sprite):
             # reduction de la vitesse de defilement des images quand la vitesse augmente
             if self.speed_gravity > 5:
                 if not self.is_attacking and not self.is_dashing_attacking:
-                    self.images[self.action_image]["compteur_image_max"] = 4
+                    self.images[self.weapon][self.action_image]["compteur_image_max"] = 4
             elif self.speed_gravity > 6.5:
                 if not self.is_attacking and not self.is_dashing_attacking:
-                    self.images[self.action_image]["compteur_image_max"] = 3
+                    self.images[self.weapon][self.action_image]["compteur_image_max"] = 3
         # vitesse maximal du defilement des images
-        elif self.images[self.action_image]["compteur_image_max"] != 2 and not self.is_attacking and not self.is_dashing_attacking:
-            self.images[self.action_image]["compteur_image_max"] = 2  
+        elif self.images[self.weapon][self.action_image]["compteur_image_max"] != 2 and not self.is_attacking and not self.is_dashing_attacking:
+            self.images[self.weapon][self.action_image]["compteur_image_max"] = 2  
 
     def debut_ralentissement(self):
         """methode appele quand je joueur arretes de courir"""
@@ -284,7 +297,7 @@ class MOB(pygame.sprite.Sprite):
             self.compteur_ralentissement = 0
             # augmentation du compteur pour que le ralentissement soit visible
             if not self.is_attacking:
-                self.images[self.action_image]["compteur_image_max"] = 6
+                self.images[self.weapon][self.action_image]["compteur_image_max"] = 6
         else:
             # si le joueur arrete davancer mais est contre un mur
             if self.action_image == "run":
@@ -327,7 +340,7 @@ class MOB(pygame.sprite.Sprite):
             dir = self.direction
         else:
             dir=self.direction_attack
-        if self.compteur_image < self.images[self.action_image]["compteur_image_max"]:
+        if self.compteur_image < self.images[self.weapon][self.action_image]["compteur_image_max"]:
             if self.action_image == "run":
                 self.compteur_image += 1*self.speed_dt * abs(self.motion[0])
             else:
@@ -338,7 +351,7 @@ class MOB(pygame.sprite.Sprite):
             # changement de l'image
             self.compteur_image = 0
             # si l'image en cours est la derniere on re passe a la 1ere, sinon on passe a la suivante
-            if self.current_image < self.images[self.action_image]["nbr_image"]:
+            if self.current_image < self.images[self.weapon][self.action_image]["nbr_image"]:
                 self.current_image += 1
             else:
                 temp=True
@@ -352,7 +365,8 @@ class MOB(pygame.sprite.Sprite):
                     else:
                         self.change_direction("idle", dir)
                 elif self.action_image == "Edge_grab":
-                    self.change_direction("Edge_Idle", dir)
+                    self.is_sliding = True
+                    self.change_direction("Wall_slide", dir)
                 elif self.action_image == "attack1" or self.action_image == "attack2" or self.action_image=="hurt" or self.action_image=="pary":
                     self.is_attacking=False
                     self.is_parying=False
@@ -361,6 +375,10 @@ class MOB(pygame.sprite.Sprite):
                     else:
                         if "up_to_fall" in self.actions :self.change_direction("up_to_fall", dir)
                         else: self.change_direction("fall", dir)
+                elif self.action_image=="air attack":
+                    self.is_attacking=False
+                    if "up_to_fall" in self.actions :self.change_direction("up_to_fall", dir)
+                    else: self.change_direction("fall", dir)
                 elif self.action_image == "dash_attack":   
                     self.fin_dash_attack()
                 elif self.action_image=="dying":
@@ -372,13 +390,13 @@ class MOB(pygame.sprite.Sprite):
                     self.current_image = 1
             
             if not temp:
-                self.image = self.images[self.action_image][dir][str(self.current_image)]
+                self.image = self.images[self.weapon][self.action_image][dir][str(self.current_image)]
                 transColor = self.image.get_at((0,0))
                 self.image.set_colorkey(transColor)
         
     def change_direction(self, action, direction, compteur_image=0, current_image=0):
         """change la direction et / ou l'action en cours"""
-        if action != "attack1" and action != "attack2" and action != "up_to_attack":
+        if action != "attack1" and action != "attack2" and action != "up_to_attack" and action != "air attack":
             self.is_attacking=False
         elif self.action == "attack2":
             self.a_attaquer2=False
@@ -388,18 +406,19 @@ class MOB(pygame.sprite.Sprite):
             self.speed *= 0.9
         # reset du compteur d'image si le joueur ne va pas chuter, sion il garde sa vitesse
         if self.action_image == "run" and action != "fall" and action != "up_to_fall":
-            self.images["run"]["compteur_image_max"] = self.origin_compteur_image_run
+            self.images[self.weapon]["run"]["compteur_image_max"] = self.origin_compteur_image_run
         elif self.action_image == "fall":
-            self.images["fall"]["compteur_image_max"] = self.origin_compteur_image_fall
+            self.images[self.weapon]["fall"]["compteur_image_max"] = self.origin_compteur_image_fall
         self.action_image = action
         self.direction = direction
         self.compteur_image = compteur_image
         self.current_image = current_image
-        self.image = self.images[self.action_image][self.direction]["1"]
+        self.image = self.images[self.weapon][self.action_image][self.direction]["1"]
         transColor = self.image.get_at((0,0))
         self.image.set_colorkey(transColor)
         
     def update(self):
+        if "player" in self.id : print(self.is_attacking)
         """methode appele a chaque tick"""
         if self.speed > self.max_speed_run:
             if self.action != "jump_edge" and self.action != "chute":
@@ -418,9 +437,10 @@ class MOB(pygame.sprite.Sprite):
             self.rect_attack.center = self.rect.center
         elif self.is_attacking and self.rect_attack_update_pos=="left_right":
             if self.direction_attack == "right":
-                self.rect_attack.topright=self.rect.topright
+                self.rect_attack.topleft=self.rect.midtop
+                self.rect_air_attack.topleft=self.rect.midtop
             else:
-                self.rect_attack.topleft=self.rect.topleft
+                self.rect_air_attack.topright=self.rect.midtop
         
         # la vitesse de course du joueur ne ralentit pas tant qu'il coure ou chute
         if self.action_image == "run" or self.action_image == "fall" or self.action_image == "up_to_fall" or self.action_image == "jump" or self.action == "jump_edge" or self.is_attacking:
