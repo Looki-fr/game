@@ -34,6 +34,7 @@ class Game:
         self.all_groups = [self.group_object,self.group, self.group_particle]
         self.all_coords_mobs_screen = []
         self.all_coords_particule = []
+        self.tab_particule_dead=[]
         
         self.radiusL=80
         self.radiusLInc=40
@@ -46,7 +47,7 @@ class Game:
         
         self.image_pp=pygame.image.load(f'{self.directory}\\assets\\pp.png').convert_alpha()
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
-        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule)
+        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group)
         
         self.pressed_up_bool = [False]
         self.last_player_position=self.player.position.copy()
@@ -67,7 +68,7 @@ class Game:
         for line in self.render.matrix_map:
             for map in line:
                 if map != None:      
-                    self.add_mob_to_game(Crab(map["spawn_player"][0], map["spawn_player"][1]+1, self.directory, self.render.zoom, i, self.checkpoint.copy(), Particule, self.player, handle_input_ralentissement), "bot")
+                    self.add_mob_to_game(Crab(map["spawn_player"][0], map["spawn_player"][1]+1, self.directory, self.render.zoom, i, self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, handle_input_ralentissement), "bot")
                     i+=1
         
         self.all_controls={}
@@ -102,27 +103,29 @@ class Game:
             for sprite in group.sprites():
                 if self.scroll_rect.x - (self.screen.get_width()/2) - sprite.image.get_width() <= sprite.position[0] <= self.scroll_rect.x + (self.screen.get_width()/2)  + sprite.image.get_width() and \
                     self.scroll_rect.y - (self.screen.get_height()/2) - sprite.image.get_height() <= sprite.position[1] <= self.scroll_rect.y + (self.screen.get_height()/2)  + sprite.image.get_height():
-                        if "arbre" in sprite.id :new_x = self.screen.get_width()/2 + sprite.position[0] - self.scroll_rect.x - sprite.image.get_width()/2
-                        else:new_x=self.screen.get_width()/2 + sprite.position[0] - self.scroll_rect.x
-                        
+                        new_x=self.screen.get_width()/2 + sprite.position[0] - self.scroll_rect.x
                         new_y = self.screen.get_height()/2 + sprite.position[1] - self.scroll_rect.y
-                        if "player" in sprite.id: 
-                            new_x_=self.screen.get_width()/2 + sprite.body.centerx - self.scroll_rect.x  
-                            new_y_ = self.screen.get_height()/2 + sprite.body.centery - self.scroll_rect.y 
-                            self.all_coords_mobs_screen.append((new_x_, new_y_, 3))
-                        elif "crab" in sprite.id:
-                            new_x_ = self.screen.get_width()/2 + sprite.body.centerx - self.scroll_rect.x  
-                            new_y_ = self.screen.get_height()/2 + sprite.body.centery - self.scroll_rect.y 
-                            nbr = 3
-                            for co in self.all_coords_mobs_screen:
-                                if new_x_-(self.radiusL) <= co[0] <= new_x_+(self.radiusL) and new_y_-(self.radiusL) <= co[1] <= new_y_+(self.radiusL) : 
-                                    nbr=0
-                                    break
-                                elif new_x_-(self.radiusL+self.radiusLInc) <= co[0] <= new_x_+(self.radiusL+self.radiusLInc) and new_y_-(self.radiusL+self.radiusLInc) <= co[1] <= new_y_+(self.radiusL+self.radiusLInc) : nbr=min(nbr, 1)
-                                elif new_x_-(self.radiusL+self.radiusLInc*2) <= co[0] <= new_x_+(self.radiusL+self.radiusLInc*2) and new_y_-(self.radiusL+self.radiusLInc*2) <= co[1] <= new_y_+(self.radiusL+self.radiusLInc*2) : nbr=min(nbr, 2)
-                            if nbr>0:
-                                self.all_coords_mobs_screen.append((new_x_, new_y_, nbr))
-                        elif "particule" in sprite.id: 
+                        if "particule" not in sprite.id: 
+                            if "arbre" in sprite.id :new_x = self.screen.get_width()/2 + sprite.position[0] - self.scroll_rect.x - sprite.image.get_width()/2
+
+                            if "player" in sprite.id: 
+                                new_x_=self.screen.get_width()/2 + sprite.body.centerx - self.scroll_rect.x  
+                                new_y_ = self.screen.get_height()/2 + sprite.body.centery - self.scroll_rect.y 
+                                self.all_coords_mobs_screen.append((new_x_, new_y_, 3))
+                            elif "crab" in sprite.id:
+                                new_x_ = self.screen.get_width()/2 + sprite.body.centerx - self.scroll_rect.x  
+                                new_y_ = self.screen.get_height()/2 + sprite.body.centery - self.scroll_rect.y 
+                                nbr = 3
+                                for co in self.all_coords_mobs_screen:
+                                    if new_x_-(self.radiusL) <= co[0] <= new_x_+(self.radiusL) and new_y_-(self.radiusL) <= co[1] <= new_y_+(self.radiusL) : 
+                                        nbr=0
+                                        break
+                                    elif new_x_-(self.radiusL+self.radiusLInc) <= co[0] <= new_x_+(self.radiusL+self.radiusLInc) and new_y_-(self.radiusL+self.radiusLInc) <= co[1] <= new_y_+(self.radiusL+self.radiusLInc) : nbr=min(nbr, 1)
+                                    elif new_x_-(self.radiusL+self.radiusLInc*2) <= co[0] <= new_x_+(self.radiusL+self.radiusLInc*2) and new_y_-(self.radiusL+self.radiusLInc*2) <= co[1] <= new_y_+(self.radiusL+self.radiusLInc*2) : nbr=min(nbr, 2)
+                                if nbr>0:
+                                    self.all_coords_mobs_screen.append((new_x_, new_y_, nbr))
+                        else: 
+                            
                             new_x_=self.screen.get_width()/2 + sprite.rect.centerx - self.scroll_rect.x  
                             new_y_ = self.screen.get_height()/2 + sprite.rect.centery - self.scroll_rect.y 
                             bool=False
@@ -292,26 +295,34 @@ class Game:
             # sinon on stop la chute si il y en a une
             if mob.is_falling:
                 mob.fin_chute()
+
+    def add_particule_to_group(self, p):
+        self.group_particle.add(p)
     
     def update_particle(self):
         """update les infos concernant les particles, ajoute ou en supprime """
         # si l'action du joueur a changer on l'update dans la classe particule
         
-        for mob in [i[0] for i in self.get_all_mob()]:
-            mob.particule.update()
-                
-            # transmition de donnee a travers des tableau de lobjet de la classe particle vers la clsse game    
-            if mob.particule.new_particle != []:
-                for i in mob.particule.new_particle:
-                    self.group_particle.add(i)
-                mob.particule.new_particle.clear()
-                
-            if mob.particule.remove_particle != []:
-                for id in mob.particule.remove_particle:
-                    for sprite in self.group_particle.sprites():
-                        if sprite.id == f"particule{id}":
-                            self.group_particle.remove(sprite)
-                mob.particule.remove_particle.clear() 
+        for parti in [i[0].particule for i in self.get_all_mob()]+[p for p in self.tab_particule_dead]:
+            parti.update()
+
+            i=0
+            for key, values in parti.all_particle.items():
+                while (i<len(values) and time.time() - values[i].t1 > values[i].cooldown):
+                    self.group_particle.remove(values[i])
+                    i+=1
+                parti.all_particle[key]=values[i:len(values)]
+                i=0
+
+        tmp=[]
+        for p in self.tab_particule_dead:
+            i=0
+            for tab in p.all_particle.values():
+                i+=len(tab)
+            if i==0 : tmp.append(p)
+
+        for p in tmp:
+            self.tab_particule_dead.remove(p)
     
     def handle_is_attacking(self, attacking_mob):
         try:
@@ -332,6 +343,8 @@ class Game:
                                             if len(self.group_wave)==1:
                                                 self.end_wave_map()
                                         else:
+                                            mob.particule.is_alive=False
+                                            self.tab_particule_dead.append(mob.particule)
                                             self.group.remove(mob)
                                             self.all_mobs.remove([mob, "bot"])
                                     else:

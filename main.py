@@ -11,7 +11,6 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-#https://youtu.be/NGFk44fY0O4
 
 # if head collide sol and not collide plafond then edge climb
 

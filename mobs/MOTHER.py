@@ -4,7 +4,7 @@ import random
 
 class MOB(pygame.sprite.Sprite):
 
-    def __init__(self, zoom, id, checkpoint, Particule, directory, directory_assets):
+    def __init__(self, zoom, id, checkpoint, Particule, update_particle, directory, directory_assets):
         super().__init__()
         self.directory=directory
         self.directory_assets=directory_assets
@@ -102,7 +102,7 @@ class MOB(pygame.sprite.Sprite):
         
         self.motion=[1,1]
         
-        self.particule=Particule(directory, self, self.zoom)
+        self.particule=Particule(directory, self, self.zoom, update_particle)
 
     
     def _random_choice(self, liste):

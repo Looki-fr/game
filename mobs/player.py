@@ -5,13 +5,13 @@ from .MOTHER import MOB
 
 class Player(MOB):
 
-    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule):
+    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle):
         """parametres : 
                 - x : coordonne en x du joueur
                 - y : coordonne en y du joueur
                 - directory : chemin absolu vers le dossier du jeu"""
         # initialisation de la classe mere permettant de faire de cette classe un sprite
-        MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule, directory, "assets\\Bounty Hunter\\Individual Sprite")
+        MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule,update_particle, directory, "assets\\Bounty Hunter\\Individual Sprite")
 
         #"up_to_fall", 
         action=["Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack", "pary"]
@@ -290,8 +290,10 @@ class Player(MOB):
         self.is_dashing_attacking = False
         if not self.is_falling:
             self.change_direction("idle", self.direction)
-        else:
+        elif "up_to_fall" in self.actions:
             self.change_direction("up_to_fall", self.direction)  
+        else:
+            self.change_direction("fall", self.direction)  
   
     def debut_crouch(self):
         """very simple"""

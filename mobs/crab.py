@@ -5,13 +5,13 @@ from mobs.bot import Bot
 
 class Crab(MOB):
 
-    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, player, handle_input_ralentissement):
+    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, player, handle_input_ralentissement):
         """parametres : 
                 - x : coordonne en x du joueur
                 - y : coordonne en y du joueur
                 - directory : chemin absolu vers le dossier du jeu"""
         # initialisation de la classe mere permettant de faire de cette classe un sprite
-        MOB.__init__(self, zoom, f"crab{id}", checkpoint, Particule, directory, "assets\\Crabby")
+        MOB.__init__(self, zoom, f"crab{id}", checkpoint, Particule,update_particle, directory, "assets\\Crabby")
         
         action=["attack", "crouch"]
         for a in action:
