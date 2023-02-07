@@ -12,19 +12,17 @@ if __name__ == "__main__":
     game.run()
 
 
-# if head collide sol and not collide plafond then edge climb
-
-# fleche du bas qd edge grab => edge slide
-
-# BUG se faire attaquer en etant en edge grab
-
 # add effet dash attack
 
 # en cours : rajouter nv perso
 #            reparer mvm
-#            reparer roulade + grab edge + remonter edge
+#            reparer roulade
 
-# BUG on peut sortir de la map à cause du saut edge => timer qd on se cogne
+
+
+
+
+
 
 # BUG  crab coin qd on est en bas il arete davancer
 

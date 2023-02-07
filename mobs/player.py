@@ -14,7 +14,7 @@ class Player(MOB):
         MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule,update_particle, directory, "assets\\Bounty Hunter\\Individual Sprite")
 
         #"up_to_fall", 
-        action=["Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack", "pary"]
+        action=["roll","Edge_climb", "Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack"]
         for a in action:
             self.actions.append(a)
         
@@ -32,13 +32,13 @@ class Player(MOB):
             self._get_images("ground_slide", 4, 3, "Slide", "Slide_", w, coefficient=coefficient) 
             self._get_images("dash_attack", 10, 3, "Dash Attack", "Dash-Attack_", w, coefficient=coefficient)
             self._get_images("crouch", 5, 1, "Croush", "Croush_", w, coefficient=coefficient) 
-            self._get_images("Edge_climb", 3, 50, "Edge Climb", "Edge-Climb_", w, coefficient=coefficient) 
+            self._get_images("Edge_climb", 3, 5, "Edge Climb", "Edge-Climb_", w, coefficient=coefficient) 
             self._get_images("Edge_grab", 4, 5, "Edge Grab", "Edge-Grab_", w, coefficient=coefficient) 
             self._get_images("Wall_slide", 3, 4, "WallSlide", "WallSlide_", w, coefficient=coefficient, reverse=True) 
             self._get_images("air attack", 5, 3, "Air Attack", "Air-Attack_", w, coefficient=coefficient) 
             self._get_images("attack1", 8, 2, "Attack", "Attack_", w, coefficient=coefficient) 
             self._get_images("attack2", 6, 2, "Attack2", "Attack_", w, coefficient=coefficient)
-            self._get_images("pary", 7, 6, "Roll", "Roll_", w, coefficient=coefficient)
+            self._get_images("roll", 7, 4, "Roll", "Roll_", w, coefficient=coefficient)
 
         # self._get_images("idle", 6, 5, "idle_right", "Warrior_Idle_")
         # self.origin_compteur_image_run=8
@@ -64,10 +64,12 @@ class Player(MOB):
         self.position = [x,y - self.image.get_height()]
         self.position_wave_map=[0,0]
         self.rect = self.image.get_rect()
+        self.increment_foot=0
         
         # creation d'un rect pour les pieds et le corps
         self.feet = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.1)
         self.head = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.2)
+        self.big_head = pygame.Rect(0,0,self.rect.width * 1, self.rect.height*0.2)
         self.body = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.7)
         self.rect_attack = pygame.Rect(0,0,self.rect.width * 0.8, self.rect.height*1)
         self.rect_air_attack = pygame.Rect(0,0,self.rect.width * 0.8, self.rect.height*0.5)
@@ -90,6 +92,8 @@ class Player(MOB):
         self.direction_jump_edge = ''
         self.increment_jump_edge = 0.25
         self.jump_edge_pieds = False
+        self.timer_jump_edge_cogne=0
+        self.cooldown_jump_edge_cogne=0.5
         
         # edge grab / idle
         self.is_sliding = False
@@ -167,6 +171,10 @@ class Player(MOB):
         self.increment_dash_attack=0.1
         self.compteur_dash_attack_max = self.compteur_dash_attack_min + self.increment_dash_attack*self.images["shotgun"]["dash_attack"]["compteur_image_max"]*self.images["shotgun"]["dash_attack"]["nbr_image"] - 8*self.increment_dash_attack
         
+        # edge climb
+        self.additionnal_compeur=0
+        self.edge_climb_bool=True
+
         self.is_friendly=True
         
         self.dico_action_functions = {
@@ -178,7 +186,8 @@ class Player(MOB):
             "Wall_slide":self.sliding,
             "Edge_Idle":self.sliding,
             "Edge_grab":self.sliding,
-            "ground_slide":self.slide_ground
+            "ground_slide":self.slide_ground,
+            "Edge_climb":self.edge_climb
         }       
     
     def move_right(self, pieds_sur_sol = False): 
@@ -240,6 +249,26 @@ class Player(MOB):
             else:
                 self.direction="left"
     
+    def debut_edge_climb(self):
+        if self.direction=="right":
+            self.position[0]+=self.body.width + 10*self.zoom
+        else:
+            self.position[0]-=self.body.width + 10*self.zoom
+        self.position[1]-=77*self.zoom
+        self.change_direction("Edge_climb", self.direction)
+
+    def edge_climb(self):
+        if self.current_image==1:
+            #self.compteur_image+=1
+            pass
+        elif self.current_image==2 and self.edge_climb_bool:
+            self.position[1]-=31*self.zoom
+            self.edge_climb_bool=False
+        elif self.current_image==2:
+            if (self.additionnal_compeur<=5):
+                self.compteur_image=2
+            self.additionnal_compeur+=1
+
     def debut_pary(self):
         self.compteur_pary=0
         self.is_parying = True
@@ -258,9 +287,7 @@ class Player(MOB):
             self.change_direction("air attack", self.direction)
         else :
             self.change_direction("attack1", self.direction)
-            self.a_attaquer2=False
-        
-            
+            self.a_attaquer2=False   
     
     def attack2(self):
         self.compteur_attack=0
@@ -338,13 +365,25 @@ class Player(MOB):
         self.direction_wall = self.direction
         self.change_direction('Edge_grab', self.direction)
    
+    def debut_wallslide(self):
+        #if self.is_grabing_edge: self.fin_grab_edge(mouvement=False)
+        self.is_sliding = True
+        self.change_direction("Wall_slide", self.direction)
+
     def sliding(self):
+        if time.time() - self.timer_jump_edge_cogne < self.cooldown_jump_edge_cogne:
+            self.debut_wallslide()
         if self.is_sliding:
             self.position[1] += self.speed_sliding * self.zoom * self.speed_dt
         
     def fin_grab_edge(self, mouvement = True):
+        """
+        ne pas appeler quand on veut wallslide
+        """
         self.is_grabing_edge = False
         self.is_sliding = False
+        self.edge_climb_bool=True
+        self.additionnal_compeur=0
         if mouvement:
             # petit decalage necessaires pour eviter des bug a causes des images d'animations ou des collision
             if self.direction == "right":
@@ -463,10 +502,11 @@ class Player(MOB):
         else:
             self.fin_saut_edge()
     
-    def fin_saut_edge(self):
+    def fin_saut_edge(self, cogne=False):
         """reinitialisation des vvariables du saut"""
         # sinon le joueur va sauter immediatement en arrivant sur une plateforme ou sur le sol apres un saut
-        self.timer_cooldown_next_jump = time.time()
+        if cogne : self.timer_jump_edge_cogne = time.time()
+        self.jump_edge_pieds = False
         self.a_sauter = True
         self.is_jumping_edge = False
         self.compteur_jump_edge = self.compteur_jump_edge_min     

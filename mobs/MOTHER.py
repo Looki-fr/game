@@ -150,6 +150,8 @@ class MOB(pygame.sprite.Sprite):
             self.fin_slide_ground()
         if self.is_parying:
             self.is_parying=False
+        if self.is_grabing_edge:
+            self.fin_grab_edge()
         if chute:
             self.fin_chute()
         
@@ -365,8 +367,7 @@ class MOB(pygame.sprite.Sprite):
                     else:
                         self.change_direction("idle", dir)
                 elif self.action_image == "Edge_grab":
-                    self.is_sliding = True
-                    self.change_direction("Wall_slide", dir)
+                    self.debut_wallslide()
                 elif self.action_image == "attack1" or self.action_image == "attack2" or self.action_image=="hurt" or self.action_image=="pary":
                     self.is_attacking=False
                     self.is_parying=False
@@ -385,6 +386,9 @@ class MOB(pygame.sprite.Sprite):
                     self.position=[self.checkpoint[0], self.checkpoint[1]-self.image.get_height()]
                     self.fin_chute()
                     self.change_direction("idle", dir)
+                elif self.action_image=="Edge_climb":
+                    self.change_direction("idle", dir)
+                    self.position[1]+=2*self.zoom
                 else:
                     temp=False
                     self.current_image = 1
@@ -432,6 +436,7 @@ class MOB(pygame.sprite.Sprite):
         self.body.midbottom = self.rect.midbottom
         self.feet.midbottom = (self.rect.midbottom[0], self.rect.midbottom[1]-self.increment_foot)
         self.head.midtop = self.body.midtop
+        if "Edge_climb" in self.actions : self.big_head.midtop = self.body.midtop
         if self.is_attacking and self.rect_attack_update_pos=="mid":
             self.rect_attack.center = self.rect.center
         elif self.is_attacking and self.rect_attack_update_pos=="left_right":
@@ -452,7 +457,7 @@ class MOB(pygame.sprite.Sprite):
         """sometimes actions and actions image are differents :
         when the player dash self.action = 'dash' and self.action_image = 'jump'
         because its has the same image, so we update it here"""
-        if self.action_image in ["run", "idle", "fall","up_to_fall","Edge_Idle","Edge_grab","Wall_slide","ground_slide","crouch", "dying"]:
+        if self.action_image in ["Edge_climb", "run", "idle", "fall","up_to_fall","Edge_Idle","Edge_grab","Wall_slide","ground_slide","crouch", "dying"]:
             self.action = self.action_image
         elif self.action_image == "jump":
             if self.is_dashing:

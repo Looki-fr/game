@@ -60,7 +60,7 @@ class Collision:
                 for ground in dico["ground"]:
                     if mob.feet.collidelist(ground) > -1:
                         if not mob.is_jumping_edge and not mob.is_jumping:
-                            mob.position[1] = ground[0].y - mob.image.get_height() + 1 + mob.increment_foot*2
+                            if mob.action != "Edge_climb": mob.position[1] = ground[0].y - mob.image.get_height() + 1 + mob.increment_foot*2
                             # comme le joueur est sur le sol, il peut de nouveau dash / sauter
                             mob.a_sauter = False
                             mob.a_dash = False
@@ -71,7 +71,7 @@ class Collision:
                     if mob.feet.collidelist(plateforme) > -1:
                         if (mob.position[1] + mob.image.get_height() - plateforme[0].y < 20) or "crab" in mob.id:
                             if not mob.is_jumping_edge and not mob.is_jumping:
-                                mob.position[1] = plateforme[0].y - mob.image.get_height() + 1 + mob.increment_foot*2
+                                if mob.action != "Edge_climb": mob.position[1] = plateforme[0].y - mob.image.get_height() + 1 + mob.increment_foot*2
                                 # comme le joueur est sur une plateforme, il peut de nouveau dash / sauter
                                 mob.a_sauter = False
                                 mob.a_dash = False
@@ -132,6 +132,15 @@ class Collision:
         for dico in self._get_dico(mob.coord_map):
             for wall in dico["wall"]:
                 if mob.feet.collidelist(wall) > -1:
+                    return True
+        return False
+
+    def check_head_collide_ground(self, mob, changing_y=False):
+        for dico in self._get_dico(mob.coord_map):
+            for ground in dico["ground"]:
+                if mob.big_head.collidelist(ground) > -1:
+                    if changing_y==True:
+                        mob.position[1]=ground[0].y
                     return True
         return False
     

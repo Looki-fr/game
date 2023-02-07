@@ -145,14 +145,15 @@ class Game:
         # if self.scroll_rect.y > self.map_height - self.screen.get_height()/2 : self.scroll_rect.y = self.map_height - self.screen.get_height()/2 
     
     def add_mob_to_game(self, mob, input, group="base"):
-        if group=="base":
-            self.all_mobs.append([mob, input])
-            self.group.add(mob)
-        else:
-            self.all_mobs_wave.append([mob, input])
-            self.group_wave.add(mob)
-        if input=="manette":
-            mob.motion=self.motion
+        if "player" in mob.id:
+            if group=="base":
+                self.all_mobs.append([mob, input])
+                self.group.add(mob)
+            else:
+                self.all_mobs_wave.append([mob, input])
+                self.group_wave.add(mob)
+            if input=="manette":
+                mob.motion=self.motion
       
     def end_wave_map(self):
         self.render.current_map_is_wave=False  
@@ -178,7 +179,7 @@ class Game:
             self.player.position, self.player.position_wave_map = self.player.position_wave_map, self.player.position
             self.checkpoint=[self.collision.dico_map_wave['spawn_player'][0], self.collision.dico_map_wave['spawn_player'][1]]
             for i, coord in enumerate(self.collision.dico_map_wave["spawn_crab"]):
-                self.add_mob_to_game(Crab(coord[0], coord[1]+1, self.directory, self.render.zoom, str(i+1), self.checkpoint.copy(), Particule, self.player, handle_input_ralentissement), "bot", group="wave")  
+                self.add_mob_to_game(Crab(coord[0], coord[1]+1, self.directory, self.render.zoom, str(i+1), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, handle_input_ralentissement), "bot", group="wave")  
             self.all_groups.remove(self.group)
             self.all_groups.insert(1, self.group_wave)
         
@@ -284,7 +285,7 @@ class Game:
         
         # si le joueur n'est pas sur un sol et ne chute pas on commence la chute
         if not self.collision.joueur_sur_sol(mob):
-            if not mob.is_falling and not mob.is_jumping and not mob.is_dashing and not mob.is_grabing_edge and not mob.is_jumping_edge:
+            if mob.action != "Edge_climb" and not mob.is_falling and not mob.is_jumping and not mob.is_dashing and not mob.is_grabing_edge and not mob.is_jumping_edge:
                 if mob.is_sliding_ground:
                     mob.fin_slide_ground()
                 if mob.is_attacking or mob.is_dashing_attacking:
@@ -337,14 +338,14 @@ class Game:
                                     mob.take_damage()
                                 if mob.health <=0:
                                     if mob.id != "player1":
+                                        mob.particule.is_alive=False
+                                        self.tab_particule_dead.append(mob.particule)
                                         if self.render.current_map_is_wave:
                                             self.group_wave.remove(mob)
                                             self.all_mobs_wave.remove([mob, "bot"])
                                             if len(self.group_wave)==1:
                                                 self.end_wave_map()
                                         else:
-                                            mob.particule.is_alive=False
-                                            self.tab_particule_dead.append(mob.particule)
                                             self.group.remove(mob)
                                             self.all_mobs.remove([mob, "bot"])
                                     else:
@@ -367,8 +368,8 @@ class Game:
             mob.dash_attack()
         
         # le joueur ne peut pas de cogner pendant 2 ticks car sinon il ne peut pas sauter si il tiens un wall du bout des doigts
-        if mob.is_jumping_edge and self.collision.joueur_se_cogne(mob) and mob.compteur_jump_edge >= mob.compteur_jump_edge_min + mob.increment_jump_edge*4:
-            mob.fin_saut_edge()
+        if mob.is_jumping_edge and self.collision.joueur_se_cogne(mob) and (mob.jump_edge_pieds or (not mob.jump_edge_pieds and mob.compteur_jump_edge >= mob.compteur_jump_edge_min + mob.increment_jump_edge*4)):
+            mob.fin_saut_edge(cogne=True)
         
         if mob.is_jumping and self.collision.joueur_se_cogne(mob):
             mob.fin_saut()
