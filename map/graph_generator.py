@@ -62,7 +62,7 @@ def remove_path(co, c, mat, add=False):
         mat[c[0]][c[1]][3]=add
 
 def get_matrix():
-    mat=[[[True, True, True, True] for _ in range(5)] for _ in range(6)]
+    mat=[[[True, True, True, True] for _ in range(5)] for _ in range(3)]
     # BUG faire en sorte que X pas tt une ligne / colonne
 
     for i in range(len(mat)):
@@ -77,7 +77,7 @@ def get_matrix():
 
     c=0
     # remove x nodes randomly
-    while c<4:
+    while c<3:
         i, y = random.randint(0,len(mat)-1), random.randint(0,len(mat[0])-1)
         
         if mat[i][y]:
@@ -137,8 +137,8 @@ def get_matrix():
                     
             path.append(node)
             path.append(n)
-    for line in mat: print(line)
-    printTab(mat)
+    # for line in mat: print(line)
+    # printTab(mat)
     return mat
 
 get_matrix()

@@ -54,17 +54,37 @@ class Collision:
         """renvoie True si les pieds du joueur est sur une plateforme ou sur le sol.
         De plus, place la coordonee en y du joueur juste au dessus de la plateforme / du sol"""
         passage_a_travers = time.time() - mob.t1_passage_a_travers_plateforme < mob.cooldown_passage_a_travers_plateforme
-        
+        bool=False
+        gd=None
         for dico in self._get_dico(mob.coord_map):
             if not platform_only:
+                if not mob.is_falling:
+                    for little_ground in dico["little_ground"]:
+                        if mob.feet.collidelist(little_ground) > -1:
+                            if not mob.is_jumping_edge and not mob.is_jumping:
+                                if not gd:
+                                    gd=little_ground
+                                elif gd[0].y>little_ground[0].y:
+                                    gd=little_ground
+                                # comme le joueur est sur le sol, il peut de nouveau dash / sauter
+                                mob.a_sauter = False
+                                mob.a_dash = False
+                            bool= True
+
                 for ground in dico["ground"]:
                     if mob.feet.collidelist(ground) > -1:
                         if not mob.is_jumping_edge and not mob.is_jumping:
-                            if mob.action != "Edge_climb": mob.position[1] = ground[0].y - mob.image.get_height() + 1 + mob.increment_foot*2
+                            if not gd:
+                                gd=ground
+                            elif gd[0].y>ground[0].y:
+                                gd=ground
                             # comme le joueur est sur le sol, il peut de nouveau dash / sauter
                             mob.a_sauter = False
                             mob.a_dash = False
-                        return True
+                        bool= True
+            if bool : 
+                if not mob.is_jumping_edge and not mob.is_jumping and mob.action != "Edge_climb": mob.position[1] = gd[0].y - mob.image.get_height() + 1 + mob.increment_foot*2
+                return True
             for plateforme in dico["platform"]:
                 # and not sprite.is_sliding
                 if not passage_a_travers:

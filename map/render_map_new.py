@@ -15,15 +15,19 @@ class RenderMap:
 
         self.minimap_tile_width=32            
         self.zoom=2
-        self.tile_width=30*self.zoom
-        self.room_width=self.tile_width*15
-        self.room_height=self.tile_width*10
+        self.tile_width=20*self.zoom
+        self.room_width=self.tile_width*35
+        self.room_height=self.tile_width*25
         
         self.increment=7*self.zoom
         self.increment_ground=30*self.zoom
         self.all_pic=[]
         self._init_all_pics()
-        
+
+        self.gen_max_height=4
+        self.gen_min_width=5
+        self.gen_max_width=15
+
         # value : dictionnary : keys : id of the tile value : image of the tile
         self.matrix_picture=[ [[] for _ in range(len(self.graphe[0]))] for _ in range(len(self.graphe))]
 
@@ -33,73 +37,34 @@ class RenderMap:
         # we dont start at 0 since the map as empty maps around it
         i=0; z=0
         for i,line in enumerate(self.graphe):
+            self.re_initialize_gen_var()
+            #parameters for the generation of reliefs
             for z,node in enumerate(line):
                     # E and S correspond to if the map has a neightboor on the right or on the bot
                 self.load_map(node, i, z)
-                # else:
-                #     self.load_map("", i, z, empty=True)
-                #     self.load_map("", i+self.tm.height, z, empty=True)
-                #     self.load_map("", i, z+self.tm.width, empty=True)
-                # just remove it and see what happened if you dont understand why we load this map
-            
         
         self.minimap_picture=pygame.image.load(f"{directory}\\assets\\tiled_maps\\minimap.png")
         self.minimap_picture=pygame.transform.scale(self.minimap_picture, (self.minimap_tile_width,self.minimap_tile_width))
         self.minimap_tile=[[None for _ in range(len(self.graphe))] for _ in range(len(self.graphe[0]))]
-        # for i, line in enumerate(self.graphe):
-        #     for y, node in enumerate(line):
-        #         if node != []: 
-        #             self.minimap_tile[i][y]=self.minimap_picture
-                    
-        # self.current_map_objects={"walls":[], "grounds":[], "ceillings":[], "plateformes":[], "spawn_player":()}    
-        # self.current_map=[]
+
         self.current_map_is_wave=False
-        # self.coord_current_map=(0,0)
-        # for _ in range(self.tm.height):
-        #     self.current_map.append([])
-        #     for _ in range(self.tm.width):
-        #         self.current_map[-1].append(None)
         
         self.get_first_map()["info"]["beated"]=True
-        
-        # self.type_objects_map=[[None for _ in range(len(self.graphe.matrix_of_node[0])*2+2)] for _ in range(len(self.graphe.matrix_of_node)*2+2)]
-        # differents_types_random=["wave","wave","wave", "fontain", "devil", "old_men", "secret", "trap"]
-        # # at least one of those
-        # pile_types=['trader', 'boss',"wave", "fontain", "devil", "old_men", "secret", "trap"]
-        # c=self.get_first_map(index=True)
-        # self.type_objects_map[c[0]][c[1]]="spawn"
-        # liste=[]
-        # for i, line in enumerate(self.matrix_map):
-        #     for y,map in enumerate(line):
-        #         if map != None and list((i,y))!=list(self.get_first_map(index=True)):
-        #             liste.append((i,y))
-        # random.shuffle(liste)
-        # while len(liste)>0:
-        #     if len(pile_types)>0:
-        #         type_=pile_types.pop()
-        #     else:
-        #         type_=random.choice(differents_types_random)
-        #     temp=liste.pop()
-        #     self.type_objects_map[temp[0]][temp[1]]=type_
-            
-        # string=""
-        # for line in self.type_objects_map:
-        #     for obj in line:
-        #         if obj != None:
-        #             string+=obj+"-"*(7-len(obj))+" "
-        #         else:
-        #             string+="-"*7+" "
-        #     string+="\n"
-        # with open(f"{self.directory}\\map\\output\\objects_maps.txt", "w") as f:
-        #     f.write(string)
-    
+
+    def re_initialize_gen_var(self):
+        self.gen_current_height=1
+        self.gen_current_width=1
+
     def _init_all_pics(self):
         pic=pygame.Surface((self.tile_width, self.tile_width))
         pic.fill((200,200,200))
         pic2=pygame.Surface((self.room_width, self.room_height))
         pic2.fill((200,200,200))
+        pic3=pygame.Surface((self.tile_width//2, self.tile_width//2))
+        pic3.fill((200,200,200))
         self.all_pic.append(pic)
         self.all_pic.append(pic2)
+        self.all_pic.append(pic3)
 
     def get_height(self):
         """return the height of the map in coordonates"""
@@ -121,10 +86,98 @@ class RenderMap:
                     else:
                         return (i,y)
 
+    def _spawn_object(self, i, z, dico, i_, y_, tmp):
+        dico["wall"].append([pygame.Rect(z*self.room_width+(tmp)*self.tile_width, i*self.room_height+i_*self.tile_width+self.increment, self.tile_width*1, self.tile_width-1*+self.increment)])
+        dico["wall"].append([pygame.Rect(z*self.room_width+(y_-1)*self.tile_width, i*self.room_height+i_*self.tile_width+self.increment, self.tile_width*1, self.tile_width-1*+self.increment)])
+        dico["ground"].append([pygame.Rect(z*self.room_width+(tmp)*self.tile_width+self.increment, i*self.room_height+i_*self.tile_width, self.tile_width*(y_-tmp)-2*self.increment, self.tile_width)])
+
+    def generate_relief(self, i, z, dico, node):
+        mat = [[0 for _ in range(self.room_width//self.tile_width)] for _ in range(self.room_height//self.tile_width)]
+        if not node[0] or not node[1]: 
+            for i_ in range (self.room_height//self.tile_width):
+                if not node[0]: mat[i_][0]=1
+                if not node[1]: mat[i_][-1]=1
+        if not node[2] or not node[3]: 
+            for i_ in range (self.room_width//self.tile_width):
+                if not node[2]: mat[0][i_]=1
+                if not node[3]: mat[-1][i_]=1
+
+        #ground
+        if not node[3]:
+            i_=0
+            while i_ <= (self.room_width//self.tile_width)-1:
+                if self.gen_current_width==0:
+                    if self.gen_current_height<self.gen_max_height and self.gen_current_height>1:
+                        c = random.randint(1,3)
+                    elif self.gen_current_height<self.gen_max_height: c=random.randint(2,3)
+                    else: c=random.choice([1,3])
+
+                    self.gen_current_width=random.randint(self.gen_min_width, self.gen_max_width)
+                    if i_+self.gen_current_width>=self.room_width//self.tile_width:
+                        width_=self.room_width//self.tile_width-i_
+                        self.gen_current_width=self.gen_current_width-width_
+                    else: 
+                        width_=self.gen_current_width
+                        self.gen_current_width=0
+                    if c==1: self.gen_current_height-=1
+                    else:self.gen_current_height+=1
+
+                # y=(i+1)*self.room_height-self.tile_width*self.gen_current_height
+                # x=z*self.room_width+self.gen_current_width*self.tile_width
+                    if width_>3 or node[1]:
+                        for i__ in range(i_, i_+width_):
+                            for y in range(self.room_height//self.tile_width-self.gen_current_height, self.room_height//self.tile_width-1):
+                                mat[y][i__]=1
+
+                    i_+=width_
+                    
+                else:
+
+                    for i__ in range(i_, i_+self.gen_current_width):
+                        for y in range(self.room_height//self.tile_width-self.gen_current_height, self.room_height//self.tile_width-1):
+                            mat[y][i__]=1
+
+                    i_+=self.gen_current_width
+                    self.gen_current_width=0
+
+        if node[0]: g=0
+        else: g=1
+        if node[1]:d=len(mat[0])
+        else: d=len(mat[0])-1
+        if node[2]: h=0
+        else: h=1
+        if node[3]:b=len(mat)
+        else: b=len(mat)-1
+
+        
+
+        for i_ in range(h, b):
+            tmp=-1
+            for y_ in range(g, d):
+                if mat[i_][y_]:
+                    self.matrix_picture[i][z].append({"x":z*self.room_width+y_*self.tile_width,"y":i*self.room_height+i_*self.tile_width,"img":0})
+                    if i_==0 or not mat[i_-1][y_]:
+                        dico["wall"].append([pygame.Rect(z*self.room_width+y_*self.tile_width, i*self.room_height+i_*self.tile_width+self.increment, self.tile_width*1, self.tile_width-1*+self.increment)])
+                        dico["ground"].append([pygame.Rect(z*self.room_width+y_*self.tile_width, i*self.room_height+i_*self.tile_width, self.tile_width*1, self.tile_width)])
+                    if y_>0 and not mat[i_][y_-1]:
+                        self.matrix_picture[i][z].append({"x":z*self.room_width+(y_-0.5)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":2})
+                        dico["little_ground"].append([pygame.Rect(z*self.room_width+(y_-0.7)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
+                    if y_<len(mat[0])-1 and not mat[i_][y_+1]:
+                        self.matrix_picture[i][z].append({"x":z*self.room_width+(y_+1)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":2})
+                        dico["little_ground"].append([pygame.Rect(z*self.room_width+(y_+1.2)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
+                    if tmp == -1: tmp=y_
+                    elif y_ == d-1 or not mat[i_][y_+1]:
+                        #self._spawn_object(i, z, dico, i_, y_, tmp)
+                        tmp=-1
+
+        # for line in mat : print(line)
+
+        # print()
+
     def load_map(self, node, i, z, empty=False):
         """call load_objects_map if the map is not empty and load all tiles for the map widht the coordinates i and z""" 
 
-        self.matrix_map[i][z]={"wall":[], "ground":[], "ceilling":[], "platform":[],"bot":{"platform_right":[], "platform_left":[], "platform_go_right":[], "platform_go_left":[]}, "spawn_player":(), "object_map":(), "object_map":(), "spawn_crab":[], "info":{"beated":True, "type":node}}
+        self.matrix_map[i][z]={"wall":[], "ground":[], "little_ground":[], "ceilling":[], "platform":[],"bot":{"platform_right":[], "platform_left":[], "platform_go_right":[], "platform_go_left":[]}, "spawn_player":(), "object_map":(), "object_map":(), "spawn_crab":[], "info":{"beated":True, "type":node}}
         dico=self.matrix_map[i][z]
         # [g, d, h, b]
         if node:
@@ -169,12 +222,16 @@ class RenderMap:
                 dico["wall"].append([pygame.Rect((z+1)*self.room_width-self.tile_width, (i+1)*self.room_height-self.tile_width+self.increment, self.tile_width, self.tile_width-2*self.increment)])
                 dico["ground"].append([pygame.Rect((z+1)*self.room_width-self.tile_width+self.increment, (i+1)*self.room_height-self.tile_width, self.tile_width-2*self.increment, self.tile_width)])
                 self.matrix_picture[i][z].append({"x":(z+1)*self.room_width-self.tile_width,"y":(i+1)*self.room_height-self.tile_width,"img":0})
+            self.generate_relief(i, z, dico, node)
+            if node[3]:self.re_initialize_gen_var()
         else:
             # dico["wall"].append([pygame.Rect(z*self.room_width, i*self.room_height+self.increment, self.tile_width, self.room_height-2*self.increment)])
             # dico["wall"].append([pygame.Rect((z+1)*self.room_width-self.tile_width, i*self.room_height+self.increment, self.tile_width, self.room_height-2*self.increment)])
             # dico["ground"].append([pygame.Rect(z*self.room_width+self.increment, i*self.room_height, self.room_width-2*self.increment, self.tile_width)])
             # dico["ceilling"].append([pygame.Rect(z*self.room_width+self.increment, (i+1)*self.room_height-self.tile_width, self.room_width-2*self.increment, self.tile_width)])
             self.matrix_picture[i][z].append({"x":z*self.room_width,"y":i*self.room_height,"img":1})
+            self.re_initialize_gen_var()
+
 
     def is_current_map_beated(self, cam_x, cam_y):
         # y_min, y_max, x_min, x_max, a, b, c, d = self.get_coord_tile_matrix(cam_x, cam_y)
