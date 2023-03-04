@@ -86,7 +86,7 @@ class Collision:
                     return True
         return False
         
-    def stop_if_collide(self, direction,mob, head = False):
+    def stop_if_collide(self, direction,mob, head = False, move_back=True):
         """fait en sorte que le joueur avance plus lorsque qu'il vance dans un mur"""
         if head:rect = mob.head
         else:rect = mob.body
@@ -96,26 +96,31 @@ class Collision:
                     # si le joueur va a droite en etant a gauche du mur
                     # limage est plus grande que la partie visible du joueur, d'où mob.image.get_width()/2
                     if direction == 'right' and wall[0].x > mob.position[0] + mob.complement_collide_wall_right:
-                        if not mob.is_dashing: 
+                        if not mob.is_dashing and not mob.is_dashing_attacking and move_back: 
                             mob.move_back()   
+                        elif not move_back:
+                            mob.position[0]=wall[0].x-mob.rect.w
                         return True
                     # si le joueur va a gauche en etant a droite du mur
                     if direction == 'left' and wall[0].x < mob.position[0] + mob.complement_collide_wall_left:  
-                        if not mob.is_dashing: 
+                        if not mob.is_dashing and not mob.is_dashing_attacking and move_back:  
                             mob.move_back()  
+                        elif not move_back:
+                            mob.position[0]=wall[0].x+wall[0].w
                         return True
         return False
 
     def stick_to_wall(self, mob):
         if mob.direction == "right":
-                mob.position[0] += 15*self.zoom
+                mob.position[0] += 2*self.zoom
         elif mob.direction == "left":
-                mob.position[0] -= 15*self.zoom
+                mob.position[0] -= 2*self.zoom
         for dico in self._get_dico(mob.coord_map):
             for wall in dico["wall"]:
                 if mob.body.collidelist(wall) > -1:
                     if mob.direction=="left": mob.position[0] = wall[0].x + wall[0].w - 1.26 * mob.body.w
                     elif mob.direction=="right": mob.position[0] = wall[0].x - 2.11 * mob.body.w
+                    break
                         
     def check_grab(self, mob):
         """Grab SSI head collide"""

@@ -36,7 +36,7 @@ class RenderMap:
         # keys : map id in the form y_x when y and x are the coordinates of the map in self.liste_tile
         # value : dictionnary : keys : id of the tile value : image of the tile
         self.picture_dictionnary={}
-        self.minimap_tile_width=64            
+        self.minimap_tile_width=32            
         self.zoom=2
 
         # matrix map is used to load all the map objects
@@ -252,7 +252,7 @@ class RenderMap:
             for i, line in enumerate(self.minimap_tile):
                 for y, tile in enumerate(line):
                         if tile != None:
-                            minimap.blit(tile, (-a*self.minimap_picture.get_width()+y*self.minimap_picture.get_width() + 200 + self.minimap_picture.get_width(), -b*self.minimap_picture.get_height()+i*self.minimap_picture.get_height() +200 + self.minimap_picture.get_height()))
+                            minimap.blit(tile, (-a*self.minimap_picture.get_width()+y*self.minimap_picture.get_width() + minimap.get_width()/2 + self.minimap_picture.get_width(), -b*self.minimap_picture.get_height()+i*self.minimap_picture.get_height() +minimap.get_height()/2 + self.minimap_picture.get_height()))
         else:
             y = 0
             x = 0

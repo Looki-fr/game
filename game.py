@@ -10,8 +10,9 @@ from mobs.collision import Collision
 from pygame.locals import *
 from entities_sprite.dash_images import Dash_images
 from entities_sprite.particule import Particule
-from map.render_map import RenderMap
+from map.render_map_new import RenderMap
 from map.object_map import Object_map
+from entities_sprite.dash_attack_effect import Dash_attack_image
 
 class Game:
     def __init__(self):
@@ -21,7 +22,7 @@ class Game:
         self.screen = pygame.display.set_mode((round(info_screen.current_w*0.7),round(info_screen.current_h*0.7)))
         self.screen.fill((200,100,100))       
         self.bg = pygame.Surface((self.screen.get_width(), self.screen.get_height()), flags=SRCALPHA)
-        self.minimap = pygame.Surface((400, 400), flags=SRCALPHA)
+        self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
         self.dt = 1/30
         
         
@@ -43,11 +44,11 @@ class Game:
         self.map_height=self.render.get_height()
         self.map_width=self.render.get_width()
         self.first_map=self.render.get_first_map()
-        player_position = self.first_map["spawn_player"]
+        player_position = (500, 500)
         
         self.image_pp=pygame.image.load(f'{self.directory}\\assets\\pp.png').convert_alpha()
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
-        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group)
+        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image)
         
         self.pressed_up_bool = [False]
         self.last_player_position=self.player.position.copy()
@@ -65,11 +66,11 @@ class Game:
         
         self.collision=Collision(self.render.zoom, self.render.matrix_map) 
         i=1  
-        for line in self.render.matrix_map:
-            for map in line:
-                if map != None:      
-                    self.add_mob_to_game(Crab(map["spawn_player"][0], map["spawn_player"][1]+1, self.directory, self.render.zoom, i, self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, handle_input_ralentissement), "bot")
-                    i+=1
+        # for line in self.render.matrix_map:
+        #     for map in line:
+        #         if map != None:      
+        #             self.add_mob_to_game(Crab(map["spawn_player"][0], map["spawn_player"][1]+1, self.directory, self.render.zoom, i, self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, handle_input_ralentissement), "bot")
+        #             i+=1
         
         self.all_controls={}
         self.all_controls["solo_clavier"]={"perso":[],"touches":[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP,pygame.K_DOWN, pygame.K_q, pygame.K_a, pygame.K_d, pygame.K_z, pygame.K_e]}  
@@ -79,9 +80,10 @@ class Game:
                 self.load_object_map(y, i)
     
     def load_object_map(self, c, d):
-        if self.render.type_objects_map[d][c]=="wave":
-            coord=self.render.matrix_map[d][c]["object_map"]
-            self.group_object.add(Object_map(self.render.zoom, "wave", coord[0], coord[1], self.directory, 5, 8, "assets\\flag", "flag_", 2, 30, 5, c, d))
+        pass
+        #if self.render.type_objects_map[d][c]=="wave":
+            # coord=self.render.matrix_map[d][c]["object_map"]
+            # self.group_object.add(Object_map(self.render.zoom, "wave", coord[0], coord[1], self.directory, 5, 8, "assets\\flag", "flag_", 2, 30, 5, c, d))
 
     def blit_health_bar(self, bg, all_mobs):
         i=1
@@ -145,15 +147,14 @@ class Game:
         # if self.scroll_rect.y > self.map_height - self.screen.get_height()/2 : self.scroll_rect.y = self.map_height - self.screen.get_height()/2 
     
     def add_mob_to_game(self, mob, input, group="base"):
-        if "player" in mob.id:
-            if group=="base":
-                self.all_mobs.append([mob, input])
-                self.group.add(mob)
-            else:
-                self.all_mobs_wave.append([mob, input])
-                self.group_wave.add(mob)
-            if input=="manette":
-                mob.motion=self.motion
+        if group=="base":
+            self.all_mobs.append([mob, input])
+            self.group.add(mob)
+        else:
+            self.all_mobs_wave.append([mob, input])
+            self.group_wave.add(mob)
+        if input=="manette":
+            mob.motion=self.motion
       
     def end_wave_map(self):
         self.render.current_map_is_wave=False  
@@ -206,17 +207,21 @@ class Game:
                             mob[0].reset_actions()
             
             for control in self.all_controls.values():
-                if pressed[control["touches"][0]]: pressed_left(control["perso"], self.collision)
-                elif pressed[control["touches"][1]]: pressed_right(control["perso"], self.collision)
-                if not pressed[control["touches"][0]] and not pressed[control["touches"][1]]:
+                down=pressed[control["touches"][3]]
+                left=pressed[control["touches"][0]]
+                right=pressed[control["touches"][1]]
+                up=pressed[control["touches"][2]]
+                if left: pressed_left(control["perso"], self.collision)
+                elif right: pressed_right(control["perso"], self.collision)
+                if not left and not right:
                     for mob in control["perso"]:
-                        handle_input_ralentissement(mob)
-                if pressed[control["touches"][2]]:pressed_up(control["perso"], pressed[control["touches"][3]], pressed[control["touches"][0]], pressed[control["touches"][1]], self.pressed_up_bool, self.collision)
-                if pressed[control["touches"][3]]:pressed_down(control["perso"])
-                if pressed[control["touches"][4]]:pressed_dash(control["perso"], pressed[control["touches"][0]], pressed[control["touches"][1]], pressed[control["touches"][3]], pressed[control["touches"][2]], self.collision.joueur_sur_sol, self.render.zoom)
+                        handle_input_ralentissement(mob, self.collision)
+                if up:pressed_up(control["perso"], down, left, right, self.pressed_up_bool, self.collision)
+                if down:pressed_down(control["perso"])
+                if pressed[control["touches"][4]]:pressed_dash(control["perso"], left, right, pressed[control["touches"][3]], pressed[control["touches"][2]], self.collision.joueur_sur_sol, self.render.zoom)
                 if pressed[control["touches"][5]]:pressed_attack(control["perso"])
-                if pressed[control["touches"][6]]:pressed_heavy_attack(control["perso"])     
-                if pressed[control["touches"][7]]:pressed_pary(control["perso"])                                                    
+                if pressed[control["touches"][6]]:pressed_heavy_attack(control["perso"], self.collision, left, right)     
+                if pressed[control["touches"][7]]:pressed_pary(control["perso"], left, right)                                                    
                 if pressed[control["touches"][8]]: 
                     id = pressed_interact(control["perso"], self.group_object)
                     if id !=None:
@@ -256,7 +261,7 @@ class Game:
                 if event.button == 2:    
                     pressed_attack(perso_manette)   
                 if event.button == 3:
-                    pressed_heavy_attack(perso_manette)
+                    pressed_heavy_attack(perso_manette, self.collision, left, right)
                                 
         if self.motion[0]<-0.1:
             pressed_left(perso_manette, self.collision)
@@ -264,7 +269,7 @@ class Game:
             pressed_right(perso_manette, self.collision)
         else:
             for mob in perso_manette:
-                handle_input_ralentissement(mob)
+                handle_input_ralentissement(mob, self.collision)
         
         if self.motion[1]>0.8:
             pressed_down(perso_manette)
@@ -277,10 +282,28 @@ class Game:
                     self.group.remove(sprite)
                 if sprite.body.collidelist([tuple[0] for tuple in self.get_all_mob()]) > -1 and self.player.is_grabing_edge:
                     self.group.remove(sprite)
+            elif sprite.id == "dash_attack_effect":
+                if self.player.dash_attack_image.finish:
+                    self.group.remove(self.player.dash_attack_image)
+                    self.player.dash_attack_image_added=False
+                    self.player.dash_attack_image=None
+
+        for sprite in self.group_wave.sprites():      
+            # suppression des images dash apres le cooldown
+            if sprite.id == "image_dash":
+                if time.time() - sprite.t1 > sprite.cooldown:
+                    self.group_wave.remove(sprite)
+                if sprite.body.collidelist([tuple[0] for tuple in self.get_all_mob()]) > -1 and self.player.is_grabing_edge:
+                    self.group_wave.remove(sprite)
+            elif sprite.id == "dash_attack_effect":
+                if self.player.dash_attack_image.finish:
+                    self.group_wave.remove(self.player.dash_attack_image)
+                    self.player.dash_attack_image_added=False
+                    self.player.dash_attack_image=None
     
     def gestion_chute(self, mob):
         # si le j saut ou dash la chute prends fin
-        if (mob.is_jumping or mob.is_dashing) and mob.is_falling:
+        if (mob.is_jumping or mob.is_dashing or mob.is_rolling) and mob.is_falling:
             mob.fin_chute(jump_or_dash = True) 
         
         # si le joueur n'est pas sur un sol et ne chute pas on commence la chute
@@ -288,7 +311,7 @@ class Game:
             if mob.action != "Edge_climb" and not mob.is_falling and not mob.is_jumping and not mob.is_dashing and not mob.is_grabing_edge and not mob.is_jumping_edge:
                 if mob.is_sliding_ground:
                     mob.fin_slide_ground()
-                if mob.is_attacking or mob.is_dashing_attacking:
+                if mob.is_attacking or mob.is_dashing_attacking or mob.is_rolling:
                     mob.debut_chute(attack=True)
                 else:
                     mob.debut_chute()
@@ -326,44 +349,42 @@ class Game:
             self.tab_particule_dead.remove(p)
     
     def handle_is_attacking(self, attacking_mob):
-        try:
-            if attacking_mob.current_image in attacking_mob.attack_damage[attacking_mob.action_image][0]:
-                for mob in [tuple[0] for tuple in self.get_all_mob()]:
-                    if mob.id != attacking_mob.id and mob.is_mob != attacking_mob.is_mob:
-                        if (mob.body.collidelist([attacking_mob.rect_attack]) > -1 or (attacking_mob.has_air_attack and mob.body.collidelist([attacking_mob.rect_air_attack]) > -1)) and mob.action_image!="dying":
-                            if not mob.is_parying or attacking_mob.is_dashing_attacking:
-                                mob.health -= attacking_mob.attack_damage[attacking_mob.action_image][1]
 
-                                if mob.action_image != "hurt":
-                                    mob.take_damage()
-                                if mob.health <=0:
-                                    if mob.id != "player1":
-                                        mob.particule.is_alive=False
-                                        self.tab_particule_dead.append(mob.particule)
-                                        if self.render.current_map_is_wave:
-                                            self.group_wave.remove(mob)
-                                            self.all_mobs_wave.remove([mob, "bot"])
-                                            if len(self.group_wave)==1:
-                                                self.end_wave_map()
-                                        else:
-                                            self.group.remove(mob)
-                                            self.all_mobs.remove([mob, "bot"])
-                                    else:
-                                        mob.start_dying()
+        if attacking_mob.is_dashing_attacking or attacking_mob.current_image in attacking_mob.attack_damage[attacking_mob.action_image][0]:
+            for mob in [tuple[0] for tuple in self.get_all_mob()]:
+                if mob.id != attacking_mob.id and mob.is_mob != attacking_mob.is_mob and (not "roll" in mob.actions or not mob.is_rolling):
+                    if (attacking_mob.is_dashing_attacking and attacking_mob.dash_attack_image != None and mob.body.collidelist([attacking_mob.dash_attack_image.body]) > -1) or (mob.body.collidelist([attacking_mob.rect_attack]) > -1 or (attacking_mob.has_air_attack and mob.body.collidelist([attacking_mob.rect_air_attack]) > -1)) and mob.action_image!="dying":
+                        if not mob.is_parying or attacking_mob.is_dashing_attacking:
+                            if attacking_mob.is_dashing_attacking: mob.health -= attacking_mob.dash_attack_damage
+                            else :mob.health -=  attacking_mob.attack_damage[attacking_mob.action_image][1]
+
+                            if not "hurt" in mob.action_image:
+                                mob.take_damage()
+                            if mob.health <=0:
+                                mob.start_dying()
+
+                        else:
+                            attacking_mob.take_damage()
+                            mob.is_parying=False
+                            if not mob.is_falling:
+                                mob.change_direction("idle", mob.direction)
                             else:
-                                attacking_mob.take_damage()
-                                mob.is_parying=False
-                                if not mob.is_falling:
-                                    mob.change_direction("idle", mob.direction)
-                                else:
-                                    mob.change_direction("up_to_fall", mob.direction)
-        except KeyError:
-            print("KEY ERROR handle_is_attacking :", attacking_mob.action_image)
-            attacking_mob.is_attacking=False
-            if "dash_attack" in attacking_mob.actions:
-                attacking_mob.fin_dash_attack()
+                                mob.change_direction("up_to_fall", mob.direction)
     
     def handle_action(self, mob):
+        if "player" not in mob.id and mob.action=="dying":
+            if mob.compteur_image==mob.images[mob.weapon][mob.action_image]["compteur_image_max"] and mob.current_image == mob.images[mob.weapon][mob.action_image]["nbr_image"]:
+                mob.particule.is_alive=False
+                self.tab_particule_dead.append(mob.particule)
+                if self.render.current_map_is_wave:
+                    self.group_wave.remove(mob)
+                    self.all_mobs_wave.remove([mob, "bot"])
+                    if len(self.group_wave)==1:
+                        self.end_wave_map()
+                else:
+                    self.group.remove(mob)
+                    self.all_mobs.remove([mob, "bot"])
+
         if mob.is_dashing_attacking:
             mob.dash_attack()
         
@@ -395,7 +416,10 @@ class Game:
         mob.save_location()    
         
         if mob.is_dashing_attacking and self.collision.stop_if_collide(mob.direction, mob):
+            print("infdsfndn")
             mob.fin_dash_attack()
+            if mob.is_falling :
+                self.collision.check_grab(mob)
             
         if mob.is_jumping_edge and self.collision.stop_if_collide(mob.direction_jump_edge, mob):
             mob.fin_saut_edge()
@@ -404,6 +428,11 @@ class Game:
         if mob.is_sliding_ground and self.collision.stop_if_collide(mob.slide_ground_direction_x, mob):
             mob.fin_slide_ground()
             self.collision.check_grab(mob)
+        
+        if mob.is_rolling and self.collision.stop_if_collide(mob.roll_direction_x, mob):
+            mob.fin_roll()
+            if mob.is_falling : 
+                self.collision.check_grab(mob)
             
         if mob.is_dashing and self.collision.stop_if_collide(mob.dash_direction_x, mob):
             mob.fin_dash()
@@ -467,8 +496,15 @@ class Game:
         if self.player.images_dash != []:
             # [x,y, image_modifié, cooldown]
             im = Dash_images(self.player.images_dash[0][0], self.player.images_dash[0][1], self.player.images_dash[0][2], self.player.images_dash[0][3])
-            self.group.add(im)
+            if self.render.current_map_is_wave:self.group_wave.add(im)
+            else:self.group.add(im)
             del self.player.images_dash[:]
+        
+        if self.player.dash_attack_image != None:
+            if not self.player.dash_attack_image_added:
+                if self.render.current_map_is_wave:self.group_wave.add(self.player.dash_attack_image)
+                else:self.group.add(self.player.dash_attack_image)
+                self.player.dash_attack_image_added=True
         
         self.update_particle()      
         
@@ -514,9 +550,13 @@ class Game:
         """boucle du jeu"""
 
         clock = pygame.time.Clock()
-
+        #t1=time.time()
         self.running = True
         while self.running:
+            # print(time.time() -t1)
+            # if time.time() -t1 > 3:
+            #     t1 = time.time()
+            #     self.player.take_damage()
             self.player.is_mouving_x = False
             self.handle_input()
             

@@ -5,7 +5,7 @@ from .MOTHER import MOB
 
 class Player(MOB):
 
-    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle):
+    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, Dash_attack_image):
         """parametres : 
                 - x : coordonne en x du joueur
                 - y : coordonne en y du joueur
@@ -14,7 +14,7 @@ class Player(MOB):
         MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule,update_particle, directory, "assets\\Bounty Hunter\\Individual Sprite")
 
         #"up_to_fall", 
-        action=["roll","Edge_climb", "Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack"]
+        action=["air_hurt","roll","Edge_climb", "Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack"]
         for a in action:
             self.actions.append(a)
         
@@ -28,17 +28,21 @@ class Player(MOB):
             self._get_images("fall", 3, self.origin_compteur_image_fall, "Fall", "Fall_", w, coefficient=coefficient)
             self._get_images("jump", 4, 4, "Jump", "Jump_", w, coefficient=coefficient) 
             self._get_images("hurt", 3, 4, "Hurt", "Hurt_", w, coefficient=coefficient) 
+            self._get_images("air_hurt", 3, 4, "Air Hurt", "Air-Hurt_", w, coefficient=coefficient) 
             self._get_images("dying", 7, 4, "Death", "Death_", w, coefficient=coefficient) 
+            self._get_images("air_dying", 3, 5, "Death Fall", "Death-Fall_", w, coefficient=coefficient) 
             self._get_images("ground_slide", 4, 3, "Slide", "Slide_", w, coefficient=coefficient) 
             self._get_images("dash_attack", 10, 3, "Dash Attack", "Dash-Attack_", w, coefficient=coefficient)
-            self._get_images("crouch", 5, 1, "Croush", "Croush_", w, coefficient=coefficient) 
+            self._get_images("crouch", 5, 2, "Croush", "Croush_", w, coefficient=coefficient) 
             self._get_images("Edge_climb", 3, 5, "Edge Climb", "Edge-Climb_", w, coefficient=coefficient) 
             self._get_images("Edge_grab", 4, 5, "Edge Grab", "Edge-Grab_", w, coefficient=coefficient) 
             self._get_images("Wall_slide", 3, 4, "WallSlide", "WallSlide_", w, coefficient=coefficient, reverse=True) 
             self._get_images("air attack", 5, 3, "Air Attack", "Air-Attack_", w, coefficient=coefficient) 
             self._get_images("attack1", 8, 2, "Attack", "Attack_", w, coefficient=coefficient) 
             self._get_images("attack2", 6, 2, "Attack2", "Attack_", w, coefficient=coefficient)
-            self._get_images("roll", 7, 4, "Roll", "Roll_", w, coefficient=coefficient)
+            self._get_images("roll", 7, 3, "Roll", "Roll_", w, coefficient=coefficient)
+
+        self._get_images("dash_attack_effect", 3, 0, "Dash-Attack-Effect", "Dash-Attack-Effect", weapon="effect", coefficient=2)
 
         # self._get_images("idle", 6, 5, "idle_right", "Warrior_Idle_")
         # self.origin_compteur_image_run=8
@@ -71,8 +75,8 @@ class Player(MOB):
         self.head = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.2)
         self.big_head = pygame.Rect(0,0,self.rect.width * 1, self.rect.height*0.2)
         self.body = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.7)
-        self.rect_attack = pygame.Rect(0,0,self.rect.width * 0.8, self.rect.height*1)
-        self.rect_air_attack = pygame.Rect(0,0,self.rect.width * 0.8, self.rect.height*0.5)
+        self.rect_attack = pygame.Rect(0,0,self.rect.width * 1, self.rect.height*1)
+        self.rect_air_attack = pygame.Rect(0,0,self.rect.width * 1, self.rect.height*1)
         self.rect_attack_update_pos="left_right"
         self.complement_collide_wall_right = self.body.w
         self.complement_collide_wall_left = self.body.w
@@ -128,17 +132,29 @@ class Player(MOB):
         self.compteur_slide_ground = self.compteur_slide_ground_min
         self.compteur_slide_ground_increment = 0.25
         # le mouvement doit durer exactement le temps necessaire à passer toutes les images de wall slide
-        self.compteur_slide_ground_max = self.compteur_slide_ground_min + self.compteur_slide_ground_increment*self.images["shotgun"]["ground_slide"]["compteur_image_max"]*self.images["shotgun"]["ground_slide"]["nbr_image"]
+        self.compteur_slide_ground_max = self.compteur_slide_ground_min + self.compteur_slide_ground_increment*self.images[self.weapon]["ground_slide"]["compteur_image_max"]*self.images[self.weapon]["ground_slide"]["nbr_image"]
         self.speed_slide_ground = 0
         self.slide_ground_direction_x = ""
         self.cooldown_slide_ground = 0.4
         self.timer_cooldown_slide_ground = 0
+
+        # roll
+        self.is_rolling = False
+        self.compteur_roll_min = -5
+        self.compteur_roll = self.compteur_roll_min
+        self.compteur_roll_increment = 0.25
+        # le mouvement doit durer exactement le temps necessaire à passer toutes les images de wall slide
+        self.compteur_roll_max = self.compteur_roll_min + self.compteur_roll_increment*self.images[self.weapon]["roll"]["compteur_image_max"]*self.images[self.weapon]["roll"]["nbr_image"]
+        self.speed_roll = 0
+        self.roll_direction_x = ""
+        self.cooldown_roll = 1
+        self.timer_roll = 0
         
         #attack
         self.attack_damage={}
         self.attack_damage["attack1"]=([6,7,8], 100)
         self.attack_damage["attack2"]=([2,3,4],100)
-        self.attack_damage["dash_attack"]=([6,7],100)
+        self.dash_attack_damage=100
         self.attack_damage["air attack"]=([3,4,5],100)
 
         self.has_air_attack = True
@@ -161,15 +177,19 @@ class Player(MOB):
         self.direction_pary=""
         self.timer_pary=0
         self.cooldown_pary=0.5
-        
-        #dash attack
+    
+
+        # dash attack
         self.is_dashing_attacking = False
         self.timer_dash_attack=0
-        self.cooldown_dash_attack=1
+        self.cooldown_dash_attack=2
         self.compteur_dash_attack_min=-5
         self.compteur_dash_attack=self.compteur_dash_attack_min
-        self.increment_dash_attack=0.1
-        self.compteur_dash_attack_max = self.compteur_dash_attack_min + self.increment_dash_attack*self.images["shotgun"]["dash_attack"]["compteur_image_max"]*self.images["shotgun"]["dash_attack"]["nbr_image"] - 8*self.increment_dash_attack
+        self.increment_dash_attack=0.082
+        self.dash_attack_image=None
+        self.Dash_attack_image=Dash_attack_image
+        self.dash_attack_image_added=False
+    
         
         # edge climb
         self.additionnal_compeur=0
@@ -187,7 +207,9 @@ class Player(MOB):
             "Edge_Idle":self.sliding,
             "Edge_grab":self.sliding,
             "ground_slide":self.slide_ground,
-            "Edge_climb":self.edge_climb
+            "Edge_climb":self.edge_climb,
+            "roll":self.roll,
+            "air_hurt":self.air_hurt
         }       
     
     def move_right(self, pieds_sur_sol = False): 
@@ -209,9 +231,9 @@ class Player(MOB):
                 self.position[0] += self.speed *0.8* (self.compteur_pary_max/self.compteur_pary)* self.zoom * self.speed_dt *abs(self.motion[0])
             
         if pieds_sur_sol:
-            if self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
+            if not self.is_rolling and self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
                 self.change_direction("run","right") 
-        if self.direction != "right":
+        if self.direction != "right" and not self.is_rolling:
             if self.action_image == "crouch":
                 # we dont want the crouch animation du re start from the biggining
                 self.change_direction(self.action_image,"right",compteur_image=self.compteur_image, current_image=self.current_image)
@@ -238,9 +260,9 @@ class Player(MOB):
                 self.compteur_pary+=self.increment_pary
                 self.position[0] -= self.speed *0.8* (self.compteur_pary_max/self.compteur_pary)* self.zoom * self.speed_dt *abs(self.motion[0])
         if pieds_sur_sol:
-            if self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
+            if not self.is_rolling and self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
                 self.change_direction("run","left") 
-        if self.direction != "left":
+        if self.direction != "left" and not self.is_rolling:
             if self.action_image == "crouch":
                 # we dont want the crouch animation du re start from the biggining
                 self.change_direction(self.action_image,"left",compteur_image=self.compteur_image, current_image=self.current_image)
@@ -258,10 +280,7 @@ class Player(MOB):
         self.change_direction("Edge_climb", self.direction)
 
     def edge_climb(self):
-        if self.current_image==1:
-            #self.compteur_image+=1
-            pass
-        elif self.current_image==2 and self.edge_climb_bool:
+        if self.current_image==2 and self.edge_climb_bool:
             self.position[1]-=31*self.zoom
             self.edge_climb_bool=False
         elif self.current_image==2:
@@ -296,22 +315,31 @@ class Player(MOB):
         self.change_direction("attack2", self.direction)
         self.direction_attack=self.direction
         
-    def debut_dash_attack(self):
+    def debut_dash_attack(self, direct):
         self.compteur_dash_attack=self.compteur_dash_attack_min
         self.is_dashing_attacking = True
-        self.change_direction("dash_attack", self.direction)
+        if direct=="":
+            self.change_direction("dash_attack", self.direction)
+        else:
+            self.change_direction("dash_attack", direct)
     
     def dash_attack(self):
-        if self.is_falling:
-            c=0.45
-        else:
-            c=0.3
-        self.compteur_dash_attack+=self.increment_dash_attack
-        if self.compteur_dash_attack<=self.compteur_dash_attack_max:
-            if self.direction=="right":
-                self.position[0] += self.compteur_dash_attack**2 *c* self.zoom * self.speed_dt
-            elif self.direction=="left":
-                self.position[0] -= self.compteur_dash_attack**2 *c* self.zoom * self.speed_dt
+        if self.is_falling:c=0.7
+        else:c=0.7
+
+        self.is_mouving_x=True
+
+        self.compteur_dash_attack+=self.increment_dash_attack* self.speed_dt
+
+        if self.direction=="right":
+            x, y=self.body.topright[0]-self.images["effect"]["dash_attack_effect"][self.direction]["1"].get_width(), self.position[1]+20*self.zoom
+            self.position[0] += self.compteur_dash_attack**2 *c* self.zoom * self.speed_dt
+        elif self.direction=="left":
+            x, y=self.body.topleft[0], self.position[1]+20*self.zoom
+            self.position[0] -= self.compteur_dash_attack**2 *c* self.zoom * self.speed_dt
+
+        if self.current_image==2 and self.compteur_image==1:
+            self.dash_attack_image=self.Dash_attack_image(x,y, self.images["effect"]["dash_attack_effect"][self.direction]["1"], self.images["effect"]["dash_attack_effect"][self.direction]["2"], self.images["effect"]["dash_attack_effect"][self.direction]["3"])
     
     def fin_dash_attack(self):
         self.is_dashing_attacking = False
@@ -321,17 +349,66 @@ class Player(MOB):
             self.change_direction("up_to_fall", self.direction)  
         else:
             self.change_direction("fall", self.direction)  
+        self.timer_dash_attack=time.time()
+        if self.current_image==self.images[self.weapon]["dash_attack"]["nbr_image"]:
+            self.speed=self.max_speed_run
+            self.is_mouving_x=True
+        if not self.is_falling:
+            self.change_direction("run",self.direction)
+        else:
+            self.change_direction("fall",self.direction)
+        # on soccupe de reset dash_attack_image dans game
   
     def debut_crouch(self):
         """very simple"""
         self.change_direction("crouch", self.direction)
   
+    def air_hurt(self):
+        if self.is_falling:self.chute()
+    
+    def debut_roll(self, direction_x):
+        self.is_rolling = True
+        self.change_direction('roll', direction_x)
+        self.roll_direction_x = direction_x
+    
+    def roll(self):
+        if self.is_falling:self.chute()
+        if self.compteur_roll < self.compteur_roll_max:
+            self.update_speed_slide_ground()
+            if self.roll_direction_x == "right":
+                self.move_right()
+                self.position[0] += (self.speed_roll + self.speed *0.5) * self.zoom * self.speed_dt 
+            elif self.roll_direction_x == "left":
+                self.move_left()
+                self.position[0] -= (self.speed_roll + self.speed *0.5) * self.zoom * self.speed_dt 
+            self.compteur_roll += self.compteur_roll_increment* self.speed_dt
+        else:
+            self.fin_roll()
+    
+    def update_speed_roll(self):
+        self.speed_roll = (self.compteur_roll**2) * 1.5
+        # the base speed is also increasing
+        if self.speed < self.max_speed_run:
+            self.speed += (self.speed*0.003 + self.origin_speed_run*0.010)
+    
+    def fin_roll(self):
+        self.is_rolling = False
+        self.roll_direction_x = ""
+        self.compteur_roll = self.compteur_roll_min
+        # the player was running before the slide so he should run after
+        self.change_direction("run", self.direction)
+        self.timer_roll = time.time()
+
+        if self.is_falling:
+                if "up_to_fall" in self.actions :self.change_direction("up_to_fall", self.direction)
+                else: self.change_direction("fall", self.direction)
+
     def debut_slide_ground(self, slide_ground_direction_x):
         #penser à bien utiliser .copy() parce que sinon la valeur est la meme que self.position tous le temps
         self.is_sliding_ground = True
         self.change_direction('ground_slide', slide_ground_direction_x)
         self.slide_ground_direction_x = slide_ground_direction_x
-    
+
     def slide_ground(self):
         if self.compteur_slide_ground < self.compteur_slide_ground_max:
             self.update_speed_slide_ground()
@@ -344,7 +421,7 @@ class Player(MOB):
             self.fin_slide_ground()
     
     def update_speed_slide_ground(self):
-        self.speed_slide_ground = (self.compteur_slide_ground**2) * 0.5
+        self.speed_slide_ground = (self.compteur_slide_ground**2) * 0.55
         # the base speed is also increasing
         if self.speed < self.max_speed_run:
             self.speed += (self.speed*0.003 + self.origin_speed_run*0.010)
@@ -513,6 +590,7 @@ class Player(MOB):
         self.coord_debut_jump = [-999,-999]
         self.direction_jump_edge = ''
         self.compteur_jump_edge_max = self.original_compteur_jump_edge_max
+        self.timer_cooldown_next_jump=time.time()
     
     def update_speed_jump_edge(self):
         self.speed_jump_edge = (self.compteur_jump_edge**2) * 0.4 *self.zoom * self.speed_dt

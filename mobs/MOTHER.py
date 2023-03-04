@@ -27,6 +27,7 @@ class MOB(pygame.sprite.Sprite):
                 "shotgun":{},
                 "gun":{},
                 "crossbow":{},
+                "effect":{}
             }
         elif "crab" in id:
             self.images = {
@@ -71,9 +72,10 @@ class MOB(pygame.sprite.Sprite):
         self.compteur_jump = self.compteur_jump_min
         self.compteur_jump_max = 0
         self.speed_jump = 0
-        self.cooldown_able_to_jump = 0.1
+        self.cooldown_able_to_jump = 0
         self.timer_cooldown_able_to_jump = 0
-        self.cooldown_next_jump = 0.2
+        # cooldown pour jump edge, 2x plus long pour saut normal
+        self.cooldown_next_jump = 0.15
         self.timer_cooldown_next_jump = 0
         self.coord_debut_jump = [-999,-999]
         self.increment_jump = 0.25      
@@ -90,6 +92,7 @@ class MOB(pygame.sprite.Sprite):
         self.is_parying=False
         self.has_air_attack = False
         self.can_attack_while_jump=False
+        self.is_rolling=False
         self.rect_attack_update_pos=""
         
         self.max_health=100
@@ -152,12 +155,20 @@ class MOB(pygame.sprite.Sprite):
             self.is_parying=False
         if self.is_grabing_edge:
             self.fin_grab_edge()
+        if self.is_rolling:
+            self.fin_roll()
+        if self.is_dashing_attacking:
+            self.fin_dash_attack()
         if chute:
             self.fin_chute()
         
     def take_damage(self):
-        self.reset_actions()
-        self.change_direction("hurt", self.direction)
+        if self.is_falling and "air_hurt" in self.actions: 
+            self.change_direction("air_hurt", self.direction)
+            self.reset_actions(chute=False)
+        else:
+            self.reset_actions()
+            self.change_direction("hurt", self.direction)
   
     def update_tick(self, dt):
         """i created a multiplicator for the mouvements that based on 60 fps (clock.tick() = 17) because the original
@@ -258,7 +269,7 @@ class MOB(pygame.sprite.Sprite):
         if not attack and not self.is_parying and not self.is_dashing_attacking:
             if "up_to_fall" in self.actions:  self.change_direction('up_to_fall', self.direction)
             else: self.change_direction('fall', self.direction)
-        else:
+        elif not self.is_rolling:
             if "up_to_fall" in self.actions: self.action="up_to_fall"
             else: self.action="fall"
         
@@ -389,6 +400,11 @@ class MOB(pygame.sprite.Sprite):
                 elif self.action_image=="Edge_climb":
                     self.change_direction("idle", dir)
                     self.position[1]+=2*self.zoom
+                elif self.action_image=="jump" and not self.is_dashing:
+                    self.fin_saut()
+                    self.change_direction("fall", dir)
+                elif self.action_image=="dying":
+                    pass
                 else:
                     temp=False
                     self.current_image = 1
@@ -421,6 +437,13 @@ class MOB(pygame.sprite.Sprite):
         transColor = self.image.get_at((0,0))
         self.image.set_colorkey(transColor)
         
+    def update_rect(self):
+        self.rect.topleft = self.position
+        self.body.midbottom = self.rect.midbottom
+        self.feet.midbottom = (self.rect.midbottom[0], self.rect.midbottom[1]-self.increment_foot)
+        self.head.midtop = self.body.midtop
+        if "Edge_climb" in self.actions : self.big_head.midtop = self.body.midtop
+
     def update(self):
         """methode appele a chaque tick"""
         if self.speed > self.max_speed_run:
@@ -432,19 +455,16 @@ class MOB(pygame.sprite.Sprite):
         self.update_animation()
         
         # update des coordonees des rect
-        self.rect.topleft = self.position
-        self.body.midbottom = self.rect.midbottom
-        self.feet.midbottom = (self.rect.midbottom[0], self.rect.midbottom[1]-self.increment_foot)
-        self.head.midtop = self.body.midtop
-        if "Edge_climb" in self.actions : self.big_head.midtop = self.body.midtop
+        self.update_rect()
         if self.is_attacking and self.rect_attack_update_pos=="mid":
             self.rect_attack.center = self.rect.center
         elif self.is_attacking and self.rect_attack_update_pos=="left_right":
             if self.direction_attack == "right":
-                self.rect_attack.topleft=self.rect.midtop
-                self.rect_air_attack.topleft=self.rect.midtop
+                self.rect_attack.topleft=self.body.topleft
+                self.rect_air_attack.topleft=self.body.topleft
             else:
-                self.rect_air_attack.topright=self.rect.midtop
+                self.rect_attack.topright=self.body.topright
+                self.rect_air_attack.topright=self.body.topright
         
         # la vitesse de course du joueur ne ralentit pas tant qu'il coure ou chute
         if self.action_image == "run" or self.action_image == "fall" or self.action_image == "up_to_fall" or self.action_image == "jump" or self.action == "jump_edge" or self.is_attacking:
@@ -457,7 +477,7 @@ class MOB(pygame.sprite.Sprite):
         """sometimes actions and actions image are differents :
         when the player dash self.action = 'dash' and self.action_image = 'jump'
         because its has the same image, so we update it here"""
-        if self.action_image in ["Edge_climb", "run", "idle", "fall","up_to_fall","Edge_Idle","Edge_grab","Wall_slide","ground_slide","crouch", "dying"]:
+        if self.action_image in ["roll","Edge_climb", "run", "idle", "fall","up_to_fall","Edge_Idle","Edge_grab","Wall_slide","ground_slide","crouch", "dying", "air_hurt"]:
             self.action = self.action_image
         elif self.action_image == "jump":
             if self.is_dashing:

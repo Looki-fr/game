@@ -30,7 +30,7 @@ class Crab(MOB):
         self._get_images("up_to_attack", 3, 3, "06-Anticipation", "Anticipation 0", reverse=True, coefficient=self.coefficient) 
         self._get_images("attack1", 4, 3, "07-Attack", "Attack 0", reverse=True, coefficient=self.coefficient) 
         self._get_images("hurt", 4, 4, "08-Hit", "Hit 0", reverse=True, coefficient=self.coefficient) 
-        self._get_images("dying", 4, 4, "09-Dead Hit", "Dead Hit 0", reverse=True, coefficient=self.coefficient) 
+        self._get_images("dying", 4, 5, "09-Dead Hit", "Dead Hit 0", reverse=True, coefficient=self.coefficient) 
         
         self.image = self.images[self.weapon]["idle"]["right"]["1"]
         
