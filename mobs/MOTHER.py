@@ -269,7 +269,7 @@ class MOB(pygame.sprite.Sprite):
         if not attack and not self.is_parying and not self.is_dashing_attacking:
             if "up_to_fall" in self.actions:  self.change_direction('up_to_fall', self.direction)
             else: self.change_direction('fall', self.direction)
-        elif not self.is_rolling:
+        elif not self.is_rolling and not self.is_dashing_attacking and not self.is_sliding_ground:
             if "up_to_fall" in self.actions: self.action="up_to_fall"
             else: self.action="fall"
         
@@ -281,9 +281,7 @@ class MOB(pygame.sprite.Sprite):
     def fin_chute(self, jump_or_dash = False):
         self.is_falling = False
         self.speed_gravity = self.original_speed_gravity
-        if self.is_dashing_attacking:
-            self.action="idle"
-        elif not jump_or_dash and not self.is_parying:
+        if not self.is_dashing_attacking and not self.is_sliding_ground and not self.is_rolling and not jump_or_dash and not self.is_parying:
             self.debut_crouch()
     
     def update_speed_gravity(self):
@@ -477,7 +475,7 @@ class MOB(pygame.sprite.Sprite):
         """sometimes actions and actions image are differents :
         when the player dash self.action = 'dash' and self.action_image = 'jump'
         because its has the same image, so we update it here"""
-        if self.action_image in ["roll","Edge_climb", "run", "idle", "fall","up_to_fall","Edge_Idle","Edge_grab","Wall_slide","ground_slide","crouch", "dying", "air_hurt"]:
+        if self.action_image in ["roll","Edge_climb", "run", "idle", "fall","up_to_fall","Edge_Idle","Edge_grab","Wall_slide","ground_slide","crouch", "dying", "air_hurt", "dash_attack"]:
             self.action = self.action_image
         elif self.action_image == "jump":
             if self.is_dashing:

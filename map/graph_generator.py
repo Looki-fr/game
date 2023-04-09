@@ -1,5 +1,8 @@
 import random
-
+room_to_remove=3
+width=5
+height=5
+#random.seed(123)
 def printTab(mat):
     for line in mat:
         for val in line:
@@ -62,7 +65,7 @@ def remove_path(co, c, mat, add=False):
         mat[c[0]][c[1]][3]=add
 
 def get_matrix():
-    mat=[[[True, True, True, True] for _ in range(5)] for _ in range(3)]
+    mat=[[[True, True, True, True] for _ in range(width)] for _ in range(height)]
     # BUG faire en sorte que X pas tt une ligne / colonne
 
     for i in range(len(mat)):
@@ -77,7 +80,7 @@ def get_matrix():
 
     c=0
     # remove x nodes randomly
-    while c<3:
+    while c<room_to_remove:
         i, y = random.randint(0,len(mat)-1), random.randint(0,len(mat[0])-1)
         
         if mat[i][y]:
@@ -137,27 +140,9 @@ def get_matrix():
                     
             path.append(node)
             path.append(n)
-    # for line in mat: print(line)
-    # printTab(mat)
     return mat
 
-get_matrix()
 
-# vu=[path]
-# while len(path)>0:
-#     printTab(mat)
-#     c=path.pop()
-#     tab=get_all_neighboors(c[0], c[1], mat)
-#     while len(tab)>1:
-#         n = random.choice(tab)
-        
-#         tab.remove(n)
-#         remove_path(c, n, mat)
-    
-#     if tab[0] not in vu:
-#         path += [c,tab[0]]
-#         vu.append(tab[0])
-        
 
 
 

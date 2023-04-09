@@ -43,25 +43,6 @@ class Player(MOB):
             self._get_images("roll", 7, 3, "Roll", "Roll_", w, coefficient=coefficient)
 
         self._get_images("dash_attack_effect", 3, 0, "Dash-Attack-Effect", "Dash-Attack-Effect", weapon="effect", coefficient=2)
-
-        # self._get_images("idle", 6, 5, "idle_right", "Warrior_Idle_")
-        # self.origin_compteur_image_run=8
-        # self._get_images('run', 8, self.origin_compteur_image_run, "Run_right","Warrior_Run_")
-        # self.origin_compteur_image_fall = 6
-        # self._get_images("fall", 3, self.origin_compteur_image_fall, "Fall_right", "Warrior_Fall_")
-        # self._get_images("up_to_fall", 2, 4, "UptoFall_right", "Warrior_UptoFall_")    
-        # self._get_images("jump", 3, 4, "Jump_right", "Warrior_Jump_")  
-        # self._get_images("Edge_Idle", 6, 4, "Edge-Idle_right", "Warrior_Edge-Idle_")  
-        # self._get_images("Edge_grab", 5, 4, "EdgeGrab_right", "Warrior_Edge-Grab_")  
-        # self._get_images("Wall_slide", 3, 4, "WallSlide_right", "Warrior_WallSlide_")  
-        # self._get_images("ground_slide", 5, 3, "Slide_right", "Warrior-SlideNoEffect_") 
-        # self._get_images("crouch", 5, 1, "Crouch_right", "Warrior_Crouch_") 
-        # self._get_images("attack1", 8, 2, "Attack1", "Warrior_Attack_") 
-        # self._get_images("attack2", 4, 2, "Attack2", "Warrior_Attack_") 
-        # self._get_images("dash_attack", 12, 3, "Dash_Attack", "Warrior_Dash-Attack_") 
-        # self._get_images("hurt", 4, 4, "HurtnoEffect", "Warrior_hurt_") 
-        # self._get_images("dying", 11, 4, "Death-Effect", "Warrior_Death_") 
-        # self._get_images("pary", 4, 6, "pary", "pary_")
         
         self.image = self.images[self.weapon]["idle"]["right"]["1"]
         
@@ -209,7 +190,8 @@ class Player(MOB):
             "ground_slide":self.slide_ground,
             "Edge_climb":self.edge_climb,
             "roll":self.roll,
-            "air_hurt":self.air_hurt
+            "air_hurt":self.air_hurt,
+            "dash_attack":self.dash_attack
         }       
     
     def move_right(self, pieds_sur_sol = False): 
@@ -324,8 +306,8 @@ class Player(MOB):
             self.change_direction("dash_attack", direct)
     
     def dash_attack(self):
-        if self.is_falling:c=0.7
-        else:c=0.7
+        if self.is_falling:self.chute()
+        c=0.7
 
         self.is_mouving_x=True
 
@@ -341,6 +323,15 @@ class Player(MOB):
         if self.current_image==2 and self.compteur_image==1:
             self.dash_attack_image=self.Dash_attack_image(x,y, self.images["effect"]["dash_attack_effect"][self.direction]["1"], self.images["effect"]["dash_attack_effect"][self.direction]["2"], self.images["effect"]["dash_attack_effect"][self.direction]["3"])
     
+    def distance_dash_attack(self):
+        if self.is_falling:c=0.7
+        else:c=0.7
+        if self.direction=="right":
+            return self.compteur_dash_attack**2 *c* self.zoom * self.speed_dt
+        elif self.direction=="left":
+            return self.compteur_dash_attack**2 *c* self.zoom * self.speed_dt
+        return 0
+
     def fin_dash_attack(self):
         self.is_dashing_attacking = False
         if not self.is_falling:
@@ -410,6 +401,7 @@ class Player(MOB):
         self.slide_ground_direction_x = slide_ground_direction_x
 
     def slide_ground(self):
+        if self.is_falling:self.chute()
         if self.compteur_slide_ground < self.compteur_slide_ground_max:
             self.update_speed_slide_ground()
             if self.slide_ground_direction_x == "right":
@@ -430,8 +422,10 @@ class Player(MOB):
         self.is_sliding_ground = False
         self.slide_ground_direction_x = ""
         self.compteur_slide_ground = self.compteur_slide_ground_min
-        # the player was running before the slide so he should run after
-        self.change_direction("run", self.direction)
+        # the player was running before the slide so he should run after 
+        if not self.is_falling:self.change_direction("run", self.direction)
+        else: self.change_direction("fall", self.direction)
+            
         self.timer_cooldown_slide_ground = time.time()
         
     def debut_grab_edge(self, head_only=False):
@@ -469,13 +463,16 @@ class Player(MOB):
                 self.position[0] += 15*self.zoom
         self.speed_gravity = self.original_speed_gravity 
 
-    def debut_dash(self, dash_direction_x, dash_direction_y):
+    def debut_dash(self, dash_direction_x, dash_direction_y, skip_immobile=False):
         #penser à bien utiliser .copy() parce que sinon la valeur est la meme que self.position tous le temps
         self.coord_debut_dash = self.position.copy()
         self.is_dashing = True
-        self.change_direction('jump', self.direction)
+        # used when dashing from a wallslide
+        if skip_immobile and dash_direction_x!="": self.change_direction('jump', dash_direction_x)
+        else :self.change_direction('jump', self.direction)
         self.dash_direction_x = dash_direction_x
         self.dash_direction_y = dash_direction_y
+        self.compteur_dash_immobile = self.compteur_dash_immobile_max
     
     def dash(self):
         #enregistrement des images transparentes lors su dash
@@ -504,7 +501,7 @@ class Player(MOB):
                 speed_dash = self.speed_dash
                 if self.dash_direction_y != "" and self.dash_direction_x != "":
                     speed_dash *= 1
-                elif self.dash_direction_x == 'up' or self.dash_direction_x == "right" or self.dash_direction_x == "left":
+                elif (self.dash_direction_y == 'up' and self.dash_direction_x=="") or (self.dash_direction_x == "right" or self.dash_direction_x == "left") and self.dash_direction_y=="":
                     speed_dash *= 1.3
                 if self.dash_direction_x == "right":
                     self.position[0] += speed_dash
@@ -537,8 +534,20 @@ class Player(MOB):
         self.image3_dash = False
         self.image4_dash = False
 
+    def distance_dash(self):
+        speed_dash=(self.compteur_dash**2) * 0.3 * self.zoom * self.speed_dt
+        if self.dash_direction_y != "" and self.dash_direction_x != "":
+                    speed_dash *= 1
+        elif (self.dash_direction_y == 'up' and self.dash_direction_x=="") or (self.dash_direction_x == "right" or self.dash_direction_x == "left") and self.dash_direction_y=="":
+            speed_dash *= 1.3
+        if self.dash_direction_x == "right":
+            return speed_dash
+        elif self.dash_direction_x == "left":
+            return speed_dash
+        return 0
+
     def update_speed_dash(self):
-        self.speed_dash = (self.compteur_dash**2) * 0.3 * self.zoom * self.speed_dt
+        self.speed_dash = (self.compteur_dash**2) * 0.5 * self.zoom * self.speed_dt
 
     def debut_saut_edge(self, pieds = False, direction_x = ""):
         self.jump_edge_pieds = pieds

@@ -1,4 +1,3 @@
-import pygame
 import time
 
 class Collision:
@@ -7,7 +6,7 @@ class Collision:
         self.matrix_map=matrix
         self.dico_map_wave={}
         self.current_map_is_wave=False
-        
+
     def _get_coords_maps(self, c, d):
         liste=[]    
         if self.matrix_map[d][c]!=None: liste.append((d,c))
@@ -70,9 +69,10 @@ class Collision:
                                 mob.a_sauter = False
                                 mob.a_dash = False
                             bool= True
-
+                
                 for ground in dico["ground"]:
                     if mob.feet.collidelist(ground) > -1:
+                        #print(ground[0].y)
                         if not mob.is_jumping_edge and not mob.is_jumping:
                             if not gd:
                                 gd=ground
@@ -82,20 +82,25 @@ class Collision:
                             mob.a_sauter = False
                             mob.a_dash = False
                         bool= True
-            if bool : 
-                if not mob.is_jumping_edge and not mob.is_jumping and mob.action != "Edge_climb": mob.position[1] = gd[0].y - mob.image.get_height() + 1 + mob.increment_foot*2
-                return True
             for plateforme in dico["platform"]:
                 # and not sprite.is_sliding
                 if not passage_a_travers:
                     if mob.feet.collidelist(plateforme) > -1:
                         if (mob.position[1] + mob.image.get_height() - plateforme[0].y < 20) or "crab" in mob.id:
                             if not mob.is_jumping_edge and not mob.is_jumping:
-                                if mob.action != "Edge_climb": mob.position[1] = plateforme[0].y - mob.image.get_height() + 1 + mob.increment_foot*2
+                                #if mob.action != "Edge_climb": mob.position[1] = plateforme[0].y - mob.image.get_height() + 1 + mob.increment_foot*2
+                                if not gd:
+                                    gd=ground
+                                elif gd[0].y>ground[0].y:
+                                    gd=ground
                                 # comme le joueur est sur une plateforme, il peut de nouveau dash / sauter
                                 mob.a_sauter = False
                                 mob.a_dash = False
-                            return True
+                            bool=True
+        if bool : 
+            if not mob.is_jumping_edge and not mob.is_jumping and mob.action != "Edge_climb": 
+                mob.position[1] = gd[0].y - mob.image.get_height() + 1 + mob.increment_foot*2
+            return True
         return False
 
     def joueur_se_cogne(self, mob):
@@ -106,15 +111,18 @@ class Collision:
                     return True
         return False
         
-    def stop_if_collide(self, direction,mob, head = False, move_back=True):
+    def stop_if_collide(self, direction,mob, head = False, move_back=True, dash=False):
         """fait en sorte que le joueur avance plus lorsque qu'il vance dans un mur"""
         if head:rect = mob.head
         else:rect = mob.body
         for dico in self._get_dico(mob.coord_map):
             for wall in dico["wall"]:
                 if rect.collidelist(wall) > -1:
+                    
                     # si le joueur va a droite en etant a gauche du mur
                     # limage est plus grande que la partie visible du joueur, d'où mob.image.get_width()/2
+                    if dash:
+                        return True
                     if direction == 'right' and wall[0].x > mob.position[0] + mob.complement_collide_wall_right:
                         if not mob.is_dashing and not mob.is_dashing_attacking and move_back: 
                             mob.move_back()   
@@ -161,13 +169,15 @@ class Collision:
         return False
 
     def check_head_collide_ground(self, mob, changing_y=False):
+        pos=-999999
         for dico in self._get_dico(mob.coord_map):
             for ground in dico["ground"]:
                 if mob.big_head.collidelist(ground) > -1:
                     if changing_y==True:
-                        mob.position[1]=ground[0].y
-                    return True
-        return False
+                        if pos == -999999 or ground[0].y < pos : pos = ground[0].y
+                    if not changing_y : return True
+        if changing_y and pos != -999999 :mob.position[1]=pos
+        if not changing_y : return False
     
     def check_tombe_ou_grab(self, mob):
         """stop le grab edge si on est plus en collision avce un mur"""

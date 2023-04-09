@@ -43,6 +43,7 @@ def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision):
             pieds=collision.check_pieds_collide_wall(mob)
             cogne = collision.joueur_se_cogne(mob)
             if "Edge_climb" in mob.actions and ((mob.direction=="right" and right) or (mob.direction=="left" and left) or (mob.direction=="right" and not left) or (mob.direction=="left" and not right)) and not pressed_up_bool[0] and not cogne and collision.check_head_collide_ground(mob) and mob.is_grabing_edge:
+                mob.position[1]-=20
                 collision.check_head_collide_ground(mob, True)
                 mob.fin_grab_edge()
                 mob.debut_edge_climb()
@@ -78,18 +79,27 @@ def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision):
 def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, zoom):
     for mob in liste_mob:
         if 'dash' in mob.actions:
-            if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_dashing and not mob.a_dash and not mob.is_sliding_ground and not mob.is_grabing_edge and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking and time.time() - mob.timer_cooldown_slide_ground > mob.cooldown_slide_ground :           
+            if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_dashing and not mob.a_dash and not mob.is_sliding_ground and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking and time.time() - mob.timer_cooldown_slide_ground > mob.cooldown_slide_ground :           
                 if not joueur_sur_sol(mob):
-                    if mob.is_parying:
-                        mob.is_parying=False
-                    dir_y = ""
-                    dir_x = ""
-                    if down:dir_y = "down"
-                    if up:dir_y = "up"
-                    if right:dir_x = "right"
-                    if left:dir_x = "left"
-                    if dir_y == "" and dir_x == "":dir_y = "up"
-                    mob.debut_dash(dir_x, dir_y)         
+                    if not mob.is_grabing_edge or ( mob.direction_wall == "left" and right ) or ( mob.direction_wall == "right" and left ):
+                        if mob.is_parying:
+                            mob.is_parying=False
+                        dir_y = ""
+                        dir_x = ""
+                        bool_ = False
+                        if mob.is_grabing_edge:
+                            bool_ = True
+                            if mob.direction_wall == "left": dir_x="right"
+                            else:dir_x="left"
+                            mob.fin_grab_edge()
+                        else:
+                            if right:dir_x = "right"
+                            if left:dir_x = "left"
+                        if down:dir_y = "down"
+                        if up:dir_y = "up"
+                        
+                        if dir_y == "" and dir_x == "":dir_y = "up"
+                        mob.debut_dash(dir_x, dir_y, bool_)         
                 elif down and time.time() - mob.timer_cooldown_slide_ground > mob.cooldown_slide_ground : 
                     if mob.is_parying:
                         mob.is_parying=False
