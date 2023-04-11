@@ -2,7 +2,8 @@ import random
 room_to_remove=3
 width=5
 height=5
-#random.seed(123)
+from seed import seed
+random.seed(seed)
 def printTab(mat):
     for line in mat:
         for val in line:

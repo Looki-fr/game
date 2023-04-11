@@ -3,7 +3,8 @@ from map.graph import Graphe
 import random
 import pygame
 from map.graph_generator import get_matrix, printTab
-#random.seed(123)
+from seed import seed
+random.seed(seed)
 class RenderMap:
     def __init__(self, screen_width, screen_height, directory):
         """cf la documentation de pytmx"""
@@ -213,18 +214,20 @@ class RenderMap:
         if node[0] and node[2] : 
             mat[0][0]=1
         if node[0] and node[3] :
-            if z>0 and self.graphe[i][z-1][3] and not self.graphe[i+1][z][0]:
+            if i<len(mat)-1 and z>0 and self.graphe[i][z-1][3] and not self.graphe[i+1][z][0] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]:
                 mat[-1][1]=1 
             mat[-1][0]=1
         if node[1] and node[2] : 
             mat[0][-1]=1
         if node[1] and node[3] : 
             mat[-1][-1]=1
-            if z<len(self.graphe)-1 and self.graphe[i][z+1][3] and not self.graphe[i+1][z][1]:
+            if i<len(mat)-1 and z<len(self.graphe)-1 and self.graphe[i][z+1][3] and not self.graphe[i+1][z][1] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3]:
                 mat[-1][-2]=1
         # ground, generation is from left to right
         if not node[3]:
             self._generate_relief_ground(0, (self.room_width//self.tile_width)-1, node, mat)
+
+        
 
         # hills generation from left to right
         if i>0 and z<len(self.graphe[i])-1 and not node[3] and node[2] and not node[1] and self.graphe[i-1][z][1] and self.graphe[i-1][z+1][3] and not self.graphe[i][z+1][3]:
@@ -232,7 +235,6 @@ class RenderMap:
             self.gen_current_height, self.gen_current_width = 0, 0
             self._generate_relief_ground((self.room_width//self.tile_width)-2-self.gen_width_hill*self.gen_width_width_hill, (self.room_width//self.tile_width)-2, node, mat, hill=1)
             self.gen_current_height, self.gen_current_width = old_height, old_width
-            
 
         if i>0 and z>0 and not node[3] and node[2] and not node[0] and self.graphe[i-1][z][0] and self.graphe[i-1][z-1][3] and not self.graphe[i][z-1][3]:
             old_height, old_width=self.gen_current_height, self.gen_current_width
@@ -242,11 +244,13 @@ class RenderMap:
                 mat[tmp][1]=1
             self.gen_current_height, self.gen_current_width = old_height, old_width    
 
+        
+
         # continuing relief when down and (right or left)
         if node[3] and node[0]:
             for y in range(self.room_height//self.tile_width-self.gen_current_height, self.room_height//self.tile_width-1):
                 mat[y][0]=1
-                if z>0 and self.graphe[i][z-1][3] and not self.graphe[i+1][z][0]:
+                if i<len(mat)-1 and z>0 and self.graphe[i][z-1][3] and not self.graphe[i+1][z][0] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]:
                     mat[y][1]=1
 
         if node[3] and node[1]:
@@ -254,7 +258,7 @@ class RenderMap:
             self.gen_current_width-=1
             for y in range(self.room_height//self.tile_width-self.gen_current_height, self.room_height//self.tile_width-1):
                 mat[y][-1]=1
-                if z<len(self.graphe)-1 and self.graphe[i][z+1][3] and not self.graphe[i+1][z][1]:
+                if i<len(mat)-1 and z<len(self.graphe)-1 and self.graphe[i][z+1][3] and not self.graphe[i+1][z][1] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3]:
                     mat[y][-2]=1
 
         g=0
@@ -280,7 +284,6 @@ class RenderMap:
 
                     # ground
                     if tmp == -1 and ((i_>0 and not mat[i_-1][y_]) or (i_==0 and i>0 and self.all_mat[i-1][z] and not self.all_mat[i-1][z][-1][y_])) :
-            
                         tmp=y_
                         
                     # not elif because if lenght is 1
@@ -293,7 +296,6 @@ class RenderMap:
 
                         if tmp==y_ or y_<len(mat)-2 or z==len(self.graphe[0])-1 or len(self.graphe[i][z+1])==0 or not self.graphe[i][z+1][3] or self.graphe[i][z][1] or len(mat)-1-i_ > self.gen_max_height:inc2=0
                         else: inc2=1
-
                         self._spawn_big_ground(i, z, dico, i_, y_+1-inc2, tmp+inc)
                         tmp=-1
 
