@@ -6,5 +6,7 @@
 # hill
 # seed=123
 
-import time
-seed=time.time()
+seed=5469888
+
+# import time
+# seed=time.time()

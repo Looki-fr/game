@@ -119,19 +119,27 @@ class RenderMap:
         tab.append(0)
         return tab
 
-    def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=False):
+    def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0):
         i_=start
 
         if hill : 
-            print("hill")
+            print("hill", hill)
             if hill==1:tab=self._get_hill_heights(self.gen_current_height)
-            if hill==2:
+            elif hill==2:
                 starting_height=0
                 for i,line in enumerate(mat):
                     if line[1]==1:
                         starting_height=len(mat)-1-i
                         break
                 tab=self._get_hill_heights(starting_height)
+            elif hill==3 or hill == 4:
+                starting_height=0
+                for i,line in enumerate(mat):
+                    if line[1]==1:
+                        starting_height=i
+                        break
+                tab=self._get_hill_heights(starting_height)
+                print(tab)
             i____=0
 
         while i_ <= end:
@@ -167,8 +175,8 @@ class RenderMap:
 
                 else:
                     if -start+i_-i____>=len(tab):break
-                    if hill==1:self.gen_current_height+=tab[-start+i_-i____]
-                    elif hill==2:self.gen_current_height-=tab[-start+i_-i____]
+                    if hill==1 or hill==3:self.gen_current_height+=tab[-start+i_-i____]
+                    elif hill==2 or hill == 4:self.gen_current_height-=tab[-start+i_-i____]
                     self.gen_current_width=0
                     width_=self.gen_width_width_hill
                     i____+=self.gen_width_width_hill-1
@@ -176,15 +184,18 @@ class RenderMap:
                 if width_>self.gen_min_width or node[1] or hill!=0:
                     # also generating the tiles below the current height
                     for i__ in range(i_, i_+width_):
-                        for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height), self.room_height//self.tile_width-1):
-                            mat[y][i__]=1
+                        if hill != 3 and hill != 4:
+                            for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height), self.room_height//self.tile_width-1):
+                                mat[y][i__]=1
+                        else:
+                            for y in range(0, self.gen_current_height+additionnal_height):
+                                mat[y][i__]=1
                 else:
                     if c==1: self.gen_current_height+=1
                     else:self.gen_current_height-=1
                     for i__ in range(i_, i_+width_):
                         for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height), self.room_height//self.tile_width-1):
                             mat[y][i__]=1
-
                 i_+=width_
                 
             else:
@@ -244,8 +255,6 @@ class RenderMap:
                 mat[tmp][1]=1
             self.gen_current_height, self.gen_current_width = old_height, old_width    
 
-        
-
         # continuing relief when down and (right or left)
         if node[3] and node[0]:
             for y in range(self.room_height//self.tile_width-self.gen_current_height, self.room_height//self.tile_width-1):
@@ -260,6 +269,21 @@ class RenderMap:
                 mat[y][-1]=1
                 if i<len(mat)-1 and z<len(self.graphe)-1 and self.graphe[i][z+1][3] and not self.graphe[i+1][z][1] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3]:
                     mat[y][-2]=1
+
+        # hills on ceilling generation from left to right
+        if i<len(self.graphe) and z<len(self.graphe[i])-1 and not node[2] and node[3] and not node[1] and self.graphe[i+1][z][1] and self.graphe[i+1][z+1][2] and not self.graphe[i][z+1][2]:
+            old_height, old_width=self.gen_current_height, self.gen_current_width
+            self.gen_current_height, self.gen_current_width = 0, 0
+            self._generate_relief_ground((self.room_width//self.tile_width)-2-self.gen_width_hill*self.gen_width_width_hill, (self.room_width//self.tile_width)-2, node, mat, hill=3)
+            self.gen_current_height, self.gen_current_width = old_height, old_width
+
+        if i<len(self.graphe) and z>0 and not node[2] and node[3] and not node[0] and self.graphe[i+1][z][0] and self.graphe[i+1][z-1][2] and not self.graphe[i][z-1][2]:
+            old_height, old_width=self.gen_current_height, self.gen_current_width
+            self.gen_current_height, self.gen_current_width = len(mat)-1, 0
+            self._generate_relief_ground(2, self.gen_width_hill*self.gen_width_width_hill+2, node, mat, hill=4)
+            for tmp in range(len(mat)-1):
+                mat[tmp][1]=1
+            self.gen_current_height, self.gen_current_width = old_height, old_width 
 
         g=0
         d=len(mat[0])
