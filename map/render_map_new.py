@@ -27,13 +27,15 @@ class RenderMap:
         self._init_all_pics()
 
         self.gen_max_height=4
-        self.gen_min_width=7
-        self.gen_max_width=15
+        self.gen_min_width=6
+        self.gen_max_width=10
         self.gen_min_reduced_width=12
         self.gen_width_hill=3
         self.gen_width_width_hill=1
         self.gen_max_hill_height=(self.room_height//self.tile_width)//self.gen_width_hill + 5
         self.gen_min_hill_height=2
+        self.gen_falaise_max_width=self.room_width/self.tile_width // 2
+        self.gen_falaise_min_width=self.room_width/self.tile_width // 3
         self.all_mat=[[None for _ in range(len(self.graphe[0]))] for _ in range(len(self.graphe))]
 
         # value : dictionnary : keys : id of the tile value : image of the tile
@@ -123,7 +125,6 @@ class RenderMap:
         i_=start
 
         if hill : 
-            print("hill", hill)
             if hill==1:tab=self._get_hill_heights(self.gen_current_height)
             elif hill==2:
                 starting_height=0
@@ -139,7 +140,6 @@ class RenderMap:
                         starting_height=i
                         break
                 tab=self._get_hill_heights(starting_height)
-                print(tab)
             i____=0
 
         while i_ <= end:
@@ -185,7 +185,7 @@ class RenderMap:
                     # also generating the tiles below the current height
                     for i__ in range(i_, i_+width_):
                         if hill != 3 and hill != 4:
-                            for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height), self.room_height//self.tile_width-1):
+                            for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height)-1, self.room_height//self.tile_width):
                                 mat[y][i__]=1
                         else:
                             for y in range(0, self.gen_current_height+additionnal_height):
@@ -194,18 +194,24 @@ class RenderMap:
                     if c==1: self.gen_current_height+=1
                     else:self.gen_current_height-=1
                     for i__ in range(i_, i_+width_):
-                        for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height), self.room_height//self.tile_width-1):
+                        for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height)-1, self.room_height//self.tile_width):
                             mat[y][i__]=1
                 i_+=width_
                 
             else:
+                if i_+self.gen_current_width>=self.room_width//self.tile_width:
+                    width_=self.room_width//self.tile_width-i_
+                    self.gen_current_width=self.gen_current_width-width_
+                else:
+                    width_=self.gen_current_width
+                    self.gen_current_width=0
                 # finishing the last relief of the map on the left 
-                for i__ in range(i_, i_+self.gen_current_width):
-                    for y in range(self.room_height//self.tile_width-self.gen_current_height, self.room_height//self.tile_width-1):
+                for i__ in range(i_, i_+width_):
+                    for y in range(self.room_height//self.tile_width-self.gen_current_height-1-additionnal_height, self.room_height//self.tile_width):
                         mat[y][i__]=1
 
-                i_+=self.gen_current_width
-                self.gen_current_width=0
+                i_+=width_
+                
 
     def generate_relief(self, i, z, dico, node):
         # matrix used after for objects and images
@@ -238,22 +244,52 @@ class RenderMap:
         if not node[3]:
             self._generate_relief_ground(0, (self.room_width//self.tile_width)-1, node, mat)
 
-        
+        # O   O
+        # O | O
+        #
 
+        if i<len(self.graphe)-1 and z<len(self.graphe[0])-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z+1][3] and not self.graphe[i+1][z][3]:
+            self.re_initialize_gen_var()
+            self._generate_relief_ground((self.room_width//self.tile_width)-1, (self.room_width//self.tile_width)-1, node, mat)
+
+
+        if i<len(self.graphe)-1 and z>0 and node[0] and node[3] and self.graphe[i][z-1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]:
+            print("# falaises right TOP", i, z)
+            self._generate_relief_ground(0, random.randint(self.gen_falaise_min_width, self.gen_falaise_max_width), node, mat)
+
+        if i>0 and z>0 and not node[0] and node[3] and node[2] and self.graphe[i-1][z][0] and self.graphe[i-1][z-1][3] and not self.graphe[i][z-1][3]:
+
+            # falaises right
+            print("# falaises right", i, z)
+            
+            for y___ in range(len(mat[i])):
+                if self.all_mat[i-1][z][-1][y___]:
+                    for i____ in range(len(mat)):
+                        mat[i____][y___]=1
+
+                        
         # hills generation from left to right
-        if i>0 and z<len(self.graphe[i])-1 and not node[3] and node[2] and not node[1] and self.graphe[i-1][z][1] and self.graphe[i-1][z+1][3] and not self.graphe[i][z+1][3]:
-            old_height, old_width=self.gen_current_height, self.gen_current_width
-            self.gen_current_height, self.gen_current_width = 0, 0
-            self._generate_relief_ground((self.room_width//self.tile_width)-2-self.gen_width_hill*self.gen_width_width_hill, (self.room_width//self.tile_width)-2, node, mat, hill=1)
-            self.gen_current_height, self.gen_current_width = old_height, old_width
+        if i>0 and z<len(self.graphe[i])-1 and not node[3] and node[2] and not node[1] and self.graphe[i-1][z][1] and self.graphe[i-1][z+1][3]:
+            if not self.graphe[i][z+1][3]:
+                old_height, old_width=self.gen_current_height, self.gen_current_width
+                self.gen_current_height, self.gen_current_width = 0, 0
+                self._generate_relief_ground((self.room_width//self.tile_width)-2-self.gen_width_hill*self.gen_width_width_hill, (self.room_width//self.tile_width)-2, node, mat, hill=1)
+                self.gen_current_height, self.gen_current_width = old_height, old_width
+            # elif not node[1]
 
-        if i>0 and z>0 and not node[3] and node[2] and not node[0] and self.graphe[i-1][z][0] and self.graphe[i-1][z-1][3] and not self.graphe[i][z-1][3]:
-            old_height, old_width=self.gen_current_height, self.gen_current_width
-            self.gen_current_height, self.gen_current_width = len(mat)-1, 0
-            self._generate_relief_ground(2, self.gen_width_hill*self.gen_width_width_hill+2, node, mat, hill=2)
-            for tmp in range(len(mat)-1):
-                mat[tmp][1]=1
-            self.gen_current_height, self.gen_current_width = old_height, old_width    
+                # add ground then delete it
+
+        if i>0 and z>0 and not node[3] and node[2] and not node[0] and self.graphe[i-1][z][0] and self.graphe[i-1][z-1][3]:
+            if not self.graphe[i][z-1][3]:
+                old_height, old_width=self.gen_current_height, self.gen_current_width
+                self.gen_current_height, self.gen_current_width = len(mat)-1, 0
+                self._generate_relief_ground(2, self.gen_width_hill*self.gen_width_width_hill+2, node, mat, hill=2)
+                for tmp in range(len(mat)-1):
+                    mat[tmp][1]=1
+                self.gen_current_height, self.gen_current_width = old_height, old_width    
+            else:
+                # falaises right
+                print("# falaises left")
 
         # continuing relief when down and (right or left)
         if node[3] and node[0]:
@@ -285,6 +321,7 @@ class RenderMap:
                 mat[tmp][1]=1
             self.gen_current_height, self.gen_current_width = old_height, old_width 
 
+        
         g=0
         d=len(mat[0])
         h=0
@@ -298,11 +335,11 @@ class RenderMap:
                     self.matrix_picture[i][z].append({"x":z*self.room_width+y_*self.tile_width,"y":i*self.room_height+i_*self.tile_width,"img":0})
                     
                     #adding little ground if there is a change of height
-                    if not node[3] and ((y_>g and not mat[i_][y_-1] and i_<len(mat)-1 and mat[i_+1][y_-1] and i_>0 and not mat[i_-1][y_]) or (y_==g and z>0 and self.all_mat[i][z-1] and not self.all_mat[i][z-1][i_][-1] and i_<len(mat)-1 and self.all_mat[i][z-1][i_+1][-1] and i_>0 and not mat[i_-1][y_])):
+                    if ((y_>g and not mat[i_][y_-1] and i_<len(mat)-1 and mat[i_+1][y_-1] and i_>0 and not mat[i_-1][y_]) or (y_==g and z>0 and self.all_mat[i][z-1] and not self.all_mat[i][z-1][i_][-1] and i_<len(mat)-1 and self.all_mat[i][z-1][i_+1][-1] and i_>0 and not mat[i_-1][y_])):
                         self.matrix_picture[i][z].append({"x":z*self.room_width+(y_-0.5)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":2})
                         dico["little_ground"].append([pygame.Rect(z*self.room_width+(y_-0.6)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
                     #  or (y==d-1 and self.last_mat and not self.last_mat[i_][0])
-                    if not node[3] and ((y_<d-1 and not mat[i_][y_+1] and i_<len(mat)-1 and mat[i_+1][y_+1] and i_>0 and not mat[i_-1][y_]) or (y_==d-1 and node[1] and self.gen_current_width<=1) and z<len(self.graphe[i])-1 and not self.graphe[i][z+1][3]):
+                    if ((y_<d-1 and not mat[i_][y_+1] and i_<len(mat)-1 and mat[i_+1][y_+1] and i_>0 and not mat[i_-1][y_]) or (y_==d-1 and node[1] and self.gen_current_width<=1) and z<len(self.graphe[i])-1 and not self.graphe[i][z+1][3]):
                         self.matrix_picture[i][z].append({"x":z*self.room_width+(y_+1)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":2})
                         dico["little_ground"].append([pygame.Rect(z*self.room_width+(y_+1.1)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
 
@@ -324,12 +361,11 @@ class RenderMap:
                         tmp=-1
 
                     # ceillings
-                    if i_<len(mat)-1:
-                        if tmp2 == -1 and not mat[i_+1][y_] :tmp2=y_
-                        # not elif because if lenght is 1
-                        if tmp2 != -1 and (y_ == d-1 or not mat[i_][y_+1] or mat[i_+1][y_+1] or mat[i_+1][y_]):
-                            self._spawn_big_ceilling(i, z, dico, i_, y_+1, tmp2)
-                            tmp2=-1
+                    if tmp2 == -1 and (i_==len(mat)-1 or not mat[i_+1][y_]) :tmp2=y_
+                    # not elif because if lenght is 1
+                    if tmp2 != -1 and (y_ == d-1 or not mat[i_][y_+1] or i_<len(mat)-1 and (mat[i_+1][y_+1] or mat[i_+1][y_])):
+                        self._spawn_big_ceilling(i, z, dico, i_, y_+1, tmp2)
+                        tmp2=-1
 
         for y_ in range(g, d):
             tmp=-1
