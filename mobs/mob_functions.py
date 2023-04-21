@@ -93,6 +93,7 @@ def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, zoom):
                             else:dir_x="left"
                             mob.fin_grab_edge()
                         else:
+
                             if right:dir_x = "right"
                             if left:dir_x = "left"
                         if down:dir_y = "down"

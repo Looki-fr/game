@@ -360,12 +360,20 @@ class RenderMap:
                         self._spawn_big_ground(i, z, dico, i_, y_+1-inc2, tmp+inc)
                         tmp=-1
 
-                    # ceillings
-                    if tmp2 == -1 and (i_==len(mat)-1 or not mat[i_+1][y_]) :tmp2=y_
-                    # not elif because if lenght is 1
-                    if tmp2 != -1 and (y_ == d-1 or not mat[i_][y_+1] or i_<len(mat)-1 and (mat[i_+1][y_+1] or mat[i_+1][y_])):
-                        self._spawn_big_ceilling(i, z, dico, i_, y_+1, tmp2)
-                        tmp2=-1
+                    if i_<len(mat)-1:
+                        # ceillings
+                        if tmp2 == -1 and (not mat[i_+1][y_]) :tmp2=y_
+                        # not elif because if lenght is 1
+                        if tmp2 != -1 and (y_ == d-1 or not mat[i_][y_+1] or (i_<len(mat)-1 and ( mat[i_+1][y_+1] or mat[i_+1][y_]))):
+                            self._spawn_big_ceilling(i, z, dico, i_, y_+1, tmp2)
+                            tmp2=-1
+        if i>0:
+            tmp=-1
+            for y_ in range(g, d):
+                if tmp==-1 and not mat[0][y_] and self.all_mat[i-1][z][-1][y_] and not mat[1][y_]: tmp=y_
+                if tmp != -1 and (y_==d-1 or mat[1][y_+1] or mat[0][y_+1] or not self.all_mat[i-1][z][-1][y_+1]):
+                    self._spawn_big_ceilling(i-1, z, dico, len(mat)-1, y_+1, tmp)
+                    tmp=-1
 
         for y_ in range(g, d):
             tmp=-1
