@@ -32,7 +32,7 @@ class RenderMap:
         self.gen_min_reduced_width=12
         self.gen_width_hill=3
         self.gen_width_width_hill=1
-        self.gen_max_hill_height=(self.room_height//self.tile_width)//self.gen_width_hill + 5
+        self.gen_max_hill_height=(self.room_height//self.tile_width)//self.gen_width_hill + 4
         self.gen_min_hill_height=2
         self.gen_falaise_max_width=self.room_width/self.tile_width // 2
         self.gen_falaise_min_width=self.room_width/self.tile_width // 3
@@ -106,14 +106,19 @@ class RenderMap:
     def _spawn_big_walls(self, i, z, dico, i_, y_, tmp):
         dico["wall"].append([pygame.Rect(z*self.room_width+y_*(self.tile_width), i*self.room_height+(tmp)*self.tile_width+self.increment, self.tile_width, self.tile_width*(i_-tmp) - 2*+self.increment)])
 
-    def _get_hill_heights(self, starting_height):
+    def _get_hill_heights(self, starting_height, width=0):
+        bool_=False
+        if width==0:
+            width=self.gen_width_hill
+            bool_=True
         tab=[]
-        for _ in range(self.gen_width_hill):
+        for _ in range(width):
             tab.append(random.randint(self.gen_min_hill_height, self.gen_max_hill_height))
         
         while sum(tab)>(self.room_height//self.tile_width)-starting_height:
             i = random.randint(0, len(tab)-1)
-            if tab[i]>self.gen_min_hill_height: tab[i]-=1
+            if bool_ and tab[i]>self.gen_min_hill_height: tab[i]-=1
+            elif not bool_ and tab[i]>0: tab[i]-=1
         
         while sum(tab)<(self.room_height//self.tile_width)-starting_height:
             i = random.randint(0, len(tab)-1)
@@ -140,6 +145,8 @@ class RenderMap:
                         starting_height=i
                         break
                 tab=self._get_hill_heights(starting_height)
+            elif hill==5:
+                tab=self._get_hill_heights(0, width=end)
             i____=0
 
         while i_ <= end:
@@ -176,7 +183,7 @@ class RenderMap:
                 else:
                     if -start+i_-i____>=len(tab):break
                     if hill==1 or hill==3:self.gen_current_height+=tab[-start+i_-i____]
-                    elif hill==2 or hill == 4:self.gen_current_height-=tab[-start+i_-i____]
+                    elif hill==2 or hill == 4 or hill==5:self.gen_current_height-=tab[-start+i_-i____]
                     self.gen_current_width=0
                     width_=self.gen_width_width_hill
                     i____+=self.gen_width_width_hill-1
@@ -184,7 +191,7 @@ class RenderMap:
                 if width_>self.gen_min_width or node[1] or hill!=0:
                     # also generating the tiles below the current height
                     for i__ in range(i_, i_+width_):
-                        if hill != 3 and hill != 4:
+                        if hill != 3 and hill != 4 and hill!=5:
                             for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height)-1, self.room_height//self.tile_width):
                                 mat[y][i__]=1
                         else:
@@ -244,37 +251,37 @@ class RenderMap:
         if not node[3]:
             self._generate_relief_ground(0, (self.room_width//self.tile_width)-1, node, mat)
 
-        # O   O
-        # O | O
-        #
-
+        # falaise droite
+        # generation of the top left corner
         if i<len(self.graphe)-1 and z<len(self.graphe[0])-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z+1][3] and not self.graphe[i+1][z][3]:
             self.re_initialize_gen_var()
             self._generate_relief_ground((self.room_width//self.tile_width)-1, (self.room_width//self.tile_width)-1, node, mat)
 
-
+        # generation of the ground
         if i<len(self.graphe)-1 and z>0 and node[0] and node[3] and self.graphe[i][z-1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]:
-            print("# falaises right TOP", i, z)
             self._generate_relief_ground(0, random.randint(self.gen_falaise_min_width, self.gen_falaise_max_width), node, mat)
 
+        # generation of the bottom of the falaise
         if i>0 and z>0 and not node[0] and node[3] and node[2] and self.graphe[i-1][z][0] and self.graphe[i-1][z-1][3] and not self.graphe[i][z-1][3]:
-
-            # falaises right
-            print("# falaises right", i, z)
-            
+            tmp=0
             for y___ in range(len(mat[i])):
-                if self.all_mat[i-1][z][-1][y___]:
-                    for i____ in range(len(mat)):
-                        mat[i____][y___]=1
+                if self.all_mat[i-1][z][-1][y___]==0:
+                    break
+                tmp+=1
+            self.gen_current_height, self.gen_current_width = len(mat)-1, 0
+            self._generate_relief_ground(0, tmp, node, mat, hill=5)
+            self.gen_current_height, self.gen_current_width = 0, 0
+
+            # for y___ in range(len(mat[i])):
+            #     if self.all_mat[i-1][z][-1][y___]:
+            #         for i____ in range(len(mat)):
+            #             mat[i____][y___]=1
 
                         
         # hills generation from left to right
         if i>0 and z<len(self.graphe[i])-1 and not node[3] and node[2] and not node[1] and self.graphe[i-1][z][1] and self.graphe[i-1][z+1][3]:
             if not self.graphe[i][z+1][3]:
-                old_height, old_width=self.gen_current_height, self.gen_current_width
-                self.gen_current_height, self.gen_current_width = 0, 0
                 self._generate_relief_ground((self.room_width//self.tile_width)-2-self.gen_width_hill*self.gen_width_width_hill, (self.room_width//self.tile_width)-2, node, mat, hill=1)
-                self.gen_current_height, self.gen_current_width = old_height, old_width
             # elif not node[1]
 
                 # add ground then delete it
