@@ -348,7 +348,10 @@ class RenderMap:
                 mat[tmp][1]=1
             self.gen_current_height, self.gen_current_width = old_height, old_width 
 
-        
+        if i==4 and z==2:
+            for line in mat:  print(line)    
+
+
         g=0
         d=len(mat[0])
         h=0
@@ -373,11 +376,8 @@ class RenderMap:
                     # ground
                     if tmp == -1 and ((i_>0 and not mat[i_-1][y_]) or (i_==0 and i>0 and self.all_mat[i-1][z] and not self.all_mat[i-1][z][-1][y_])) :
                         tmp=y_
-                        
                     # not elif because if lenght is 1
                     if tmp != -1 and (y_ == d-1 or not mat[i_][y_+1] or ((i_>0 and mat[i_-1][y_+1]) or (i_==0 and i>0 and self.all_mat[i-1][z] and self.all_mat[i-1][z][-1][y_+1]))):
-                        
-                        
 
                         if tmp==y_ or tmp>1 or z==0 or len(self.graphe[i][z-1])==0 or not self.graphe[i][z-1][3] or self.graphe[i][z][0] or len(mat)-1-i_ > self.gen_max_height:inc=0
                         else: inc=1
@@ -387,8 +387,8 @@ class RenderMap:
                         self._spawn_big_ground(i, z, dico, i_, y_+1-inc2, tmp+inc)
                         tmp=-1
 
+                    # ceillings
                     if i_<len(mat)-1:
-                        # ceillings
                         if tmp2 == -1 and (not mat[i_+1][y_]) :tmp2=y_
                         # not elif because if lenght is 1
                         if tmp2 != -1 and (y_ == d-1 or not mat[i_][y_+1] or (i_<len(mat)-1 and ( mat[i_+1][y_+1] or mat[i_+1][y_]))):
@@ -408,15 +408,18 @@ class RenderMap:
             for i_ in range(h, b):
                 if mat[i_][y_]:
                     if tmp == -1 and  ((y_==0 or y_==len(mat[0])-1) or ((y_>0 and y_<len(mat[0])-1) and (not mat[i_][y_-1] or not mat[i_][y_+1]))):
-                        if y_==0 or not mat[i_][y_-1]: type_=1
-                        tmp=i_
+                        if (y_!=len(mat[0])-1 or not mat[i_][y_-1]) and (y_>0 or not mat[i_][y_+1]):
+                            if y_==0 or not mat[i_][y_-1]: type_=1
+                            tmp=i_
                         
                         # not elif because if lenght is 1
-                    if tmp != -1 and type_ == 1 and (i_ == b-1 or not mat[i_+1][y_] or (not y_==0 and mat[i_][y_-1])):
+                    if tmp != -1 and type_ == 1 and (i_ == b-1 or not mat[i_+1][y_] or (y_>0 and mat[i_][y_-1])):
+                        if i==4 and z==2: print(i_, y_, tmp, type_)
                         if i_-tmp>=1 : self._spawn_big_walls(i, z, dico, i_+1, y_, tmp)
                         tmp=-1
                         
                     elif tmp != -1 and type_ == 0 and (i_ == b-1 or not mat[i_+1][y_] or (not y_==len(mat[0])-1 and mat[i_][y_+1])):
+                        if i==4 and z==2: print(i_, y_, tmp,type_)
                         if i_-tmp>=1 : self._spawn_big_walls(i, z, dico, i_+1, y_, tmp)
                         tmp=-1
 

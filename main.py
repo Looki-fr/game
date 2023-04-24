@@ -12,8 +12,10 @@ if __name__ == "__main__":
 
 # BUG left hill en bas
 
-# BUG qd colle au mur et regarder mur on peut pas sauter
-# BUG passage a travers mur dans hill2
+# BUG saut depuis la droite jusqu'a en haut + rester appuyer sur touche du haut : 
+# l'animation du saut reste en boucle
+
+# BUG collision run left
 
 
 

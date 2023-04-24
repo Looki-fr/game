@@ -563,7 +563,6 @@ class Game:
             self.bg.blit(self.minimap, (self.screen.get_width()-self.minimap.get_width(), 0))
 
         self.add_lightning(self.bg)
-
         self.screen.blit(self.bg, (0,0))
 
         self.last_player_position=self.player.position.copy()
@@ -585,7 +584,7 @@ class Game:
             self.update()
             
             self.update_ecran()
-            
+
             pygame.display.update()      
             
             self.dt = clock.tick(60)
