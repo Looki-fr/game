@@ -9,7 +9,7 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# BUG passage a travers sol qd change dir sur un sol reduit pour pas climb edge le wall
+# BUG un little ground est pas actif vers la droite mais ya son image wtf
 
 # TODO clean collision, pk wall[0] ??
 

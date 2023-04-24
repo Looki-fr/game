@@ -376,10 +376,10 @@ class RenderMap:
                     if tmp != -1 and (y_ == d-1 or not mat[i_][y_+1] or ((i_>0 and mat[i_-1][y_+1]) or (i_==0 and i>0 and self.all_mat[i-1][z] and self.all_mat[i-1][z][-1][y_+1]))):
 
                         if tmp==y_ or tmp>1 or z==0 or len(self.graphe[i][z-1])==0 or not self.graphe[i][z-1][3] or self.graphe[i][z][0] or len(mat)-1-i_ > self.gen_max_height:inc=0
-                        else: inc=1
+                        else: inc=0.5
 
                         if tmp==y_ or y_<len(mat)-2 or z==len(self.graphe[0])-1 or len(self.graphe[i][z+1])==0 or not self.graphe[i][z+1][3] or self.graphe[i][z][1] or len(mat)-1-i_ > self.gen_max_height:inc2=0
-                        else: inc2=1
+                        else: inc2=0.5
                         self._spawn_big_ground(i, z, dico, i_, y_+1-inc2, tmp+inc)
                         tmp=-1
 
