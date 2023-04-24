@@ -9,14 +9,14 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+# BUG passage a travers sol qd change dir sur un sol reduit pour pas climb edge le wall
 
-# BUG left hill en bas
+# TODO clean collision, pk wall[0] ??
+
+# TODO reunir move right du player dans mother
 
 # BUG saut depuis la droite jusqu'a en haut + rester appuyer sur touche du haut : 
 # l'animation du saut reste en boucle
-
-# BUG collision run left
-
 
 
 

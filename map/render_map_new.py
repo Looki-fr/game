@@ -348,10 +348,6 @@ class RenderMap:
                 mat[tmp][1]=1
             self.gen_current_height, self.gen_current_width = old_height, old_width 
 
-        if i==4 and z==2:
-            for line in mat:  print(line)    
-
-
         g=0
         d=len(mat[0])
         h=0
@@ -414,12 +410,10 @@ class RenderMap:
                         
                         # not elif because if lenght is 1
                     if tmp != -1 and type_ == 1 and (i_ == b-1 or not mat[i_+1][y_] or (y_>0 and mat[i_][y_-1])):
-                        if i==4 and z==2: print(i_, y_, tmp, type_)
                         if i_-tmp>=1 : self._spawn_big_walls(i, z, dico, i_+1, y_, tmp)
                         tmp=-1
                         
                     elif tmp != -1 and type_ == 0 and (i_ == b-1 or not mat[i_+1][y_] or (not y_==len(mat[0])-1 and mat[i_][y_+1])):
-                        if i==4 and z==2: print(i_, y_, tmp,type_)
                         if i_-tmp>=1 : self._spawn_big_walls(i, z, dico, i_+1, y_, tmp)
                         tmp=-1
 

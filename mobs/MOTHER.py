@@ -16,6 +16,7 @@ class MOB(pygame.sprite.Sprite):
         self.checkpoint=checkpoint
         
         self.increment_foot=1
+        self.increment_x_body=0
         
         self.id = id
         self.zoom = zoom
@@ -50,6 +51,7 @@ class MOB(pygame.sprite.Sprite):
         self.max_speed_run = 4.5
         self.speed = self.origin_speed_run
         self.is_mouving_x = False
+        self.max_distance_collide=15
         
         # ralentissement
         self.cooldown_ralentissement = 0.2
@@ -438,7 +440,13 @@ class MOB(pygame.sprite.Sprite):
     def update_rect(self):
         self.rect.topleft = self.position
         self.body.midbottom = self.rect.midbottom
-        self.feet.midbottom = (self.rect.midbottom[0], self.rect.midbottom[1]-self.increment_foot)
+        if self.direction=="right": self.body.x-=self.increment_x_body*self.zoom
+        else: self.body.x+=self.increment_x_body*self.zoom
+        if 'Wall_slide' in self.actions:
+            self.body_wallslide.midbottom = self.body.midbottom
+            if self.direction=="right": self.body_wallslide.x+=self.wall_slide_increment_body*self.zoom
+            else: self.body_wallslide.x-=self.wall_slide_increment_body*self.zoom
+        self.feet.midbottom = (self.body.midbottom[0], self.body.midbottom[1]-self.increment_foot)
         self.head.midtop = self.body.midtop
         if "Edge_climb" in self.actions : self.big_head.midtop = self.body.midtop
 

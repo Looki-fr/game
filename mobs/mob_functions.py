@@ -76,7 +76,6 @@ def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
                         mob.fin_slide_ground()
                     mob.debut_saut()
                     if collision.stop_if_collide(mob.direction, mob):
-                        print("DEBUT SAUT COLLIDE MUR")
                         if mob.direction=="right":mob.position[0]-=5*zoom
                         else:mob.position[0]+=5*zoom
 

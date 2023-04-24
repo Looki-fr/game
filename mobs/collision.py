@@ -72,7 +72,6 @@ class Collision:
                 
                 for ground in dico["ground"]:
                     if mob.feet.collidelist(ground) > -1:
-                        #print(ground[0].y)
                         if not mob.is_jumping_edge and not mob.is_jumping:
                             if not gd:
                                 gd=ground
@@ -123,14 +122,15 @@ class Collision:
                     # limage est plus grande que la partie visible du joueur, d'où mob.image.get_width()/2
                     if dash:
                         return True
-                    if direction == 'right' and wall[0].x > mob.position[0] + mob.complement_collide_wall_right:
+                    
+                    if direction == 'right' and wall[0].x < mob.body.x + mob.body.w and mob.body.x + mob.body.w-wall[0].x < mob.max_distance_collide:
                         if not mob.is_dashing and not mob.is_dashing_attacking and move_back: 
                             mob.move_back()   
                         elif not move_back:
                             mob.position[0]=wall[0].x-mob.rect.w
                         return True
                     # si le joueur va a gauche en etant a droite du mur
-                    if direction == 'left' and wall[0].x < mob.position[0] + mob.complement_collide_wall_left:  
+                    if direction == 'left' and wall[0].x + wall[0].w > mob.body.x and wall[0].x + wall[0].w-mob.body.x < mob.max_distance_collide:  
                         if not mob.is_dashing and not mob.is_dashing_attacking and move_back:  
                             mob.move_back()  
                         elif not move_back:
@@ -154,7 +154,8 @@ class Collision:
         """Grab SSI head collide"""
         for dico in self._get_dico(mob.coord_map):
             for wall in dico["wall"]:
-                if mob.body.collidelist(wall) > -1 and mob.head.collidelist(wall) > -1:
+                # check collide wall pour la collision
+                if mob.body.collidelist(wall) > -1 and mob.head.collidelist(wall) > -1 and ((mob.direction == 'right' and wall[0].x < mob.body.x + mob.body.w  and mob.body.x + mob.body.w-wall[0].x < mob.max_distance_collide) or (mob.direction == 'left' and wall[0].x + wall[0].w > mob.body.x and wall[0].x + wall[0].w-mob.body.x < mob.max_distance_collide)):
                     if "Edge_grab" in mob.actions:
                         if not mob.is_jumping_edge:
                             mob.fin_chute()
@@ -183,6 +184,6 @@ class Collision:
         """stop le grab edge si on est plus en collision avce un mur"""
         for dico in self._get_dico(mob.coord_map):
             for wall in dico["wall"]:
-                if (mob.body.collidelist(wall) > -1 or mob.head.collidelist(wall) > -1) and mob.is_sliding:
+                if (mob.body.collidelist(wall) > -1 or mob.head.collidelist(wall) > -1 or mob.body_wallslide.collidelist(wall) > -1) and mob.is_sliding:
                     return
         mob.fin_grab_edge()

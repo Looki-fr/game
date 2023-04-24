@@ -50,12 +50,14 @@ class Player(MOB):
         self.position_wave_map=[0,0]
         self.rect = self.image.get_rect()
         self.increment_foot=0
+        self.increment_x_body=17
         
         # creation d'un rect pour les pieds et le corps
         self.feet = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.1)
         self.head = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.2)
         self.big_head = pygame.Rect(0,0,self.rect.width * 1, self.rect.height*0.2)
         self.body = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.7)
+        self.body_wallslide = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.7)
         self.rect_attack = pygame.Rect(0,0,self.rect.width * 1, self.rect.height*1)
         self.rect_air_attack = pygame.Rect(0,0,self.rect.width * 1, self.rect.height*1)
         self.rect_attack_update_pos="left_right"
@@ -65,7 +67,7 @@ class Player(MOB):
         
         # enregistrement de l'ancienne position pour que si on entre en collision avec un element du terrain la position soit permutte avec l'anciene
         self.old_position = self.position.copy()
-        
+
         # jump edge
         self.is_jumping_edge = False
         self.compteur_jump_edge_min = -5.5
@@ -85,7 +87,8 @@ class Player(MOB):
         self.is_grabing_edge = False
         self.direction_wall = ""
         self.speed_sliding = 3.5
-        
+        self.wall_slide_increment_body=15
+
         # dash
         self.a_dash = False
         self.is_dashing = False
@@ -563,6 +566,7 @@ class Player(MOB):
                 self.direction_jump_edge = "right"
                 self.change_direction('jump', "right")
                 self.compteur_jump_edge_max -= 2*self.increment_jump_edge
+                self.position[0] += 5*self.zoom
             else:
                 self.direction_jump_edge == ""
                 self.change_direction('jump',self.direction)

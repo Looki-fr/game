@@ -414,7 +414,6 @@ class Game:
             mob.fin_saut_edge(cogne=True)
         
         if mob.is_jumping and self.collision.joueur_se_cogne(mob):
-            print("fin saut cogne")
             mob.fin_saut()
               
         if mob.is_dashing and self.collision.joueur_se_cogne(mob):
@@ -463,7 +462,6 @@ class Game:
         
         # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
         if mob.is_jumping and mob.compteur_jump > mob.compteur_jump_min * 0.4 and self.collision.stop_if_collide(mob.direction, mob):
-            print("FIN SAUT grab")
             mob.fin_saut()
             self.collision.check_grab(mob)
         
@@ -584,7 +582,6 @@ class Game:
             self.update()
             
             self.update_ecran()
-
             pygame.display.update()      
             
             self.dt = clock.tick(60)
