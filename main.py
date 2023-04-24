@@ -10,7 +10,10 @@ if __name__ == "__main__":
     game.run()
 
 
-#BUG left hill en bas
+# BUG left hill en bas
+
+# BUG qd colle au mur et regarder mur on peut pas sauter
+# BUG passage a travers mur dans hill2
 
 
 

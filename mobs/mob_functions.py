@@ -37,7 +37,7 @@ def pressed_right(liste_mob, collision):
             #     if "ground_slide" in mob.actions and mob.is_sliding_ground: mob.fin_slide_ground()
             #     if "roll" in mob.actions and mob.is_rolling: mob.fin_roll()
                 
-def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision):
+def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
     for mob in liste_mob:
         if  not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_dashing_attacking and not "hurt" in mob.action_image and not mob.is_parying:
             pieds=collision.check_pieds_collide_wall(mob)
@@ -75,6 +75,10 @@ def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision):
                     if mob.is_sliding_ground:
                         mob.fin_slide_ground()
                     mob.debut_saut()
+                    if collision.stop_if_collide(mob.direction, mob):
+                        print("DEBUT SAUT COLLIDE MUR")
+                        if mob.direction=="right":mob.position[0]-=5*zoom
+                        else:mob.position[0]+=5*zoom
 
 def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, zoom):
     for mob in liste_mob:

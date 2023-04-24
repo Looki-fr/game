@@ -297,7 +297,7 @@ class RenderMap:
                     break
                 tmp-=1
             self.gen_current_height, self.gen_current_width = 0, 0
-            self._generate_relief_ground(tmp, len(mat[0])-1, node, mat, hill=6, debug=True)
+            self._generate_relief_ground(tmp, len(mat[0])-1, node, mat, hill=6)
             self.re_initialize_gen_var()
 
 

@@ -216,7 +216,7 @@ class Game:
                 if not left and not right:
                     for mob in control["perso"]:
                         handle_input_ralentissement(mob, self.collision)
-                if up:pressed_up(control["perso"], down, left, right, self.pressed_up_bool, self.collision)
+                if up:pressed_up(control["perso"], down, left, right, self.pressed_up_bool, self.collision, self.render.zoom)
                 if down:pressed_down(control["perso"])
                 if pressed[control["touches"][4]]:pressed_dash(control["perso"], left, right, pressed[control["touches"][3]], pressed[control["touches"][2]], self.collision.joueur_sur_sol, self.render.zoom)
                 if pressed[control["touches"][5]]:pressed_attack(control["perso"])
@@ -249,7 +249,7 @@ class Game:
                     if self.motion[0]<-0.2: left=True
                     if self.motion[0]>0.2: right=True
                     if self.motion[1]>0.4: down=True
-                    pressed_up(perso_manette, down, left, right, self.pressed_up_bool, self.collision, self.particule)
+                    pressed_up(perso_manette, down, left, right, self.pressed_up_bool, self.collision, self.particule, self.render.zoom)
 
                 if event.button == 1:
                     down,up,left,right=False,False,False,False
@@ -414,6 +414,7 @@ class Game:
             mob.fin_saut_edge(cogne=True)
         
         if mob.is_jumping and self.collision.joueur_se_cogne(mob):
+            print("fin saut cogne")
             mob.fin_saut()
               
         if mob.is_dashing and self.collision.joueur_se_cogne(mob):
@@ -462,6 +463,7 @@ class Game:
         
         # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
         if mob.is_jumping and mob.compteur_jump > mob.compteur_jump_min * 0.4 and self.collision.stop_if_collide(mob.direction, mob):
+            print("FIN SAUT grab")
             mob.fin_saut()
             self.collision.check_grab(mob)
         
