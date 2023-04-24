@@ -10,14 +10,11 @@ if __name__ == "__main__":
     game.run()
 
 
-# if 
-#
-#
-# __|  | => |__|/ | + hill on left
-#
-# => node[2] and not
+#BUG left hill en bas
 
-# TODO hill mais au plafond
+
+
+
 
 # pas changer image chute qd air hurt
 # hurt and death falling

@@ -146,7 +146,7 @@ class RenderMap:
                 tab=self._get_hill_heights(starting_height)
             elif hill==5 or hill==6:
                 tab=self._get_hill_heights(0, width=end-start)
-            if debug : print(tab)
+            if debug : print(hill, tab, self.gen_current_height, self.gen_current_width)
             i____=0
         while i_ <= end:
             # if the map on the left didnt had enough place to finish generating its reliefs then we finish it here so that it doesnt abrutly stop
@@ -304,6 +304,7 @@ class RenderMap:
                         
         # hills generation from left to right
         if i>0 and z<len(self.graphe[i])-1 and not node[3] and node[2] and not node[1] and self.graphe[i-1][z][1] and self.graphe[i-1][z+1][3] and not self.graphe[i][z+1][3]:
+            self.gen_current_width=0
             self._generate_relief_ground((self.room_width//self.tile_width)-2-self.gen_width_hill*self.gen_width_width_hill, (self.room_width//self.tile_width)-2, node, mat, hill=1)
             self.re_initialize_gen_var()
 
