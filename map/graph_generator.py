@@ -109,13 +109,32 @@ def get_matrix():
 
     # [g, d, h, b]
 
-
-
-    for i in range(11):
-        if mat[i//(len(mat)-1)][i%(len(mat)-1)]:
-            path=[(i//(len(mat)-1), i%(len(mat)-1))]
-            break
-
+    corner=random.randint(1,4)
+    if corner == 1:
+        for i in range(width):
+            for y in range(height):
+                if mat[i][y]:
+                    path=[(i//(len(mat)-1), i%(len(mat)-1))]
+                    break
+    elif corner==2:
+        for i in range(width-1, -1, -1):
+            for y in range(height):
+                if mat[i][y]:
+                    path=[(i//(len(mat)-1), i%(len(mat)-1))]
+                    break
+    elif corner==3:
+        for i in range(width-1, -1, -1):
+            for y in range(height-1, -1, -1):
+                if mat[i][y]:
+                    path=[(i//(len(mat)-1), i%(len(mat)-1))]
+                    break
+    elif corner==4:
+        for i in range(width):
+            for y in range(height-1, -1, -1):
+                if mat[i][y]:
+                    path=[(i//(len(mat)-1), i%(len(mat)-1))]
+                    break
+    print("CORNER = ", corner)
 
     # 1 get a random node not in path
     # 2 remove all other path
