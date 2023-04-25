@@ -318,7 +318,7 @@ class RenderMap:
 
         # continuing relief when down and (right or left)
         if node[3] and node[0]:
-            for y in range(self.room_height//self.tile_width-self.gen_current_height, self.room_height//self.tile_width-1):
+            for y in range(self.room_height//self.tile_width-self.gen_current_height-1, self.room_height//self.tile_width):
                 mat[y][0]=1
                 if i<len(mat)-1 and z>0 and self.graphe[i][z-1][3] and not self.graphe[i+1][z][0] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]:
                     mat[y][1]=1
@@ -327,7 +327,7 @@ class RenderMap:
             # not reset when falaise gauche
             if not (i<len(self.graphe)-1 and z<len(mat)-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3] and not self.graphe[i+1][z+1][0]):self.re_initialize_gen_var(False)
             self.gen_current_width-=1
-            for y in range(self.room_height//self.tile_width-self.gen_current_height, self.room_height//self.tile_width-1):
+            for y in range(self.room_height//self.tile_width-self.gen_current_height-1, self.room_height//self.tile_width):
                 mat[y][-1]=1
                 # hill stuff
                 if i<len(mat)-1 and z<len(self.graphe)-1 and self.graphe[i][z+1][3] and not self.graphe[i+1][z][1] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3]:
@@ -360,12 +360,14 @@ class RenderMap:
                 if mat[i_][y_]:
                     self.matrix_picture[i][z].append({"x":z*self.room_width+y_*self.tile_width,"y":i*self.room_height+i_*self.tile_width,"img":0})
                     
-                    #adding little ground if there is a change of height
+                    #adding little ground if there is a change of 
+                    # left
                     if ((y_>g and not mat[i_][y_-1] and i_<len(mat)-1 and mat[i_+1][y_-1] and i_>0 and not mat[i_-1][y_]) or (y_==g and z>0 and self.all_mat[i][z-1] and not self.all_mat[i][z-1][i_][-1] and i_<len(mat)-1 and self.all_mat[i][z-1][i_+1][-1] and i_>0 and not mat[i_-1][y_])):
                         self.matrix_picture[i][z].append({"x":z*self.room_width+(y_-0.5)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":2})
                         dico["little_ground"].append([pygame.Rect(z*self.room_width+(y_-0.6)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
                     #  or (y==d-1 and self.last_mat and not self.last_mat[i_][0])
-                    if ((y_<d-1 and not mat[i_][y_+1] and i_<len(mat)-1 and mat[i_+1][y_+1] and i_>0 and not mat[i_-1][y_]) or (y_==d-1 and node[1] and self.gen_current_width<=1) and z<len(self.graphe[i])-1 and not self.graphe[i][z+1][3]):
+                    # right
+                    if ((y_<d-1 and not mat[i_][y_+1] and i_<len(mat)-1 and mat[i_+1][y_+1] and i_>0 and not mat[i_-1][y_]) or (y_==d-1 and node[1] and self.gen_current_width==0)):
                         self.matrix_picture[i][z].append({"x":z*self.room_width+(y_+1)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":2})
                         dico["little_ground"].append([pygame.Rect(z*self.room_width+(y_+1.1)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
 

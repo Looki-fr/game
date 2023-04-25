@@ -9,7 +9,13 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# BUG un little ground est pas actif vers la droite mais ya son image wtf
+# BUG continuer relief alors que gen current == 0 qd coins gauche
+
+# BUG passage a travers mur qd dash attack close to mur (apres saut mm dir que mur ?)
+
+# BUG apparition de little ground dans un coin qd bas
+
+# BUG sur un little ground vers la droite => on est bloqué à cause du mur q don va à gauche
 
 # TODO clean collision, pk wall[0] ??
 
@@ -19,7 +25,10 @@ if __name__ == "__main__":
 # l'animation du saut reste en boucle
 
 
-
+# TODO map : 
+# habiller coins de map => plus accentué sur les 
+#  _
+# | |
 
 # pas changer image chute qd air hurt
 # hurt and death falling
