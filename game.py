@@ -370,26 +370,22 @@ class Game:
                                 mob.change_direction("up_to_fall", mob.direction)
     
     def _handle_collisions_wall_dash(self, mob, dist, fin_dash, direction, fall=True):   
-        a=round(abs(dist)//7)
-        if a<5: a=5
-        if dist <= a: dist=a+1
-        if dist != 0 and a!= 0:
+        step=round((self.render.tile_width)-2)
+        if dist != 0 and step > 0:
             tmp=[mob.position[0], mob.position[1]]
-            bool_=direction == "right"
-            for i in range(0, abs(round(dist)), a):
-                if bool_:mob.position[0]+=i
+            for i in [y for y in range(step, abs(round(dist)), step)]+[abs(round(dist))+1]:
+                if direction == "right":mob.position[0]+=i
                 else:mob.position[0]-=i
-                if self.collision.stop_if_collide(mob.dash_direction_x, mob, dash=True):
-                    if bool_:mob.position[0]-=i
-                    else:mob.position[0]+=i
+                if self.collision.stop_if_collide(direction, mob, dash=True):
                     fin_dash()
-                    self.collision.check_grab(mob)
+                    self.collision.check_grab(mob, direction)
                     if fall:
                         if not mob.is_grabing_edge:
                             mob.debut_chute()
-                    break
-            if mob.action == "dash" and mob.is_dashing: mob.position=[tmp[0], tmp[1]]
-            elif mob.action_image == "dash_attack" and mob.is_dashing_attacking: mob.position=[tmp[0], tmp[1]]
+                    if not mob.is_grabing_edge:
+                        mob.position=[tmp[0], tmp[1]]
+                    return
+            mob.position=[tmp[0], tmp[1]]
 
     def handle_action(self, mob):
         if "player" not in mob.id and mob.action=="dying":
@@ -439,21 +435,23 @@ class Game:
 
         if mob.is_jumping_edge and self.collision.stop_if_collide(mob.direction_jump_edge, mob):
             mob.fin_saut_edge()
-            self.collision.check_grab(mob)
+            self.collision.check_grab(mob, mob.direction_jump_edge)
         
         if mob.is_sliding_ground and self.collision.stop_if_collide(mob.slide_ground_direction_x, mob):
             mob.fin_slide_ground()
-            self.collision.check_grab(mob)
+            self.collision.check_grab(mob, mob.slide_ground_direction_x)
         
         if mob.is_rolling and self.collision.stop_if_collide(mob.roll_direction_x, mob):
             mob.fin_roll()
             if mob.is_falling : 
-                self.collision.check_grab(mob)
+                self.collision.check_grab(mob, mob.roll_direction_x)
 
         #  if mob.is_dashing_attacking and self.collision.stop_if_collide(mob.direction, mob):
         #     mob.fin_dash_attack()
         #     if mob.is_falling :
         #         self.collision.check_grab(mob)
+
+        # called every tick because distance change every tick
         if mob.is_dashing_attacking:
             self._handle_collisions_wall_dash(mob, mob.distance_dash_attack(), mob.fin_dash_attack, mob.direction, False)     
 
@@ -463,7 +461,7 @@ class Game:
         # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
         if mob.is_jumping and mob.compteur_jump > mob.compteur_jump_min * 0.4 and self.collision.stop_if_collide(mob.direction, mob):
             mob.fin_saut()
-            self.collision.check_grab(mob)
+            self.collision.check_grab(mob, mob.direction)
         
         if mob.position[1] > self.map_height + 100:
             mob.position = [mob.checkpoint[0], mob.checkpoint[1]-mob.image.get_height()]

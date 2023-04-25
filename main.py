@@ -9,6 +9,8 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+# BUG affichage dash dans mur => check pour prochain tick aussi et preshot ?
+
 # TODO affichier mur / sol etc en couleur pour check si c bon
 
 # BUG hill en bas passage à travers du mur qd dash
