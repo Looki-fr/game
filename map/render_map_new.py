@@ -126,6 +126,18 @@ class RenderMap:
         tab.append(0)
         return tab
 
+    def _change_height_ground(self):
+        # choosing the height to add, remove or keep
+        # 3 => up
+        # 2 => up
+        # 1 => down
+        if self.gen_current_height<self.gen_max_height and self.gen_current_height>1:c = random.randint(1,2)
+        elif self.gen_current_height<self.gen_max_height: c=2
+        else: c=1
+        if c==1: self.gen_current_height-=1
+        else:self.gen_current_height+=1
+        return c
+
     def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0, debug=False):
         i_=start
         if hill : 
@@ -152,17 +164,8 @@ class RenderMap:
             # if the map on the left didnt had enough place to finish generating its reliefs then we finish it here so that it doesnt abrutly stop
             # if and only if there is a map on the left
             if self.gen_current_width==0:
-                # choosing the height to add, remove or keep
-                # 3 => up
-                # 2 => up
-                # 1 => down
-
-                
                 if not hill:
-                    if self.gen_current_height<self.gen_max_height and self.gen_current_height>1:
-                        c = random.randint(1,3)
-                    elif self.gen_current_height<self.gen_max_height: c=random.randint(2,3)
-                    else: c=random.choice([1,3])
+                    c=self._change_height_ground()
 
                     self.gen_current_width=random.randint(self.gen_min_width, self.gen_max_width)
                     # saving the width that we cant generate here because of a lack of place so that we can generating it if there is a room on the right
@@ -176,8 +179,6 @@ class RenderMap:
                             
                         width_=self.gen_current_width
                         self.gen_current_width=0
-                    if c==1: self.gen_current_height-=1
-                    else:self.gen_current_height+=1
 
                 else:
                     if -start+i_-i____>=len(tab):break
@@ -318,6 +319,8 @@ class RenderMap:
 
         # continuing relief when down and (right or left)
         if node[3] and node[0]:
+            if self.gen_current_width==0:
+                self._change_height_ground()
             for y in range(self.room_height//self.tile_width-self.gen_current_height-1, self.room_height//self.tile_width):
                 mat[y][0]=1
                 if i<len(mat)-1 and z>0 and self.graphe[i][z-1][3] and not self.graphe[i+1][z][0] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]:

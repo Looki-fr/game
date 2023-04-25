@@ -9,6 +9,10 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+# TODO affichier mur / sol etc en couleur pour check si c bon
+
+# BUG hill en bas passage à travers du mur qd dash
+
 # BUG continuer relief alors que gen current == 0 qd coins gauche
 
 # BUG passage a travers mur qd dash attack close to mur (apres saut mm dir que mur ?)
