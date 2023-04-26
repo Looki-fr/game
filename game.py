@@ -221,7 +221,7 @@ class Game:
                 if pressed[control["touches"][4]]:pressed_dash(control["perso"], left, right, pressed[control["touches"][3]], pressed[control["touches"][2]], self.collision.joueur_sur_sol, self.render.zoom)
                 if pressed[control["touches"][5]]:pressed_attack(control["perso"])
                 if pressed[control["touches"][6]]:pressed_heavy_attack(control["perso"], self.collision, left, right)     
-                if pressed[control["touches"][7]]:pressed_pary(control["perso"], left, right)                                                    
+                if pressed[control["touches"][7]]:pressed_pary(control["perso"], left, right, self.collision)                                                    
                 if pressed[control["touches"][8]]: 
                     id = pressed_interact(control["perso"], self.group_object)
                     if id !=None:

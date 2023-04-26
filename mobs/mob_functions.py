@@ -129,7 +129,7 @@ def pressed_attack(liste_mob):
                 elif time.time() - mob.timer_attack_aerienne > mob.cooldown_attack_aerienne:
                     mob.debut_attack(air=True)
 
-def pressed_pary(liste_mob, left, right):
+def pressed_pary(liste_mob, left, right, collision):
     for mob in liste_mob:
         if "pary" in mob.actions:
             if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_grabing_edge and not mob.is_dashing_attacking and time.time()-mob.timer_pary>mob.cooldown_pary and not "hurt" in mob.action_image:
@@ -138,13 +138,12 @@ def pressed_pary(liste_mob, left, right):
                 if not mob.is_parying:
                     mob.debut_pary()
         if "roll" in mob.actions:
-            if not mob.is_falling and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_dashing and not mob.a_dash and not mob.is_sliding_ground and not mob.is_grabing_edge and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking and time.time() - mob.timer_roll > mob.cooldown_roll :
-                if left:
-                    mob.debut_roll("left")
-                elif right:
-                    mob.debut_roll("right")
-                else:
-                    mob.debut_roll(mob.direction)
+            if left: dir="left"
+            elif right: dir="right"
+            else: dir=mob.direction
+            if not collision.stop_if_collide(dir,mob, dontmove=True) and not mob.is_falling and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_dashing and not mob.a_dash and not mob.is_sliding_ground and not mob.is_grabing_edge and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking and time.time() - mob.timer_roll > mob.cooldown_roll :
+                mob.debut_roll(dir)
+
 
 def pressed_heavy_attack(liste_mob, collision, left, right):
     for mob in liste_mob:
