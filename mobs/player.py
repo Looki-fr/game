@@ -109,6 +109,8 @@ class Player(MOB):
         self.images_dash = []
         self.dash_cooldown_image = 0.15
         self.coord_debut_dash = [-999,-999]
+        self.timer_debut_dash_grabedge=0
+        self.cooldown_not_collide_dash=0.1
     
         # ground slide
         self.is_sliding_ground = False

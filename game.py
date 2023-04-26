@@ -456,7 +456,7 @@ class Game:
         if mob.is_dashing_attacking and time.time()-mob.timer_debut_dash_attack_grabedge > mob.cooldown_not_collide_dash_attack:
             self._handle_collisions_wall_dash(mob, mob.distance_dash_attack(), mob.fin_dash_attack, mob.direction, False)     
 
-        if mob.is_dashing:   
+        if mob.is_dashing  and time.time()-mob.timer_debut_dash_grabedge > mob.cooldown_not_collide_dash:   
             self._handle_collisions_wall_dash(mob, mob.distance_dash(), mob.fin_dash, mob.dash_direction_x)  
         
         # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
