@@ -173,6 +173,8 @@ class Player(MOB):
         self.dash_attack_image=None
         self.Dash_attack_image=Dash_attack_image
         self.dash_attack_image_added=False
+        self.timer_debut_dash_attack_grabedge=0
+        self.cooldown_not_collide_dash_attack=0.1
     
         
         # edge climb
@@ -325,7 +327,8 @@ class Player(MOB):
 
         if self.current_image==2 and self.compteur_image==1:
             self.dash_attack_image=self.Dash_attack_image(x,y, self.images["effect"]["dash_attack_effect"][self.direction]["1"], self.images["effect"]["dash_attack_effect"][self.direction]["2"], self.images["effect"]["dash_attack_effect"][self.direction]["3"])
-    
+        self.compteur_debut_dash_attack=time.time()
+
     def distance_dash_attack(self):
         if self.is_falling:c=0.7
         else:c=0.7

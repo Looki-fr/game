@@ -110,7 +110,7 @@ class Collision:
                     return True
         return False
         
-    def stop_if_collide(self, direction,mob, head = False, move_back=True, dash=False):
+    def stop_if_collide(self, direction,mob, head = False, move_back=True, dash=False, dontmove=False):
         """fait en sorte que le joueur avance plus lorsque qu'il vance dans un mur"""
         if head:rect = mob.head
         else:rect = mob.body
@@ -122,12 +122,14 @@ class Collision:
                     # si le joueur va a droite en etant a gauche du mur
                     # limage est plus grande que la partie visible du joueur, d'où mob.image.get_width()/2
                     if dash: 
+                        if dontmove: return True
                         if temp==None: temp=wall[0]
                         else:
                             if direction== 'right' and wall[0].x < temp.x: temp=wall[0]
                             elif direction == 'left' and wall[0].x+wall[0].w > temp.x+temp.w : temp=wall[0]
                     else:
                         if direction == 'right' and wall[0].x < mob.body.x + mob.body.w and mob.body.x + mob.body.w-wall[0].x < mob.max_distance_collide:
+                            if dontmove: return True
                             if not mob.is_dashing and not mob.is_dashing_attacking and move_back: 
                                 mob.move_back()   
                             elif not move_back:
@@ -135,6 +137,7 @@ class Collision:
                             return True
                         # si le joueur va a gauche en etant a droite du mur
                         if direction == 'left' and wall[0].x + wall[0].w > mob.body.x and wall[0].x + wall[0].w-mob.body.x < mob.max_distance_collide:  
+                            if dontmove: return True
                             if not mob.is_dashing and not mob.is_dashing_attacking and move_back:  
                                 mob.move_back()  
                             elif not move_back:

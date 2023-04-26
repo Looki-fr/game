@@ -452,7 +452,8 @@ class Game:
         #         self.collision.check_grab(mob)
 
         # called every tick because distance change every tick
-        if mob.is_dashing_attacking:
+        
+        if mob.is_dashing_attacking and time.time()-mob.timer_debut_dash_attack_grabedge > mob.cooldown_not_collide_dash_attack:
             self._handle_collisions_wall_dash(mob, mob.distance_dash_attack(), mob.fin_dash_attack, mob.direction, False)     
 
         if mob.is_dashing:   
