@@ -9,8 +9,6 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# BUG affichage dash dans mur => check pour prochain tick aussi et preshot ?
-
 # TODO affichier mur / sol etc en couleur pour check si c bon
 
 # BUG hill en bas passage à travers du mur qd dash
@@ -18,8 +16,6 @@ if __name__ == "__main__":
 # BUG continuer relief alors que gen current == 0 qd coins gauche
 
 # BUG passage a travers mur qd dash attack close to mur (apres saut mm dir que mur ?)
-
-# BUG apparition de little ground dans un coin qd bas
 
 # BUG sur un little ground vers la droite => on est bloqué à cause du mur q don va à gauche
 

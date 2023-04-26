@@ -79,7 +79,7 @@ def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
                         if mob.direction=="right":mob.position[0]-=5*zoom
                         else:mob.position[0]+=5*zoom
 
-def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, zoom):
+def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, zoom, collision):
     for mob in liste_mob:
         if 'dash' in mob.actions:
             if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_dashing and not mob.a_dash and not mob.is_sliding_ground and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking and time.time() - mob.timer_cooldown_slide_ground > mob.cooldown_slide_ground :           
@@ -106,7 +106,7 @@ def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, zoom):
                         
                         if dir_y == "" and dir_x == "":dir_y = "up"
                         mob.debut_dash(dir_x, dir_y, bool_)         
-                elif down and time.time() - mob.timer_cooldown_slide_ground > mob.cooldown_slide_ground : 
+                elif down and not ((left and collision.stop_if_collide("left",mob, dontmove=True)) or (right and collision.stop_if_collide("right",mob, dontmove=True)))and time.time() - mob.timer_cooldown_slide_ground > mob.cooldown_slide_ground : 
                     if mob.is_parying:
                         mob.is_parying=False
                     if mob.is_falling: mob.fin_chute()
