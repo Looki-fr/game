@@ -369,7 +369,7 @@ class Game:
                                 mob.change_direction("up_to_fall", mob.direction)
     
     def _handle_collisions_wall_dash(self, mob, dist, fin_dash, direction, fall=True, distance_y=0):   
-        step=round((self.render.tile_width)/2-2)
+        step=round((self.render.tile_width)-2)
         if dist != 0 and step > 0:
             tmp=[mob.position[0], mob.position[1]]
             for i in [y for y in range(step, abs(round(dist)), step)]+[abs(round(dist))+1]:
@@ -377,7 +377,7 @@ class Game:
                 else:mob.position[0]-=i
                 if distance_y>0:mob.position[1]+=i
                 elif distance_y<0:mob.position[1]-=i
-                if self.collision.stop_if_collide(direction, mob, dash=True):
+                if self.collision.stop_if_collide(direction, mob, dash=True) or self.collision.joueur_se_cogne(mob):
                     fin_dash()
                     self.collision.check_grab(mob, direction)
                     if fall:

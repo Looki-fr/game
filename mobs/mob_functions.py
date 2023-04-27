@@ -39,10 +39,11 @@ def pressed_right(liste_mob, collision):
                 
 def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
     for mob in liste_mob:
-        if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_dashing_attacking and not "hurt" in mob.action_image and not mob.is_parying:
+        if not collision.joueur_se_cogne(mob) and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_dashing_attacking and not "hurt" in mob.action_image and not mob.is_parying:
             pieds=collision.check_pieds_collide_wall(mob)
-            cogne = collision.joueur_se_cogne(mob)
-            if "Edge_climb" in mob.actions and ((mob.direction=="right" and right) or (mob.direction=="left" and left) or (mob.direction=="right" and not left) or (mob.direction=="left" and not right)) and not pressed_up_bool[0] and not cogne and collision.check_head_collide_ground(mob) and mob.is_grabing_edge:
+            # cogne = collision.joueur_se_cogne(mob)
+            #  and not cogne
+            if "Edge_climb" in mob.actions and ((mob.direction=="right" and right) or (mob.direction=="left" and left) or (mob.direction=="right" and not left) or (mob.direction=="left" and not right)) and not pressed_up_bool[0] and collision.check_head_collide_ground(mob) and mob.is_grabing_edge:
                 mob.position[1]-=20
                 collision.check_head_collide_ground(mob, True)
                 mob.fin_grab_edge()
@@ -55,7 +56,8 @@ def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
                             dir_x = "left"
                         elif right:
                             dir_x = "right"
-                        if time.time()-mob.timer_jump_edge_cogne > mob.cooldown_jump_edge_cogne and mob.is_grabing_edge and (( cogne and not pieds) or not cogne)  and time.time() - mob.timer_cooldown_next_jump > mob.cooldown_next_jump:
+                        #  and (( cogne and not pieds) or not cogne)
+                        if time.time()-mob.timer_jump_edge_cogne > mob.cooldown_jump_edge_cogne and mob.is_grabing_edge and time.time() - mob.timer_cooldown_next_jump > mob.cooldown_next_jump:
                             mob.fin_grab_edge()
                             # si les pieds sont sur le mur des particles apparaissent
                             if collision.check_pieds_collide_wall(mob):

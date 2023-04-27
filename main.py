@@ -9,12 +9,6 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# BUG check si cogne avant de sauter pour deny
-
-# BUG passaga a travers mur et stick wall dans le vide quand jump edge sur falaise
-
-# BUG passage a travers mur en haut qd dash attack vers le bas    
-
 # TODO affichier mur / sol etc en couleur pour check si c bon
 
 # BUG continuer relief alors que gen current == 0 qd coins gauche

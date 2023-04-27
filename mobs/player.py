@@ -564,7 +564,7 @@ class Player(MOB):
         return 0
 
     def update_speed_dash(self):
-        self.speed_dash = (self.compteur_dash**2) * 0.5 * self.zoom * self.speed_dt
+        self.speed_dash = (self.compteur_dash**2) * 0.6 * self.zoom * self.speed_dt
 
     def debut_saut_edge(self, pieds = False, direction_x = ""):
         self.jump_edge_pieds = pieds
