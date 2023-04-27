@@ -223,6 +223,10 @@ class Collision:
         mob.fin_grab_edge()
     
     def handle_collisions_wall_dash(self, mob, dist, fin_dash, direction, tile_width, fall=True, distance_y=0):   
+        """only check when dist != 0 because if the player only go up or down the body is big enough that the player
+        wont go through the grounds / ceillings.
+        Moreover the distance parcoured in x is equal to the one in y so we can use i in the loop to 
+        add the distance in the y axix little by little"""
         step=round(tile_width-2)
         if dist != 0 and step > 0:
             tmp=[mob.position[0], mob.position[1]]

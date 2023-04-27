@@ -110,7 +110,9 @@ class Player(MOB):
         self.dash_cooldown_image = 0.15
         self.coord_debut_dash = [-999,-999]
         self.timer_debut_dash_grabedge=0
-        self.cooldown_not_collide_dash=0.1
+        self.cooldown_not_collide_dash=0.01
+        self.timer_dash=0
+        self.cooldown_dash=3
     
         # ground slide
         self.is_sliding_ground = False
@@ -447,7 +449,7 @@ class Player(MOB):
                 speed_dash = self.speed_dash
                 if self.dash_direction_y != "" and self.dash_direction_x != "":
                     speed_dash *= 1
-                elif (self.dash_direction_y == 'up' and self.dash_direction_x=="") or (self.dash_direction_x == "right" or self.dash_direction_x == "left") and self.dash_direction_y=="":
+                elif (self.dash_direction_y == 'up' and self.dash_direction_x=="") or ((self.dash_direction_x == "right" or self.dash_direction_x == "left") and self.dash_direction_y==""):
                     speed_dash *= 1.3
                 if self.dash_direction_x == "right":
                     self.position[0] += speed_dash
@@ -479,24 +481,25 @@ class Player(MOB):
         self.image2_dash = False
         self.image3_dash = False
         self.image4_dash = False
+        self.timer_dash=time.time()
 
     def distance_dash_y(self):
-        speed_dash=(self.compteur_dash**2) * 0.3 * self.zoom * self.speed_dt
+        speed_dash=self.update_speed_dash(change=False)
         if self.dash_direction_y != "" and self.dash_direction_x != "":
             speed_dash *= 1
-        elif (self.dash_direction_y == 'up' and self.dash_direction_x=="") or (self.dash_direction_x == "right" or self.dash_direction_x == "left") and self.dash_direction_y=="":
+        elif (self.dash_direction_y == 'up' and self.dash_direction_x=="") or ((self.dash_direction_x == "right" or self.dash_direction_x == "left") and self.dash_direction_y==""):
             speed_dash *= 1.3
-        if self.dash_direction_x == "down":
+        if self.dash_direction_y == "down":
             return speed_dash
-        elif self.dash_direction_x == "up":
-            return - speed_dash
+        elif self.dash_direction_y == "up":
+            return -1*speed_dash
         return 0
 
     def distance_dash(self):
-        speed_dash=(self.compteur_dash**2) * 0.3 * self.zoom * self.speed_dt
+        speed_dash=self.update_speed_dash(change=False)
         if self.dash_direction_y != "" and self.dash_direction_x != "":
-                    speed_dash *= 1
-        elif (self.dash_direction_y == 'up' and self.dash_direction_x=="") or (self.dash_direction_x == "right" or self.dash_direction_x == "left") and self.dash_direction_y=="":
+            speed_dash *= 1
+        elif (self.dash_direction_y == 'up' and self.dash_direction_x=="") or ((self.dash_direction_x == "right" or self.dash_direction_x == "left") and self.dash_direction_y==""):
             speed_dash *= 1.3
         if self.dash_direction_x == "right":
             return speed_dash
@@ -504,8 +507,10 @@ class Player(MOB):
             return speed_dash
         return 0
 
-    def update_speed_dash(self):
-        self.speed_dash = (self.compteur_dash**2) * 0.6 * self.zoom * self.speed_dt
+    def update_speed_dash(self, change=True):
+        tmp = (self.compteur_dash**2) * 0.6 * self.zoom * self.speed_dt
+        if change:self.speed_dash = tmp
+        else:return tmp
 
     def debut_saut_edge(self, pieds = False, direction_x = ""):
         self.jump_edge_pieds = pieds

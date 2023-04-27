@@ -9,9 +9,6 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# cooldown dash parce que sinon skip tt les reliefs du sol
-
-# BUG scroll in air
 
 # re coder suppr_dash_image => group dans player ?
 

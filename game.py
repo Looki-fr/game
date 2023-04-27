@@ -427,7 +427,6 @@ class Game:
             self.handle_input()
             
             self.update()
-            
             self.update_ecran()
             #self.collision.draw_walls(self.player, self.screen, self.scroll_rect)
             self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling")
