@@ -30,7 +30,9 @@ class Game:
         self.group_particle = pygame.sprite.Group()
         self.group_object=pygame.sprite.Group()
         self.group_wave=pygame.sprite.Group()
-        self.all_groups = [self.group_object,self.group, self.group_particle]
+        self.group_dash_image_player1=pygame.sprite.Group()
+        self.group_dash_attack_image_player1=pygame.sprite.Group()
+        self.all_groups = [self.group_object,self.group,self.group_dash_image_player1, self.group_dash_attack_image_player1, self.group_particle]
         self.tab_particule_dead=[]
 
         self.render=RenderMap(self.screen.get_width(), self.screen.get_height(), self.directory)
@@ -40,7 +42,7 @@ class Game:
         player_position = (500, 500)
 
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
-        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image)
+        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images)
         
         self.pressed_up_bool = [False]
         self.last_player_position=self.player.position.copy()
@@ -206,27 +208,13 @@ class Game:
             pressed_down(perso_manette)
     
     def suppr_dash_image(self):
-        for sprite in self.group.sprites():      
-            # suppression des images dash apres le cooldown
-            if sprite.id == "image_dash":
-                if time.time() - sprite.t1 > sprite.cooldown or (sprite.body.collidelist([tuple[0] for tuple in self.get_all_mob()]) > -1 and self.player.is_grabing_edge):
-                    self.group.remove(sprite)
-            elif sprite.id == "dash_attack_effect":
-                if self.player.dash_attack_image.finish:
-                    self.group.remove(self.player.dash_attack_image)
-                    self.player.dash_attack_image_added=False
-                    self.player.dash_attack_image=None
-
-        for sprite in self.group_wave.sprites():      
-            # suppression des images dash apres le cooldown
-            if sprite.id == "image_dash":
-                if time.time() - sprite.t1 > sprite.cooldown or (sprite.body.collidelist([tuple[0] for tuple in self.get_all_mob()]) > -1 and self.player.is_grabing_edge):
-                    self.group_wave.remove(sprite)
-            elif sprite.id == "dash_attack_effect":
-                if self.player.dash_attack_image.finish:
-                    self.group_wave.remove(self.player.dash_attack_image)
-                    self.player.dash_attack_image_added=False
-                    self.player.dash_attack_image=None
+        for group in [self.group_dash_image_player1, self.group_dash_attack_image_player1]:
+            for sprite in group.sprites():      
+                # suppression des images dash apres le cooldown
+                if not "dash_attack_effect" in sprite.id and time.time() - sprite.t1 > sprite.cooldown or (sprite.body.collidelist([tuple[0] for tuple in self.get_all_mob()]) > -1 and self.player.is_grabing_edge):
+                    group.remove(sprite)
+                elif "dash_attack_effect" in sprite.id and sprite.finish:
+                    group.remove(sprite)
 
     def add_particule_to_group(self, p):
         self.group_particle.add(p)
@@ -381,19 +369,6 @@ class Game:
             else:
                 mob.reset_actions()
         
-        if self.player.images_dash != []:
-            # [x,y, image_modifié, cooldown]
-            im = Dash_images(self.player.images_dash[0][0], self.player.images_dash[0][1], self.player.images_dash[0][2], self.player.images_dash[0][3])
-            if self.render.current_map_is_wave:self.group_wave.add(im)
-            else:self.group.add(im)
-            del self.player.images_dash[:]
-        
-        if self.player.dash_attack_image != None:
-            if not self.player.dash_attack_image_added:
-                if self.render.current_map_is_wave:self.group_wave.add(self.player.dash_attack_image)
-                else:self.group.add(self.player.dash_attack_image)
-                self.player.dash_attack_image_added=True
-        
         self.update_particle()      
         
         self.blit.update_camera(self.player.position[0], self.player.position[1], self.player.speed_dt)
@@ -435,5 +410,4 @@ class Game:
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:
                 mob.update_tick(self.dt)
-
         pygame.quit()

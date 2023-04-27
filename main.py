@@ -12,8 +12,6 @@ if __name__ == "__main__":
 
 # re coder suppr_dash_image => group dans player ?
 
-# TODO now : new files, reduire files    
-
 # BUG saut depuis la droite jusqu'a en haut + rester appuyer sur touche du haut : 
 # l'animation du saut reste en boucle
 

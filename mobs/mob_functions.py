@@ -87,7 +87,6 @@ def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, zoom, collisi
             if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_dashing and not mob.a_dash and not mob.is_sliding_ground and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking:           
                 if not joueur_sur_sol(mob):
                     if time.time() - mob.timer_dash > mob.cooldown_dash  and ((not mob.is_grabing_edge and not collision.stop_if_collide(mob.direction, mob, dash=True, dontmove=True)) or ( mob.is_grabing_edge and mob.direction_wall == "left" and right ) or ( mob.direction_wall == "right" and left )):
-                        print(mob.timer_dash, time.time()-mob.timer_dash, mob.cooldown_dash)
                         if ( mob.direction_wall == "left" and right ) or ( mob.direction_wall == "right" and left ):
                             mob.timer_debut_dash_grabedge=time.time()
                         if mob.is_parying:

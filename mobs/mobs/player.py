@@ -3,7 +3,7 @@ import time
 from .MOTHER import MOB
 
 class Player(MOB):
-    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, Dash_attack_image):
+    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, Dash_attack_image, group_dash_attack_image_player, group_dash_image_player, Dash_images):
         """parametres : 
                 - x : coordonne en x du joueur
                 - y : coordonne en y du joueur
@@ -90,6 +90,7 @@ class Player(MOB):
         self.wall_slide_increment_body=15
 
         # dash
+        self.group_dash_image_player=group_dash_image_player
         self.a_dash = False
         self.is_dashing = False
         self.image1_dash = False
@@ -107,6 +108,7 @@ class Player(MOB):
         self.dash_direction_y = "" 
         # [x,y, image_modifié, cooldown]
         self.images_dash = []
+        self.Dash_images = Dash_images
         self.dash_cooldown_image = 0.15
         self.coord_debut_dash = [-999,-999]
         self.timer_debut_dash_grabedge=0
@@ -174,12 +176,11 @@ class Player(MOB):
         self.compteur_dash_attack_min=-5
         self.compteur_dash_attack=self.compteur_dash_attack_min
         self.increment_dash_attack=0.082
-        self.dash_attack_image=None
         self.Dash_attack_image=Dash_attack_image
         self.dash_attack_image_added=False
         self.timer_debut_dash_attack_grabedge=0
         self.cooldown_not_collide_dash_attack=0.1
-    
+        self.group_dash_attack_image_player = group_dash_attack_image_player
         
         # edge climb
         self.additionnal_compeur=0
@@ -268,8 +269,8 @@ class Player(MOB):
             x, y=self.body.topleft[0], self.position[1]+20*self.zoom
             self.position[0] -= self.compteur_dash_attack**2 *c* self.zoom * self.speed_dt
 
-        if self.current_image==2 and self.compteur_image==1:
-            self.dash_attack_image=self.Dash_attack_image(x,y, self.images["effect"]["dash_attack_effect"][self.direction]["1"], self.images["effect"]["dash_attack_effect"][self.direction]["2"], self.images["effect"]["dash_attack_effect"][self.direction]["3"])
+        if self.current_image==2 and self.compteur_image==1 and len(self.group_dash_attack_image_player)==0:
+            self.group_dash_attack_image_player.add(self.Dash_attack_image(x,y, self.images["effect"]["dash_attack_effect"][self.direction]["1"], self.images["effect"]["dash_attack_effect"][self.direction]["2"], self.images["effect"]["dash_attack_effect"][self.direction]["3"]))
         self.compteur_debut_dash_attack=time.time()
 
     def distance_dash_attack(self):
@@ -425,18 +426,8 @@ class Player(MOB):
     def dash(self):
         #enregistrement des images transparentes lors su dash
         #i should have calculated the distance in term of the speed but i got lazy x)
-        if self.compteur_dash >-9 and not self.image1_dash:
-            self.image1_dash = True
-            self.images_dash.append((self.position[0], self.position[1], self.image.copy(), 0))
-        elif self.compteur_dash >-7.75 and not self.image2_dash:
-            self.image2_dash = True
-            self.images_dash.append((self.position[0], self.position[1], self.image.copy(), self.dash_cooldown_image))
-        elif self.compteur_dash >-6.25 and not self.image3_dash:
-            self.image3_dash = True
-            self.images_dash.append((self.position[0], self.position[1], self.image.copy(), self.dash_cooldown_image*2))
-        elif self.compteur_dash >-4.25 and not self.image4_dash:
-            self.image4_dash = True
-            self.images_dash.append((self.position[0], self.position[1], self.image.copy(), self.dash_cooldown_image*3))
+        if (self.compteur_dash >-9 and len(self.group_dash_image_player)==0) or (self.compteur_dash >-7.75 and len(self.group_dash_image_player)==1) or (self.compteur_dash >-6.25 and len(self.group_dash_image_player)==2) or (self.compteur_dash >-4.25 and len(self.group_dash_image_player)==3):
+            self.group_dash_image_player.add(self.Dash_images(self.position[0], self.position[1], self.image.copy(), self.dash_cooldown_image *len(self.group_dash_image_player)))
         
         # le dash commence par un "mouvement immobile"
         if self.compteur_dash_immobile < self.compteur_dash_immobile_max:
