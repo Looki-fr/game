@@ -196,45 +196,69 @@ class MOB(pygame.sprite.Sprite):
         
     def move_right(self, pieds_sur_sol = False): 
         self.is_mouving_x = True
-        if not self.is_attacking:
+        if (not "player" in self.id and not self.is_attacking) or ("player" in self.id and not self.is_attacking and not self.is_parying or not pieds_sur_sol):
             self.position[0] += self.speed_coeff*self.speed * self.zoom * self.speed_dt *abs(self.motion[0])
             self.update_speed()
-        else:
+        elif not "player" in self.id:
             self.position[0] += self.speed_coeff*self.speed * self.zoom * self.speed_dt *abs(self.motion[0])*0.7
             self.update_speed()
-            
+        elif self.is_attacking:
+            if self.compteur_attack < self.compteur_attack_max:
+                self.compteur_attack+=self.increment_attack
+                self.position[0] += self.speed *0.8* (self.compteur_attack_max/self.compteur_attack)* self.zoom * self.speed_dt *abs(self.motion[0])
+                if self.compteur_attack == self.compteur_attack_max:
+                    self.speed=self.speed*0.7
+                    if self.speed < self.origin_speed_run:
+                        self.speed=self.origin_speed_run
+        elif self.is_parying:
+            if self.compteur_pary < self.compteur_pary_max:
+                self.compteur_pary+=self.increment_pary
+                self.position[0] += self.speed *0.8* (self.compteur_pary_max/self.compteur_pary)* self.zoom * self.speed_dt *abs(self.motion[0])    
         if pieds_sur_sol:
-            if self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
+            if not self.is_rolling and self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
                 self.change_direction("run","right") 
-        if self.direction != "right":
+
+        if self.direction != "right" and not self.is_rolling:
             if self.action_image == "crouch":
                 # we dont want the crouch animation du re start from the biggining
                 self.change_direction(self.action_image,"right",compteur_image=self.compteur_image, current_image=self.current_image)
             elif not self.is_attacking and not self.is_parying:
                 self.change_direction(self.action_image,"right")       
             else:
-                self.direction="right" 
+                self.direction="right"  
 
     def move_left(self, pieds_sur_sol = False): 
         self.is_mouving_x = True
-        if not self.is_attacking:
+        if (not "player" in self.id and not self.is_attacking) or ("player" in self.id and not self.is_attacking and not self.is_parying or not pieds_sur_sol):
             self.position[0] -= self.speed_coeff*self.speed * self.zoom * self.speed_dt *abs(self.motion[0])
             self.update_speed()
-        else:
+        elif not "player" in self.id:
             self.position[0] -= self.speed_coeff*self.speed * self.zoom * self.speed_dt *abs(self.motion[0])*0.7
             self.update_speed()
-            
+        elif self.is_attacking:
+            if self.compteur_attack < self.compteur_attack_max:
+                self.compteur_attack+=self.increment_attack
+                self.position[0] -= self.speed *0.8* (self.compteur_attack_max/self.compteur_attack)* self.zoom * self.speed_dt *abs(self.motion[0])
+                if self.compteur_attack == self.compteur_attack_max:
+                    self.speed=self.speed*0.7
+                    if self.speed < self.origin_speed_run:
+                        self.speed=self.origin_speed_run
+        elif self.is_parying:
+            if self.compteur_pary < self.compteur_pary_max:
+                self.compteur_pary+=self.increment_pary
+                self.position[0] -= self.speed *0.8* (self.compteur_pary_max/self.compteur_pary)* self.zoom * self.speed_dt *abs(self.motion[0])    
         if pieds_sur_sol:
-            if self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
+            if not self.is_rolling and self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
                 self.change_direction("run","left") 
-        if self.direction != "left":
+
+        if self.direction != "left" and not self.is_rolling:
             if self.action_image == "crouch":
                 # we dont want the crouch animation du re start from the biggining
                 self.change_direction(self.action_image,"left",compteur_image=self.compteur_image, current_image=self.current_image)
             elif not self.is_attacking and not self.is_parying:
-                self.change_direction(self.action_image,"left")  
+                self.change_direction(self.action_image,"left")       
             else:
-                self.direction="left"
+                self.direction="left" 
   
     def debut_saut(self):
         #penser à bien utiliser .copy() parce que sinon la valeur est la meme que self.position tous le temps

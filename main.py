@@ -9,15 +9,13 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# TODO affichier mur / sol etc en couleur pour check si c bon
+# cooldown dash parce que sinon skip tt les reliefs du sol
 
-# BUG continuer relief alors que gen current == 0 qd coins gauche
+# BUG scroll in air
 
-# BUG sur un little ground vers la droite => on est bloqué à cause du mur q don va à gauche
+# re coder suppr_dash_image => group dans player ?
 
-# TODO clean collision, pk wall[0] ??
-
-# TODO reunir move right du player dans mother
+# TODO now : new files, reduire files    
 
 # BUG saut depuis la droite jusqu'a en haut + rester appuyer sur touche du haut : 
 # l'animation du saut reste en boucle

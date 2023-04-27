@@ -2,9 +2,7 @@ import pygame
 import time
 from .MOTHER import MOB
 
-
 class Player(MOB):
-
     def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, Dash_attack_image):
         """parametres : 
                 - x : coordonne en x du joueur
@@ -44,6 +42,8 @@ class Player(MOB):
 
         self._get_images("dash_attack_effect", 3, 0, "Dash-Attack-Effect", "Dash-Attack-Effect", weapon="effect", coefficient=2)
         
+        self.image_pp=pygame.image.load(f'{self.directory}\\assets\\pp.png').convert_alpha()
+
         self.image = self.images[self.weapon]["idle"]["right"]["1"]
         
         self.position = [x,y - self.image.get_height()]
@@ -198,66 +198,7 @@ class Player(MOB):
             "air_hurt":self.air_hurt,
             "dash_attack":self.dash_attack
         }       
-    
-    def move_right(self, pieds_sur_sol = False): 
-        self.is_mouving_x = True
-        if (not self.is_attacking and not self.is_parying) or not pieds_sur_sol  or self.id != "player1":
-            self.position[0] += self.speed_coeff*self.speed * self.zoom * self.speed_dt *abs(self.motion[0])
-            self.update_speed()
-        elif self.is_attacking:
-            if self.compteur_attack < self.compteur_attack_max:
-                self.compteur_attack+=self.increment_attack
-                self.position[0] += self.speed *0.8* (self.compteur_attack_max/self.compteur_attack)* self.zoom * self.speed_dt *abs(self.motion[0])
-                if self.compteur_attack == self.compteur_attack_max:
-                    self.speed=self.speed*0.7
-                    if self.speed < self.origin_speed_run:
-                        self.speed=self.origin_speed_run
-        elif self.is_parying:
-            if self.compteur_pary < self.compteur_pary_max:
-                self.compteur_pary+=self.increment_pary
-                self.position[0] += self.speed *0.8* (self.compteur_pary_max/self.compteur_pary)* self.zoom * self.speed_dt *abs(self.motion[0])
-            
-        if pieds_sur_sol:
-            if not self.is_rolling and self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
-                self.change_direction("run","right") 
-        if self.direction != "right" and not self.is_rolling:
-            if self.action_image == "crouch":
-                # we dont want the crouch animation du re start from the biggining
-                self.change_direction(self.action_image,"right",compteur_image=self.compteur_image, current_image=self.current_image)
-            elif not self.is_attacking and not self.is_parying:
-                self.change_direction(self.action_image,"right")       
-            else:
-                self.direction="right" 
 
-    def move_left(self, pieds_sur_sol = False): 
-        self.is_mouving_x = True
-        if (not self.is_attacking and not self.is_parying) or not pieds_sur_sol or self.id != "player1":
-            self.position[0] -= self.speed_coeff*self.speed * self.zoom * self.speed_dt *abs(self.motion[0])
-            self.update_speed()
-        elif self.is_attacking:
-            if self.compteur_attack < self.compteur_attack_max:
-                self.compteur_attack+=self.increment_attack
-                self.position[0] -= self.speed *0.8* (self.compteur_attack_max/self.compteur_attack)* self.zoom * self.speed_dt *abs(self.motion[0])
-                if self.compteur_attack == self.compteur_attack_max:
-                    self.speed=self.speed*0.7
-                    if self.speed < self.origin_speed_run:
-                        self.speed=self.origin_speed_run
-        elif self.is_parying:
-            if self.compteur_pary < self.compteur_pary_max:
-                self.compteur_pary+=self.increment_pary
-                self.position[0] -= self.speed *0.8* (self.compteur_pary_max/self.compteur_pary)* self.zoom * self.speed_dt *abs(self.motion[0])
-        if pieds_sur_sol:
-            if not self.is_rolling and self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
-                self.change_direction("run","left") 
-        if self.direction != "left" and not self.is_rolling:
-            if self.action_image == "crouch":
-                # we dont want the crouch animation du re start from the biggining
-                self.change_direction(self.action_image,"left",compteur_image=self.compteur_image, current_image=self.current_image)
-            elif not self.is_attacking and not self.is_parying:
-                self.change_direction(self.action_image,"left")  
-            else:
-                self.direction="left"
-    
     def debut_edge_climb(self):
         if self.direction=="right":
             self.position[0]+=self.body.width + 10*self.zoom

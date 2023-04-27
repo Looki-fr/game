@@ -120,7 +120,14 @@ class Collision:
         return False
         
     def stop_if_collide(self, direction,mob, head = False, move_back=True, dash=False, dontmove=False):
-        """fait en sorte que le joueur avance plus lorsque qu'il vance dans un mur"""
+        """fait en sorte que le joueur avance plus lorsque qu'il avance dans un mur
+        /!\           /!\          /!\        /!\ 
+        
+            its normal if we work with list (wall[0]) 
+            because collide list need to use list
+                 
+                /!\           /!\         /!\         /!\ 
+        """
         if head:rect = mob.head
         else:rect = mob.body
         if dash: temp=None
@@ -214,3 +221,23 @@ class Collision:
                 if (mob.body.collidelist(wall) > -1 or mob.head.collidelist(wall) > -1 or mob.body_wallslide.collidelist(wall) > -1) and mob.is_sliding:
                     return
         mob.fin_grab_edge()
+    
+    def handle_collisions_wall_dash(self, mob, dist, fin_dash, direction, tile_width, fall=True, distance_y=0):   
+        step=round(tile_width-2)
+        if dist != 0 and step > 0:
+            tmp=[mob.position[0], mob.position[1]]
+            for i in [y for y in range(step, abs(round(dist)), step)]+[abs(round(dist))+1]:
+                if direction == "right":mob.position[0]+=i
+                else:mob.position[0]-=i
+                if distance_y>0:mob.position[1]+=i
+                elif distance_y<0:mob.position[1]-=i
+                if self.stop_if_collide(direction, mob, dash=True) or self.joueur_se_cogne(mob):
+                    fin_dash()
+                    self.check_grab(mob, direction)
+                    if fall:
+                        if not mob.is_grabing_edge:
+                            mob.debut_chute()
+                    if not mob.is_grabing_edge:
+                        mob.position=[tmp[0], tmp[1]]
+                    return
+            mob.position=[tmp[0], tmp[1]]

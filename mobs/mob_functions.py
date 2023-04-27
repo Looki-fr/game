@@ -205,3 +205,42 @@ def pressed_interact(liste_mob, group_object):
             for sprite in group_object:
                 if sprite.rect.collidelist([mob.body]) > -1:
                     return sprite.id
+                
+def handle_is_attacking(attacking_mob, get_all_mob):
+    if attacking_mob.is_dashing_attacking or attacking_mob.current_image in attacking_mob.attack_damage[attacking_mob.action_image][0]:
+        for mob in [tuple[0] for tuple in get_all_mob()]:
+            if mob.id != attacking_mob.id and mob.is_mob != attacking_mob.is_mob and (not "roll" in mob.actions or not mob.is_rolling):
+                if (attacking_mob.is_dashing_attacking and attacking_mob.dash_attack_image != None and mob.body.collidelist([attacking_mob.dash_attack_image.body]) > -1) or (mob.body.collidelist([attacking_mob.rect_attack]) > -1 or (attacking_mob.has_air_attack and mob.body.collidelist([attacking_mob.rect_air_attack]) > -1)) and mob.action_image!="dying":
+                    if not mob.is_parying or attacking_mob.is_dashing_attacking:
+                        if attacking_mob.is_dashing_attacking: mob.health -= attacking_mob.dash_attack_damage
+                        else :mob.health -=  attacking_mob.attack_damage[attacking_mob.action_image][1]
+
+                        if not "hurt" in mob.action_image:
+                            mob.take_damage()
+                        if mob.health <=0:
+                            mob.start_dying()
+
+                    else:
+                        attacking_mob.take_damage()
+                        mob.is_parying=False
+                        if not mob.is_falling:
+                            mob.change_direction("idle", mob.direction)
+                        else:
+                            mob.change_direction("up_to_fall", mob.direction)
+
+def gestion_chute(mob, collision):
+    # si le j saut ou dash la chute prends fin
+    if (mob.is_jumping or mob.is_dashing or mob.is_rolling) and mob.is_falling:
+        mob.fin_chute(jump_or_dash = True) 
+    
+    # si le joueur n'est pas sur un sol et ne chute pas on commence la chute
+    if not collision.joueur_sur_sol(mob):
+        if mob.action != "Edge_climb" and not mob.is_falling and not mob.is_jumping and not mob.is_dashing and not mob.is_grabing_edge and not mob.is_jumping_edge:
+            if mob.is_attacking or mob.is_dashing_attacking or mob.is_rolling or mob.is_sliding_ground:
+                mob.debut_chute(attack=True)
+            else:
+                mob.debut_chute()
+    else:
+        # sinon on stop la chute si il y en a une
+        if mob.is_falling:
+            mob.fin_chute()

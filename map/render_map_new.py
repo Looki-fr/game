@@ -1,5 +1,4 @@
 from math import ceil
-from map.graph import Graphe
 import random
 import pygame
 from map.graph_generator import get_matrix, printTab

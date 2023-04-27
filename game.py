@@ -1,18 +1,17 @@
 import pygame
+from pygame.locals import *
 import os
 import time
-from math import ceil
-from mobs.player import Player
-from mobs.crab import Crab
+from mobs.mobs.player import Player
+from mobs.mobs.crab import Crab
 from mobs.mob_functions import *
 from mobs.bot import *
 from mobs.collision import Collision
-from pygame.locals import *
-from entities_sprite.dash_images import Dash_images
-from entities_sprite.particule import Particule
+from sprite.entities.dash_images import Dash_images
+from sprite.entities.particule import Particule
+from sprite.entities.dash_attack_effect import Dash_attack_image
 from map.render_map_new import RenderMap
-from map.object_map import Object_map
-from entities_sprite.dash_attack_effect import Dash_attack_image
+from blit import Blit
 
 class Game:
     def __init__(self):
@@ -25,7 +24,6 @@ class Game:
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
         self.dt = 1/30
         
-        
         self.all_mobs=[]
         self.all_mobs_wave=[]
         self.group = pygame.sprite.Group()
@@ -33,28 +31,19 @@ class Game:
         self.group_object=pygame.sprite.Group()
         self.group_wave=pygame.sprite.Group()
         self.all_groups = [self.group_object,self.group, self.group_particle]
-        self.all_coords_mobs_screen = []
-        self.all_coords_particule = []
         self.tab_particule_dead=[]
-        
-        self.radiusL=80
-        self.radiusLInc=40
 
         self.render=RenderMap(self.screen.get_width(), self.screen.get_height(), self.directory)
         self.map_height=self.render.get_height()
         self.map_width=self.render.get_width()
         self.first_map=self.render.get_first_map()
         player_position = (500, 500)
-        
-        self.image_pp=pygame.image.load(f'{self.directory}\\assets\\pp.png').convert_alpha()
+
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
         self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image)
         
         self.pressed_up_bool = [False]
         self.last_player_position=self.player.position.copy()
-        
-        self.scroll=[0,0]
-        self.scroll_rect = Rect(self.player.position[0],self.player.position[1],1,1)
         
         pygame.joystick.init()
         self.joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
@@ -65,7 +54,10 @@ class Game:
         self.add_mob_to_game(self.player, "solo_clavier", group="wave")
         
         self.collision=Collision(self.render.zoom, self.render.matrix_map) 
-        i=1  
+        self.blit = Blit(self.render.zoom, self.screen, self.bg, self.minimap, self.player.position[0], self.player.position[1])
+        
+
+        # i=1  
         # for line in self.render.matrix_map:
         #     for map in line:
         #         if map != None:      
@@ -84,67 +76,6 @@ class Game:
         #if self.render.type_objects_map[d][c]=="wave":
             # coord=self.render.matrix_map[d][c]["object_map"]
             # self.group_object.add(Object_map(self.render.zoom, "wave", coord[0], coord[1], self.directory, 5, 8, "assets\\flag", "flag_", 2, 30, 5, c, d))
-
-    def blit_health_bar(self, bg, all_mobs):
-        i=1
-        for mob in all_mobs:
-            if "player" in mob.id:
-                
-                new_y = 12.5*self.render.zoom*(i)
-                bg.blit(self.image_pp, (15*self.render.zoom, new_y +5*self.render.zoom*i+ self.image_pp.get_height()*(i-1)))
-                new_x = 15*self.render.zoom+80/(mob.max_health/(mob.health+1))
-                
-                pygame.draw.line(bg, (200,50,50), (15*self.render.zoom, new_y), (new_x, new_y), 2*self.render.zoom)
-                i+=1
-    
-    def blit_group(self, bg, all_groups):
-        """blit les images des sprites des groupes sur la surface bg"""
-        self.all_coords_mobs_screen = []
-        self.all_coords_particule = []
-        for group in all_groups:
-            for sprite in group.sprites():
-                if self.scroll_rect.x - (self.screen.get_width()/2) - sprite.image.get_width() <= sprite.position[0] <= self.scroll_rect.x + (self.screen.get_width()/2)  + sprite.image.get_width() and \
-                    self.scroll_rect.y - (self.screen.get_height()/2) - sprite.image.get_height() <= sprite.position[1] <= self.scroll_rect.y + (self.screen.get_height()/2)  + sprite.image.get_height():
-                        new_x=self.screen.get_width()/2 + sprite.position[0] - self.scroll_rect.x
-                        new_y = self.screen.get_height()/2 + sprite.position[1] - self.scroll_rect.y
-                        if "particule" not in sprite.id: 
-                            if "arbre" in sprite.id :new_x = self.screen.get_width()/2 + sprite.position[0] - self.scroll_rect.x - sprite.image.get_width()/2
-
-                            if "player" in sprite.id: 
-                                new_x_=self.screen.get_width()/2 + sprite.body.centerx - self.scroll_rect.x  
-                                new_y_ = self.screen.get_height()/2 + sprite.body.centery - self.scroll_rect.y 
-                                self.all_coords_mobs_screen.append((new_x_, new_y_, 3))
-                            elif "crab" in sprite.id:
-                                new_x_ = self.screen.get_width()/2 + sprite.body.centerx - self.scroll_rect.x  
-                                new_y_ = self.screen.get_height()/2 + sprite.body.centery - self.scroll_rect.y 
-                                nbr = 3
-                                for co in self.all_coords_mobs_screen:
-                                    if new_x_-(self.radiusL) <= co[0] <= new_x_+(self.radiusL) and new_y_-(self.radiusL) <= co[1] <= new_y_+(self.radiusL) : 
-                                        nbr=0
-                                        break
-                                    elif new_x_-(self.radiusL+self.radiusLInc) <= co[0] <= new_x_+(self.radiusL+self.radiusLInc) and new_y_-(self.radiusL+self.radiusLInc) <= co[1] <= new_y_+(self.radiusL+self.radiusLInc) : nbr=min(nbr, 1)
-                                    elif new_x_-(self.radiusL+self.radiusLInc*2) <= co[0] <= new_x_+(self.radiusL+self.radiusLInc*2) and new_y_-(self.radiusL+self.radiusLInc*2) <= co[1] <= new_y_+(self.radiusL+self.radiusLInc*2) : nbr=min(nbr, 2)
-                                if nbr>0:
-                                    self.all_coords_mobs_screen.append((new_x_, new_y_, nbr))
-                        else: 
-                            
-                            new_x_=self.screen.get_width()/2 + sprite.rect.centerx - self.scroll_rect.x  
-                            new_y_ = self.screen.get_height()/2 + sprite.rect.centery - self.scroll_rect.y 
-                            bool=False
-                            for co in self.all_coords_mobs_screen:
-                                if new_x_-5 <= co[0] <= new_x_+5 and new_y_-5 <= co[1] <= new_y_+5 : bool=True
-                            if not bool:self.all_coords_particule.append((new_x_, new_y_, sprite.rect.w*2))
-                        bg.blit(sprite.image, (new_x,new_y))
-                        
-    def update_camera(self, playerx, playery, player_speed_dt):
-        self.scroll[0] = ((playerx - self.scroll_rect.x) // 15)*self.render.zoom*player_speed_dt
-        self.scroll_rect.x += self.scroll[0] 
-        self.scroll[1] = ((playery - self.scroll_rect.y) // 15)*self.render.zoom*player_speed_dt
-        self.scroll_rect.y += self.scroll[1] 
-        # if self.scroll_rect.x < self.screen.get_width()/2 : self.scroll_rect.x = self.screen.get_width()/2
-        # if self.scroll_rect.y < self.screen.get_height()/2 : self.scroll_rect.y = self.screen.get_height()/2
-        # if self.scroll_rect.x > self.map_width - self.screen.get_width()/2 : self.scroll_rect.x = self.map_width - self.screen.get_width()/2
-        # if self.scroll_rect.y > self.map_height - self.screen.get_height()/2 : self.scroll_rect.y = self.map_height - self.screen.get_height()/2 
     
     def add_mob_to_game(self, mob, input, group="base"):
         if group=="base":
@@ -161,8 +92,8 @@ class Game:
         self.collision.current_map_is_wave=False
         self.player.reset_actions(chute=True)
         self.player.position, self.player.position_wave_map = self.player.position_wave_map, self.player.position
-        self.scroll_rect.x=self.player.position[0]
-        self.scroll_rect.y=self.player.position[1]
+        self.blit.scroll_rect.x=self.player.position[0]
+        self.blit.scroll_rect.y=self.player.position[1]
         player_position = self.first_map["spawn_player"]
         self.checkpoint=[player_position[0], player_position[1]]
         self.player.checkpoint=[player_position[0], player_position[1]]
@@ -185,7 +116,7 @@ class Game:
             self.all_groups.insert(1, self.group_wave)
         
     def handle_input(self):
-        """agit en fonction des touches appuye par le joueur"""
+        """agit en fonction des touches appuyes par le joueur"""
              
         pressed = pygame.key.get_pressed()
         self.all_controls["solo_clavier"]["perso"]=[]
@@ -278,9 +209,7 @@ class Game:
         for sprite in self.group.sprites():      
             # suppression des images dash apres le cooldown
             if sprite.id == "image_dash":
-                if time.time() - sprite.t1 > sprite.cooldown:
-                    self.group.remove(sprite)
-                if sprite.body.collidelist([tuple[0] for tuple in self.get_all_mob()]) > -1 and self.player.is_grabing_edge:
+                if time.time() - sprite.t1 > sprite.cooldown or (sprite.body.collidelist([tuple[0] for tuple in self.get_all_mob()]) > -1 and self.player.is_grabing_edge):
                     self.group.remove(sprite)
             elif sprite.id == "dash_attack_effect":
                 if self.player.dash_attack_image.finish:
@@ -291,32 +220,13 @@ class Game:
         for sprite in self.group_wave.sprites():      
             # suppression des images dash apres le cooldown
             if sprite.id == "image_dash":
-                if time.time() - sprite.t1 > sprite.cooldown:
-                    self.group_wave.remove(sprite)
-                if sprite.body.collidelist([tuple[0] for tuple in self.get_all_mob()]) > -1 and self.player.is_grabing_edge:
+                if time.time() - sprite.t1 > sprite.cooldown or (sprite.body.collidelist([tuple[0] for tuple in self.get_all_mob()]) > -1 and self.player.is_grabing_edge):
                     self.group_wave.remove(sprite)
             elif sprite.id == "dash_attack_effect":
                 if self.player.dash_attack_image.finish:
                     self.group_wave.remove(self.player.dash_attack_image)
                     self.player.dash_attack_image_added=False
                     self.player.dash_attack_image=None
-    
-    def gestion_chute(self, mob):
-        # si le j saut ou dash la chute prends fin
-        if (mob.is_jumping or mob.is_dashing or mob.is_rolling) and mob.is_falling:
-            mob.fin_chute(jump_or_dash = True) 
-        
-        # si le joueur n'est pas sur un sol et ne chute pas on commence la chute
-        if not self.collision.joueur_sur_sol(mob):
-            if mob.action != "Edge_climb" and not mob.is_falling and not mob.is_jumping and not mob.is_dashing and not mob.is_grabing_edge and not mob.is_jumping_edge:
-                if mob.is_attacking or mob.is_dashing_attacking or mob.is_rolling or mob.is_sliding_ground:
-                    mob.debut_chute(attack=True)
-                else:
-                    mob.debut_chute()
-        else:
-            # sinon on stop la chute si il y en a une
-            if mob.is_falling:
-                mob.fin_chute()
 
     def add_particule_to_group(self, p):
         self.group_particle.add(p)
@@ -345,48 +255,6 @@ class Game:
 
         for p in tmp:
             self.tab_particule_dead.remove(p)
-    
-    def handle_is_attacking(self, attacking_mob):
-        if attacking_mob.is_dashing_attacking or attacking_mob.current_image in attacking_mob.attack_damage[attacking_mob.action_image][0]:
-            for mob in [tuple[0] for tuple in self.get_all_mob()]:
-                if mob.id != attacking_mob.id and mob.is_mob != attacking_mob.is_mob and (not "roll" in mob.actions or not mob.is_rolling):
-                    if (attacking_mob.is_dashing_attacking and attacking_mob.dash_attack_image != None and mob.body.collidelist([attacking_mob.dash_attack_image.body]) > -1) or (mob.body.collidelist([attacking_mob.rect_attack]) > -1 or (attacking_mob.has_air_attack and mob.body.collidelist([attacking_mob.rect_air_attack]) > -1)) and mob.action_image!="dying":
-                        if not mob.is_parying or attacking_mob.is_dashing_attacking:
-                            if attacking_mob.is_dashing_attacking: mob.health -= attacking_mob.dash_attack_damage
-                            else :mob.health -=  attacking_mob.attack_damage[attacking_mob.action_image][1]
-
-                            if not "hurt" in mob.action_image:
-                                mob.take_damage()
-                            if mob.health <=0:
-                                mob.start_dying()
-
-                        else:
-                            attacking_mob.take_damage()
-                            mob.is_parying=False
-                            if not mob.is_falling:
-                                mob.change_direction("idle", mob.direction)
-                            else:
-                                mob.change_direction("up_to_fall", mob.direction)
-    
-    def _handle_collisions_wall_dash(self, mob, dist, fin_dash, direction, fall=True, distance_y=0):   
-        step=round((self.render.tile_width)-2)
-        if dist != 0 and step > 0:
-            tmp=[mob.position[0], mob.position[1]]
-            for i in [y for y in range(step, abs(round(dist)), step)]+[abs(round(dist))+1]:
-                if direction == "right":mob.position[0]+=i
-                else:mob.position[0]-=i
-                if distance_y>0:mob.position[1]+=i
-                elif distance_y<0:mob.position[1]-=i
-                if self.collision.stop_if_collide(direction, mob, dash=True) or self.collision.joueur_se_cogne(mob):
-                    fin_dash()
-                    self.collision.check_grab(mob, direction)
-                    if fall:
-                        if not mob.is_grabing_edge:
-                            mob.debut_chute()
-                    if not mob.is_grabing_edge:
-                        mob.position=[tmp[0], tmp[1]]
-                    return
-            mob.position=[tmp[0], tmp[1]]
 
     def handle_action(self, mob):
         if "player" not in mob.id and mob.action=="dying":
@@ -455,10 +323,10 @@ class Game:
         # called every tick because distance change every tick
         
         if mob.is_dashing_attacking and time.time()-mob.timer_debut_dash_attack_grabedge > mob.cooldown_not_collide_dash_attack:
-            self._handle_collisions_wall_dash(mob, mob.distance_dash_attack(), mob.fin_dash_attack, mob.direction, False)     
+            self.collision.handle_collisions_wall_dash(mob, mob.distance_dash_attack(), mob.fin_dash_attack, mob.direction, self.render.tile_width, fall=False)     
 
         if mob.is_dashing  and time.time()-mob.timer_debut_dash_grabedge > mob.cooldown_not_collide_dash:   
-            self._handle_collisions_wall_dash(mob, mob.distance_dash(), mob.fin_dash, mob.dash_direction_x, distance_y=mob.distance_dash_y())  
+            self.collision.handle_collisions_wall_dash(mob, mob.distance_dash(), mob.fin_dash, mob.dash_direction_x,self.render.tile_width, distance_y=mob.distance_dash_y())  
         
         # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
         if mob.is_jumping and mob.compteur_jump > mob.compteur_jump_min * 0.4 and self.collision.stop_if_collide(mob.direction, mob):
@@ -468,10 +336,10 @@ class Game:
         if mob.position[1] > self.map_height + 100:
             mob.position = [mob.checkpoint[0], mob.checkpoint[1]-mob.image.get_height()]
         
-        self.gestion_chute(mob) 
+        gestion_chute(mob, self.collision) 
         
         if (mob.is_attacking or mob.is_dashing_attacking) and mob.action_image!="up_to_attack":
-            self.handle_is_attacking(mob)
+            handle_is_attacking(mob, self.get_all_mob)
         
         if mob.is_sliding:
             self.collision.check_tombe_ou_grab(mob)
@@ -528,39 +396,18 @@ class Game:
         
         self.update_particle()      
         
-        self.update_camera(self.player.position[0], self.player.position[1], self.player.speed_dt)
-
-    def circle_surf(self, radius, color):
-        surf = pygame.Surface((radius * 2, radius * 2))
-        pygame.draw.circle(surf, color, (radius, radius), radius)
-        surf.set_colorkey((0, 0, 0))
-        return surf
-
-    def fullscreen_surf(self, color):
-        surf = pygame.Surface((self.screen.get_width(), self.screen.get_height()))
-        surf.fill(color)
-        return surf
-
-    def add_lightning(self, surface):
-        #surface.blit(self.fullscreen_surf((10,10,10)), (0,0), special_flags=BLEND_RGB_SUB)
-        for co in self.all_coords_mobs_screen:
-            for i in range(co[2]):
-                r=self.radiusL+self.radiusLInc*i
-                surface.blit(self.circle_surf(r, (4,3,3)), (int(co[0] - r), int(co[1] - r)), special_flags=BLEND_RGB_ADD)
-        for co in self.all_coords_particule:
-            surface.blit(self.circle_surf(co[2], (15, 7, 7)), (int(co[0] - co[2]), int(co[1] - co[2])), special_flags=BLEND_RGB_ADD)
-
+        self.blit.update_camera(self.player.position[0], self.player.position[1], self.player.speed_dt)
 
     def update_ecran(self):     
         self.bg.fill((155,100,100))
         self.minimap.fill((200, 155,155))
-        self.render.render(self.bg,self.minimap, self.scroll_rect.x, self.scroll_rect.y)
-        self.blit_group(self.bg, self.all_groups)
-        self.blit_health_bar(self.bg, [tuple[0] for tuple in self.get_all_mob()])
+        self.render.render(self.bg,self.minimap, self.blit.scroll_rect.x, self.blit.scroll_rect.y)
+        all_coords_mobs_screen, all_coords_particule = self.blit.blit_group(self.bg, self.all_groups)
+        self.blit.blit_health_bar(self.bg, [tuple[0] for tuple in self.get_all_mob()])
         if not self.render.current_map_is_wave:
             self.bg.blit(self.minimap, (self.screen.get_width()-self.minimap.get_width(), 0))
 
-        self.add_lightning(self.bg)
+        self.blit.add_lightning(self.bg, all_coords_mobs_screen, all_coords_particule)
         self.screen.blit(self.bg, (0,0))
 
         self.last_player_position=self.player.position.copy()
@@ -583,7 +430,7 @@ class Game:
             
             self.update_ecran()
             #self.collision.draw_walls(self.player, self.screen, self.scroll_rect)
-            self.collision.draw(self.player, self.screen, self.scroll_rect, "wall")
+            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling")
             pygame.display.update()      
             
             self.dt = clock.tick(60)
