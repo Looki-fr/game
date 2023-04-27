@@ -370,7 +370,7 @@ class Game:
                                 mob.change_direction("up_to_fall", mob.direction)
     
     def _handle_collisions_wall_dash(self, mob, dist, fin_dash, direction, fall=True):   
-        step=round((self.render.tile_width)-2)
+        step=round((self.render.tile_width)/2-2)
         if dist != 0 and step > 0:
             tmp=[mob.position[0], mob.position[1]]
             for i in [y for y in range(step, abs(round(dist)), step)]+[abs(round(dist))+1]:
@@ -581,6 +581,8 @@ class Game:
             self.update()
             
             self.update_ecran()
+            #self.collision.draw_walls(self.player, self.screen, self.scroll_rect)
+            self.collision.draw(self.player, self.screen, self.scroll_rect, "wall")
             pygame.display.update()      
             
             self.dt = clock.tick(60)

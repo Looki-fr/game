@@ -181,8 +181,6 @@ class Player(MOB):
         
         # edge climb
         self.additionnal_compeur=0
-        self.edge_climb_bool=True
-
         self.is_friendly=True
         
         self.dico_action_functions = {
@@ -261,6 +259,7 @@ class Player(MOB):
                 self.direction="left"
     
     def debut_edge_climb(self):
+        print(self.action, self.is_falling, self.is_dashing)
         if self.direction=="right":
             self.position[0]+=self.body.width + 10*self.zoom
         else:
@@ -269,12 +268,12 @@ class Player(MOB):
         self.change_direction("Edge_climb", self.direction)
 
     def edge_climb(self):
-        if self.current_image==2 and self.edge_climb_bool:
+        if self.current_image==2 and self.compteur_image==0:
             self.position[1]-=31*self.zoom
-            self.edge_climb_bool=False
+            self.save_location()
         elif self.current_image==2:
             if (self.additionnal_compeur<=5):
-                self.compteur_image=2
+                self.compteur_image=1
             self.additionnal_compeur+=1
 
     def debut_pary(self):
@@ -461,7 +460,6 @@ class Player(MOB):
         """
         self.is_grabing_edge = False
         self.is_sliding = False
-        self.edge_climb_bool=True
         self.additionnal_compeur=0
         if mouvement:
             # petit decalage necessaires pour eviter des bug a causes des images d'animations ou des collision

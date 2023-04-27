@@ -39,7 +39,7 @@ def pressed_right(liste_mob, collision):
                 
 def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
     for mob in liste_mob:
-        if  not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_dashing_attacking and not "hurt" in mob.action_image and not mob.is_parying:
+        if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_dashing_attacking and not "hurt" in mob.action_image and not mob.is_parying:
             pieds=collision.check_pieds_collide_wall(mob)
             cogne = collision.joueur_se_cogne(mob)
             if "Edge_climb" in mob.actions and ((mob.direction=="right" and right) or (mob.direction=="left" and left) or (mob.direction=="right" and not left) or (mob.direction=="left" and not right)) and not pressed_up_bool[0] and not cogne and collision.check_head_collide_ground(mob) and mob.is_grabing_edge:

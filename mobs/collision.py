@@ -1,4 +1,5 @@
 import time
+import pygame
 
 class Collision:
     def __init__(self, zoom, matrix):
@@ -48,7 +49,15 @@ class Collision:
                     if mob.body.collidelist(rect) > -1:    
                         return True
         return False 
-                    
+
+    def draw(self, mob, screen, scroll_rect, type):
+        for dico in self._get_dico(mob.coord_map):
+            for obj in dico[type]:
+                new_x = screen.get_width()/2 + obj[0].left - scroll_rect.x
+                new_y = screen.get_height()/2 + obj[0].top - scroll_rect.y
+                pygame.draw.rect(screen, (255, 0, 0), (new_x, new_y, obj[0].w, obj[0].h))
+
+
     def joueur_sur_sol(self, mob, platform_only=False):
         """renvoie True si les pieds du joueur est sur une plateforme ou sur le sol.
         De plus, place la coordonee en y du joueur juste au dessus de la plateforme / du sol"""
