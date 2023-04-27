@@ -9,18 +9,11 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# BUG collision dash => add y aussi dans _handle 
-
 # BUG check si cogne avant de sauter pour deny
-
-# BUG passaga a travers mur qd dash du bas à gauche vers le haut dans hill gauche
-#  => into double dash à travers tt
 
 # BUG passaga a travers mur et stick wall dans le vide quand jump edge sur falaise
 
 # BUG passage a travers mur en haut qd dash attack vers le bas    
-
-# BUG passage a travers sol qd dash du bas à gauche de la hill gauche 
 
 # TODO affichier mur / sol etc en couleur pour check si c bon
 

@@ -259,7 +259,6 @@ class Player(MOB):
                 self.direction="left"
     
     def debut_edge_climb(self):
-        print(self.action, self.is_falling, self.is_dashing)
         if self.direction=="right":
             self.position[0]+=self.body.width + 10*self.zoom
         else:
@@ -539,6 +538,18 @@ class Player(MOB):
         self.image2_dash = False
         self.image3_dash = False
         self.image4_dash = False
+
+    def distance_dash_y(self):
+        speed_dash=(self.compteur_dash**2) * 0.3 * self.zoom * self.speed_dt
+        if self.dash_direction_y != "" and self.dash_direction_x != "":
+            speed_dash *= 1
+        elif (self.dash_direction_y == 'up' and self.dash_direction_x=="") or (self.dash_direction_x == "right" or self.dash_direction_x == "left") and self.dash_direction_y=="":
+            speed_dash *= 1.3
+        if self.dash_direction_x == "down":
+            return speed_dash
+        elif self.dash_direction_x == "up":
+            return - speed_dash
+        return 0
 
     def distance_dash(self):
         speed_dash=(self.compteur_dash**2) * 0.3 * self.zoom * self.speed_dt

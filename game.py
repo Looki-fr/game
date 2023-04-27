@@ -347,7 +347,6 @@ class Game:
             self.tab_particule_dead.remove(p)
     
     def handle_is_attacking(self, attacking_mob):
-
         if attacking_mob.is_dashing_attacking or attacking_mob.current_image in attacking_mob.attack_damage[attacking_mob.action_image][0]:
             for mob in [tuple[0] for tuple in self.get_all_mob()]:
                 if mob.id != attacking_mob.id and mob.is_mob != attacking_mob.is_mob and (not "roll" in mob.actions or not mob.is_rolling):
@@ -369,13 +368,15 @@ class Game:
                             else:
                                 mob.change_direction("up_to_fall", mob.direction)
     
-    def _handle_collisions_wall_dash(self, mob, dist, fin_dash, direction, fall=True):   
+    def _handle_collisions_wall_dash(self, mob, dist, fin_dash, direction, fall=True, distance_y=0):   
         step=round((self.render.tile_width)/2-2)
         if dist != 0 and step > 0:
             tmp=[mob.position[0], mob.position[1]]
             for i in [y for y in range(step, abs(round(dist)), step)]+[abs(round(dist))+1]:
                 if direction == "right":mob.position[0]+=i
                 else:mob.position[0]-=i
+                if distance_y>0:mob.position[1]+=i
+                elif distance_y<0:mob.position[1]-=i
                 if self.collision.stop_if_collide(direction, mob, dash=True):
                     fin_dash()
                     self.collision.check_grab(mob, direction)
@@ -457,7 +458,7 @@ class Game:
             self._handle_collisions_wall_dash(mob, mob.distance_dash_attack(), mob.fin_dash_attack, mob.direction, False)     
 
         if mob.is_dashing  and time.time()-mob.timer_debut_dash_grabedge > mob.cooldown_not_collide_dash:   
-            self._handle_collisions_wall_dash(mob, mob.distance_dash(), mob.fin_dash, mob.dash_direction_x)  
+            self._handle_collisions_wall_dash(mob, mob.distance_dash(), mob.fin_dash, mob.dash_direction_x, distance_y=mob.distance_dash_y())  
         
         # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
         if mob.is_jumping and mob.compteur_jump > mob.compteur_jump_min * 0.4 and self.collision.stop_if_collide(mob.direction, mob):
