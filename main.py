@@ -9,8 +9,7 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-
-# re coder suppr_dash_image => group dans player ?
+# BUG en haut dash ground suivit de dash attack => passaga a travers sol
 
 # BUG saut depuis la droite jusqu'a en haut + rester appuyer sur touche du haut : 
 # l'animation du saut reste en boucle

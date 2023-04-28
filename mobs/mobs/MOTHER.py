@@ -74,13 +74,14 @@ class MOB(pygame.sprite.Sprite):
         self.compteur_jump = self.compteur_jump_min
         self.compteur_jump_max = 0
         self.speed_jump = 0
+        # allow to jump when in air for a cooldown
         self.cooldown_able_to_jump = 0
         self.timer_cooldown_able_to_jump = 0
         # cooldown pour jump edge, 2x plus long pour saut normal
-        self.cooldown_next_jump = 0.15
+        self.cooldown_next_jump = 0.16
         self.timer_cooldown_next_jump = 0
         self.coord_debut_jump = [-999,-999]
-        self.increment_jump = 0.25      
+        self.increment_jump = 0.25   
         
         # autre booleen
         self.is_jumping_edge = False 
@@ -263,7 +264,6 @@ class MOB(pygame.sprite.Sprite):
     def debut_saut(self):
         #penser à bien utiliser .copy() parce que sinon la valeur est la meme que self.position tous le temps
         self.coord_debut_jump = self.position.copy()
-        self.timer_cooldown_next_jump = time.time()
         self.is_jumping = True
         self.change_direction('jump', self.direction)
 
@@ -276,19 +276,35 @@ class MOB(pygame.sprite.Sprite):
                 self.position[1] -= self.speed_jump
                 self.compteur_jump += self.increment_jump*self.speed_dt
             else:
-                self.fin_saut()
+                self.fin_saut(False)
         
-    def fin_saut(self):
+    def fin_saut(self, ground):
         """reinitialisation des vvariables du saut"""
+        print("FIN SAUT")
+        print("FIN SAUT")
+        print("FIN SAUT")
+        print("FIN SAUT")
+        print("FIN SAUT")
+        print("FIN SAUT")
         self.is_jumping = False
         self.compteur_jump = self.compteur_jump_min        
         self.a_sauter = True
         self.coord_debut_jump = [-999,-999]
+        self.timer_cooldown_next_jump = time.time()
+        if ground and self.action_image=="jump": self.change_direction("idle", self.direction)
+        elif self.action_image=="jump": self.debut_chute()
 
     def update_speed_jump(self):
         self.speed_jump = (self.compteur_jump**2) * 0.7 *self.zoom * self.speed_dt
     
     def debut_chute(self, attack=False):
+        print("DEBUT CHUTE")
+        print("DEBUT CHUTE")
+
+        print("DEBUT CHUTE")
+        print("DEBUT CHUTE")
+        print("DEBUT CHUTE")
+
         if self.a_dash == False:
             self.timer_cooldown_able_to_jump = time.time()
         self.is_falling = True

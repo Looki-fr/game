@@ -39,7 +39,7 @@ def pressed_right(liste_mob, collision):
                 
 def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
     for mob in liste_mob:
-        if not collision.joueur_se_cogne(mob) and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_dashing_attacking and not "hurt" in mob.action_image and not mob.is_parying:
+        if not collision.joueur_se_cogne(mob) and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_dashing_attacking and not "hurt" in mob.action_image and not mob.is_parying and not mob.is_jumping:
             pieds=collision.check_pieds_collide_wall(mob)
             # cogne = collision.joueur_se_cogne(mob)
             #  and not cogne

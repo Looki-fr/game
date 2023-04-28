@@ -267,7 +267,7 @@ class Game:
             mob.fin_saut_edge(cogne=True)
         
         if mob.is_jumping and self.collision.joueur_se_cogne(mob):
-            mob.fin_saut()
+            mob.fin_saut(ground=self.collision.joueur_sur_sol(mob))
               
         if mob.is_dashing and self.collision.joueur_se_cogne(mob):
             mob.fin_dash()
@@ -318,7 +318,7 @@ class Game:
         
         # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
         if mob.is_jumping and mob.compteur_jump > mob.compteur_jump_min * 0.4 and self.collision.stop_if_collide(mob.direction, mob):
-            mob.fin_saut()
+            mob.fin_saut(ground=self.collision.joueur_sur_sol(mob))
             self.collision.check_grab(mob, mob.direction)
         
         if mob.position[1] > self.map_height + 100:
@@ -404,9 +404,9 @@ class Game:
             self.update()
             self.update_ecran()
             #self.collision.draw_walls(self.player, self.screen, self.scroll_rect)
-            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling")
+            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ground")
             pygame.display.update()      
-            
+            print(self.player.action, self.player.is_jumping, self.player.is_falling)
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:
                 mob.update_tick(self.dt)
