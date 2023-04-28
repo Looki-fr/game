@@ -9,6 +9,8 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+# BUG passage a travers mur qd dash attack juste avant collide wall
+
 # BUG haut dash ou dash attack ? stick to wall bc trop haut dans le vide
 
 # TODO map : 
