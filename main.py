@@ -9,11 +9,7 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# BUG en haut dash ground suivit de dash attack => passaga a travers sol
-
-# BUG saut depuis la droite jusqu'a en haut + rester appuyer sur touche du haut : 
-# l'animation du saut reste en boucle
-
+# BUG haut dash ou dash attack ? stick to wall bc trop haut dans le vide
 
 # TODO map : 
 # habiller coins de map => plus accentué sur les 

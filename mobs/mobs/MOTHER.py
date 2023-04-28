@@ -280,12 +280,6 @@ class MOB(pygame.sprite.Sprite):
         
     def fin_saut(self, ground):
         """reinitialisation des vvariables du saut"""
-        print("FIN SAUT")
-        print("FIN SAUT")
-        print("FIN SAUT")
-        print("FIN SAUT")
-        print("FIN SAUT")
-        print("FIN SAUT")
         self.is_jumping = False
         self.compteur_jump = self.compteur_jump_min        
         self.a_sauter = True
@@ -298,13 +292,6 @@ class MOB(pygame.sprite.Sprite):
         self.speed_jump = (self.compteur_jump**2) * 0.7 *self.zoom * self.speed_dt
     
     def debut_chute(self, attack=False):
-        print("DEBUT CHUTE")
-        print("DEBUT CHUTE")
-
-        print("DEBUT CHUTE")
-        print("DEBUT CHUTE")
-        print("DEBUT CHUTE")
-
         if self.a_dash == False:
             self.timer_cooldown_able_to_jump = time.time()
         self.is_falling = True

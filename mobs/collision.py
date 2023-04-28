@@ -58,17 +58,19 @@ class Collision:
                 pygame.draw.rect(screen, (255, 0, 0), (new_x, new_y, obj[0].w, obj[0].h))
 
 
-    def joueur_sur_sol(self, mob, platform_only=False):
+    def joueur_sur_sol(self, mob, platform_only=False, dash=False):
         """renvoie True si les pieds du joueur est sur une plateforme ou sur le sol.
         De plus, place la coordonee en y du joueur juste au dessus de la plateforme / du sol"""
         passage_a_travers = time.time() - mob.t1_passage_a_travers_plateforme < mob.cooldown_passage_a_travers_plateforme
         bool=False
         gd=None
+        if dash : rect=mob.body
+        else: rect=mob.feet
         for dico in self._get_dico(mob.coord_map):
             if not platform_only:
                 if not mob.is_falling:
                     for little_ground in dico["little_ground"]:
-                        if mob.feet.collidelist(little_ground) > -1:
+                        if rect.collidelist(little_ground) > -1:
                             if not mob.is_jumping_edge and not mob.is_jumping:
                                 if not gd:
                                     gd=little_ground
@@ -80,7 +82,7 @@ class Collision:
                             bool= True
                 
                 for ground in dico["ground"]:
-                    if mob.feet.collidelist(ground) > -1:
+                    if rect.collidelist(ground) > -1:
                         if not mob.is_jumping_edge and not mob.is_jumping:
                             if not gd:
                                 gd=ground
@@ -93,7 +95,7 @@ class Collision:
             for plateforme in dico["platform"]:
                 # and not sprite.is_sliding
                 if not passage_a_travers:
-                    if mob.feet.collidelist(plateforme) > -1:
+                    if rect.collidelist(plateforme) > -1:
                         if (mob.position[1] + mob.image.get_height() - plateforme[0].y < 20) or "crab" in mob.id:
                             if not mob.is_jumping_edge and not mob.is_jumping:
                                 #if mob.action != "Edge_climb": mob.position[1] = plateforme[0].y - mob.image.get_height() + 1 + mob.increment_foot*2
@@ -222,7 +224,7 @@ class Collision:
                     return
         mob.fin_grab_edge()
     
-    def handle_collisions_wall_dash(self, mob, dist, fin_dash, direction, tile_width, fall=True, distance_y=0):   
+    def handle_collisions_wall_dash(self, mob, dist, fin_dash, direction, tile_width, fall=True, distance_y=0, ground=False):   
         """only check when dist != 0 because if the player only go up or down the body is big enough that the player
         wont go through the grounds / ceillings.
         Moreover the distance parcoured in x is equal to the one in y so we can use i in the loop to 
@@ -235,13 +237,14 @@ class Collision:
                 else:mob.position[0]-=i
                 if distance_y>0:mob.position[1]+=i
                 elif distance_y<0:mob.position[1]-=i
-                if self.stop_if_collide(direction, mob, dash=True) or self.joueur_se_cogne(mob):
+                if self.stop_if_collide(direction, mob, dash=True) or self.joueur_se_cogne(mob) or (ground and self.joueur_sur_sol(mob, dash=True)):
                     fin_dash()
                     self.check_grab(mob, direction)
                     if fall:
                         if not mob.is_grabing_edge:
                             mob.debut_chute()
-                    if not mob.is_grabing_edge:
+                    if not mob.is_grabing_edge and (not ground or not self.joueur_sur_sol(mob, dash=True)):
                         mob.position=[tmp[0], tmp[1]]
+                    if ground and self.joueur_sur_sol(mob, dash=True) : mob.debut_crouch()
                     return
             mob.position=[tmp[0], tmp[1]]

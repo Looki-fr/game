@@ -114,7 +114,7 @@ class Player(MOB):
         self.timer_debut_dash_grabedge=0
         self.cooldown_not_collide_dash=0.01
         self.timer_dash=0
-        self.cooldown_dash=3
+        self.cooldown_dash=2
     
         # ground slide
         self.is_sliding_ground = False

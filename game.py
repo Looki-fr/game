@@ -257,10 +257,6 @@ class Game:
                 else:
                     self.group.remove(mob)
                     self.all_mobs.remove([mob, "bot"])
-
-        # # because action is fall
-        # if mob.is_dashing_attacking:
-        #     mob.dash_attack()
         
         # le joueur ne peut pas de cogner pendant 2 ticks car sinon il ne peut pas sauter si il tiens un wall du bout des doigts
         if mob.is_jumping_edge and self.collision.joueur_se_cogne(mob) and (mob.jump_edge_pieds or (not mob.jump_edge_pieds and mob.compteur_jump_edge >= mob.compteur_jump_edge_min + mob.increment_jump_edge*4)):
@@ -271,12 +267,6 @@ class Game:
               
         if mob.is_dashing and self.collision.joueur_se_cogne(mob):
             mob.fin_dash()
-    
-        # gestion collision avec les sols
-        
-        if mob.is_dashing and self.collision.joueur_sur_sol(mob):
-            mob.fin_dash()
-            mob.debut_crouch()
             
         # slide on wall
         if mob.is_sliding and self.collision.joueur_sur_sol(mob):
@@ -303,18 +293,13 @@ class Game:
             if mob.is_falling : 
                 self.collision.check_grab(mob, mob.roll_direction_x)
 
-        #  if mob.is_dashing_attacking and self.collision.stop_if_collide(mob.direction, mob):
-        #     mob.fin_dash_attack()
-        #     if mob.is_falling :
-        #         self.collision.check_grab(mob)
-
         # called every tick because distance change every tick
         
         if mob.is_dashing_attacking and time.time()-mob.timer_debut_dash_attack_grabedge > mob.cooldown_not_collide_dash_attack:
             self.collision.handle_collisions_wall_dash(mob, mob.distance_dash_attack(), mob.fin_dash_attack, mob.direction, self.render.tile_width, fall=False)     
 
         if mob.is_dashing  and time.time()-mob.timer_debut_dash_grabedge > mob.cooldown_not_collide_dash:   
-            self.collision.handle_collisions_wall_dash(mob, mob.distance_dash(), mob.fin_dash, mob.dash_direction_x,self.render.tile_width, distance_y=mob.distance_dash_y())  
+            self.collision.handle_collisions_wall_dash(mob, mob.distance_dash(), mob.fin_dash, mob.dash_direction_x,self.render.tile_width, distance_y=mob.distance_dash_y(), ground=True)  
         
         # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
         if mob.is_jumping and mob.compteur_jump > mob.compteur_jump_min * 0.4 and self.collision.stop_if_collide(mob.direction, mob):
@@ -406,7 +391,6 @@ class Game:
             #self.collision.draw_walls(self.player, self.screen, self.scroll_rect)
             self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ground")
             pygame.display.update()      
-            print(self.player.action, self.player.is_jumping, self.player.is_falling)
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:
                 mob.update_tick(self.dt)
