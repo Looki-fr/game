@@ -2,40 +2,42 @@ import time
 
 def pressed_left(liste_mob, collision):
     for mob in liste_mob:
-        if "ground_slide" in mob.actions and mob.is_sliding_ground and mob.slide_ground_direction_x == 'right':
-            mob.fin_slide_ground()
-        if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_grabing_edge and not mob.is_sliding_ground and not mob.is_dashing and not mob.is_dashing_attacking:
-            mob.save_location()
-            bool = collision.joueur_sur_sol(mob)
-            if bool:
-                mob.move_left(pieds_sur_sol=True)
-            # si le joueur ne dash pas et est en lair
-            else:
-                mob.move_left()
-            if collision.stop_if_collide("left", mob) and not bool and not mob.is_jumping:
-                collision.check_grab(mob, "left")
+        if not "hurt" in mob.action_image:
+            if "ground_slide" in mob.actions and mob.is_sliding_ground and mob.slide_ground_direction_x == 'right':
+                mob.fin_slide_ground()
+            if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_grabing_edge and not mob.is_sliding_ground and not mob.is_dashing and not mob.is_dashing_attacking:
+                mob.save_location()
+                bool = collision.joueur_sur_sol(mob)
+                if bool:
+                    mob.move_left(pieds_sur_sol=True)
+                # si le joueur ne dash pas et est en lair
+                else:
+                    mob.move_left()
+                if collision.stop_if_collide("left", mob) and not bool and not mob.is_jumping:
+                    collision.check_grab(mob, "left")
 
 def pressed_right(liste_mob, collision):
     for mob in liste_mob:
-        if "ground_slide" in mob.actions:
-            if mob.is_sliding_ground and mob.slide_ground_direction_x == 'left':
-                mob.fin_slide_ground()
-        if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_grabing_edge and not mob.is_sliding_ground and not mob.is_dashing and not mob.is_dashing_attacking:
-            mob.save_location()
-            bool = collision.joueur_sur_sol(mob)
-            if bool:
-                mob.move_right(pieds_sur_sol=True)
-            # si le joueur ne dash pas et est en lair
-            else:
-                mob.move_right()
-            if collision.stop_if_collide("right", mob) and not bool and not mob.is_jumping:
-                collision.check_grab(mob, "right")
+        if not "hurt" in mob.action_image:
+            if "ground_slide" in mob.actions:
+                if mob.is_sliding_ground and mob.slide_ground_direction_x == 'left':
+                    mob.fin_slide_ground()
+            if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_grabing_edge and not mob.is_sliding_ground and not mob.is_dashing and not mob.is_dashing_attacking:
+                mob.save_location()
+                bool = collision.joueur_sur_sol(mob)
+                if bool:
+                    mob.move_right(pieds_sur_sol=True)
+                # si le joueur ne dash pas et est en lair
+                else:
+                    mob.move_right()
+                if collision.stop_if_collide("right", mob) and not bool and not mob.is_jumping:
+                    collision.check_grab(mob, "right")
 
-            #     if collide and not bool and not mob.is_jumping:
-            #     collision.check_grab(mob)
-            # elif collide:
-            #     if "ground_slide" in mob.actions and mob.is_sliding_ground: mob.fin_slide_ground()
-            #     if "roll" in mob.actions and mob.is_rolling: mob.fin_roll()
+                #     if collide and not bool and not mob.is_jumping:
+                #     collision.check_grab(mob)
+                # elif collide:
+                #     if "ground_slide" in mob.actions and mob.is_sliding_ground: mob.fin_slide_ground()
+                #     if "roll" in mob.actions and mob.is_rolling: mob.fin_roll()
                 
 def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
     for mob in liste_mob:
@@ -235,11 +237,16 @@ def gestion_chute(mob, collision):
     
     # si le joueur n'est pas sur un sol et ne chute pas on commence la chute
     if not collision.joueur_sur_sol(mob):
-        if mob.action != "Edge_climb" and not mob.is_falling and not mob.is_jumping and not mob.is_dashing and not mob.is_grabing_edge and not mob.is_jumping_edge:
+        if mob.action_image != "hurt_air" and mob.action != "Edge_climb" and not mob.is_falling and not mob.is_jumping and not mob.is_dashing and not mob.is_grabing_edge and not mob.is_jumping_edge:
             if mob.is_attacking or mob.is_dashing_attacking or mob.is_rolling or mob.is_sliding_ground:
                 mob.debut_chute(attack=True)
             else:
                 mob.debut_chute()
+        
+    elif mob.action_image == "air_hurt":
+        mob.fin_chute(jump_or_dash=True)
+        mob.action_image = "hurt"
+        mob.action="idle"
     else:
         # sinon on stop la chute si il y en a une
         if mob.is_falling:

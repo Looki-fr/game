@@ -147,7 +147,7 @@ class MOB(pygame.sprite.Sprite):
         if self.is_dashing_attacking:
             self.fin_dash_attack()
         if self.is_jumping:
-            self.fin_saut()
+            self.fin_saut(no_change=True)
         if self.is_jumping_edge:
             self.fin_saut_edge()
         if self.is_attacking:
@@ -164,11 +164,17 @@ class MOB(pygame.sprite.Sprite):
             self.fin_dash_attack()
         if chute:
             self.fin_chute()
+        if not self.is_falling:
+            self.action="idle"
         
     def take_damage(self):
         if self.is_falling and "air_hurt" in self.actions: 
-            self.change_direction("air_hurt", self.direction)
             self.reset_actions(chute=False)
+            self.change_direction("air_hurt", self.direction)
+        elif (self.is_jumping or self.is_jumping_edge or self.is_dashing or (self.is_dashing_attacking and self.is_falling)) and "air_hurt" in self.actions:
+            self.reset_actions()
+            self.debut_chute(attack=True)
+            self.change_direction("air_hurt", self.direction)
         else:
             self.reset_actions()
             self.change_direction("hurt", self.direction)
@@ -278,15 +284,16 @@ class MOB(pygame.sprite.Sprite):
             else:
                 self.fin_saut(False)
         
-    def fin_saut(self, ground):
+    def fin_saut(self, ground=True, no_change=False):
         """reinitialisation des vvariables du saut"""
         self.is_jumping = False
         self.compteur_jump = self.compteur_jump_min        
         self.a_sauter = True
         self.coord_debut_jump = [-999,-999]
         self.timer_cooldown_next_jump = time.time()
-        if ground and self.action_image=="jump": self.change_direction("idle", self.direction)
-        elif self.action_image=="jump": self.debut_chute()
+        if not no_change and ground and self.action_image=="jump": self.change_direction("idle", self.direction)
+        elif not no_change and self.action_image=="jump": self.debut_chute()
+        self.update_action()
 
     def update_speed_jump(self):
         self.speed_jump = (self.compteur_jump**2) * 0.7 *self.zoom * self.speed_dt
@@ -312,6 +319,7 @@ class MOB(pygame.sprite.Sprite):
         self.speed_gravity = self.original_speed_gravity
         if not self.is_dashing_attacking and not self.is_sliding_ground and not self.is_rolling and not jump_or_dash and not self.is_parying:
             self.debut_crouch()
+        self.update_action()
     
     def update_speed_gravity(self):
         if self.speed_gravity < self.max_speed_gravity:
@@ -428,18 +436,22 @@ class MOB(pygame.sprite.Sprite):
                     self.change_direction("idle", dir)
                     self.position[1]+=2*self.zoom
                 elif self.action_image=="jump" and not self.is_dashing:
-                    self.fin_saut()
+                    self.fin_saut(ground=False)
                     self.change_direction("fall", dir)
                 elif self.action_image=="dying":
                     pass
+                elif self.action_image=="air_hurt":
+                    self.action_image="fall"
                 else:
                     temp=False
                     self.current_image = 1
-            
+                self.update_action()
             if not temp:
                 self.image = self.images[self.weapon][self.action_image][dir][str(self.current_image)]
                 transColor = self.image.get_at((0,0))
                 self.image.set_colorkey(transColor)
+                
+
         
     def change_direction(self, action, direction, compteur_image=0, current_image=0):
         """change la direction et / ou l'action en cours"""
@@ -463,6 +475,7 @@ class MOB(pygame.sprite.Sprite):
         self.image = self.images[self.weapon][self.action_image][self.direction]["1"]
         transColor = self.image.get_at((0,0))
         self.image.set_colorkey(transColor)
+        self.update_action()
         
     def update_rect(self):
         self.rect.topleft = self.position

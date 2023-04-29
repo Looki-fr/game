@@ -24,7 +24,7 @@ class Player(MOB):
             self._get_images('run', 8, self.origin_compteur_image_run, "Run","Run_", w, coefficient=coefficient)
             self.origin_compteur_image_fall = 6
             self._get_images("fall", 3, self.origin_compteur_image_fall, "Fall", "Fall_", w, coefficient=coefficient)
-            self._get_images("jump", 4, 4, "Jump", "Jump_", w, coefficient=coefficient) 
+            self._get_images("jump", 4, 10, "Jump", "Jump_", w, coefficient=coefficient) 
             self._get_images("hurt", 3, 4, "Hurt", "Hurt_", w, coefficient=coefficient) 
             self._get_images("air_hurt", 3, 4, "Air Hurt", "Air-Hurt_", w, coefficient=coefficient) 
             self._get_images("dying", 7, 4, "Death", "Death_", w, coefficient=coefficient) 
@@ -298,6 +298,7 @@ class Player(MOB):
             self.change_direction("run",self.direction)
         else:
             self.change_direction("fall",self.direction)
+        self.update_action()
         # on soccupe de reset dash_attack_image dans game
   
     def debut_crouch(self):
@@ -341,8 +342,10 @@ class Player(MOB):
         self.timer_roll = time.time()
 
         if self.is_falling:
-                if "up_to_fall" in self.actions :self.change_direction("up_to_fall", self.direction)
-                else: self.change_direction("fall", self.direction)
+            if "up_to_fall" in self.actions :self.change_direction("up_to_fall", self.direction)
+            else: self.change_direction("fall", self.direction)
+        self.update_action()
+        
 
     def debut_slide_ground(self, slide_ground_direction_x):
         #penser à bien utiliser .copy() parce que sinon la valeur est la meme que self.position tous le temps
@@ -377,6 +380,7 @@ class Player(MOB):
         else: self.change_direction("fall", self.direction)
             
         self.timer_cooldown_slide_ground = time.time()
+        self.update_action()
         
     def debut_grab_edge(self, head_only=False):
         # if only the head collide with the wall
@@ -411,6 +415,7 @@ class Player(MOB):
             elif self.direction == "left":
                 self.position[0] += 15*self.zoom
         self.speed_gravity = self.original_speed_gravity 
+        self.update_action()
 
     def debut_dash(self, dash_direction_x, dash_direction_y, skip_immobile=False):
         #penser à bien utiliser .copy() parce que sinon la valeur est la meme que self.position tous le temps
@@ -473,6 +478,7 @@ class Player(MOB):
         self.image3_dash = False
         self.image4_dash = False
         self.timer_dash=time.time()
+        self.update_action()
 
     def distance_dash_y(self):
         speed_dash=self.update_speed_dash(change=False)
@@ -555,6 +561,7 @@ class Player(MOB):
         self.direction_jump_edge = ''
         self.compteur_jump_edge_max = self.original_compteur_jump_edge_max
         self.timer_cooldown_next_jump=time.time()
+        self.update_action()
     
     def update_speed_jump_edge(self):
         self.speed_jump_edge = (self.compteur_jump_edge**2) * 0.4 *self.zoom * self.speed_dt

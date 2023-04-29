@@ -376,13 +376,12 @@ class Game:
         """boucle du jeu"""
 
         clock = pygame.time.Clock()
-        #t1=time.time()
+        t1=time.time()
         self.running = True
         while self.running:
-            # print(time.time() -t1)
-            # if time.time() -t1 > 3:
-            #     t1 = time.time()
-            #     self.player.take_damage()
+            if time.time() -t1 > 3:
+                t1 = time.time()
+                self.player.take_damage()
             self.player.is_mouving_x = False
             self.handle_input()
             
