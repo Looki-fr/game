@@ -199,7 +199,8 @@ class Player(MOB):
             "Edge_climb":self.edge_climb,
             "roll":self.roll,
             "air_hurt":self.air_hurt,
-            "dash_attack":self.dash_attack
+            "dash_attack":self.dash_attack,
+            "air_dying":self.air_hurt,
         }       
 
     def debut_edge_climb(self):

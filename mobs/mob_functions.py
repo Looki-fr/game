@@ -212,7 +212,7 @@ def handle_is_attacking(attacking_mob, get_all_mob):
     if attacking_mob.is_dashing_attacking or attacking_mob.current_image in attacking_mob.attack_damage[attacking_mob.action_image][0]:
         for mob in [tuple[0] for tuple in get_all_mob()]:
             if mob.id != attacking_mob.id and mob.is_mob != attacking_mob.is_mob and (not "roll" in mob.actions or not mob.is_rolling):
-                if (attacking_mob.is_dashing_attacking and attacking_mob.dash_attack_image != None and mob.body.collidelist([attacking_mob.dash_attack_image.body]) > -1) or (mob.body.collidelist([attacking_mob.rect_attack]) > -1 or (attacking_mob.has_air_attack and mob.body.collidelist([attacking_mob.rect_air_attack]) > -1)) and mob.action_image!="dying":
+                if (attacking_mob.is_dashing_attacking and attacking_mob.dash_attack_image != None and mob.body.collidelist([attacking_mob.dash_attack_image.body]) > -1) or (mob.body.collidelist([attacking_mob.rect_attack]) > -1 or (attacking_mob.has_air_attack and mob.body.collidelist([attacking_mob.rect_air_attack]) > -1)) and not "dying" in mob.action_image:
                     if not mob.is_parying or attacking_mob.is_dashing_attacking:
                         if attacking_mob.is_dashing_attacking: mob.health -= attacking_mob.dash_attack_damage
                         else :mob.health -=  attacking_mob.attack_damage[attacking_mob.action_image][1]

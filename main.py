@@ -16,8 +16,7 @@ if __name__ == "__main__":
 #  _
 # | |
 
-# pas changer image chute qd air hurt
-# hurt and death falling
+# BUG death falling xhen jumping
 
 
 # BUG  crab coin qd on est en bas il arete davancer

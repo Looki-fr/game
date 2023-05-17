@@ -137,7 +137,8 @@ class MOB(pygame.sprite.Sprite):
 
     def start_dying(self):
         self.reset_actions()
-        self.change_direction("dying", self.direction)
+        if not self.is_falling or not "air_dying" in self.images[self.weapon].keys() : self.change_direction("dying", self.direction)
+        else : self.change_direction("air_dying", self.direction)
         self.health=self.max_health
       
     def reset_actions(self, chute=False):
@@ -428,7 +429,7 @@ class MOB(pygame.sprite.Sprite):
                     else: self.change_direction("fall", dir)
                 elif self.action_image == "dash_attack":   
                     self.fin_dash_attack()
-                elif self.action_image=="dying":
+                elif "dying" in self.action_image:
                     self.position=[self.checkpoint[0], self.checkpoint[1]-self.image.get_height()]
                     self.fin_chute()
                     self.change_direction("idle", dir)
@@ -438,8 +439,6 @@ class MOB(pygame.sprite.Sprite):
                 elif self.action_image=="jump" and not self.is_dashing:
                     self.fin_saut(ground=False)
                     self.change_direction("fall", dir)
-                elif self.action_image=="dying":
-                    pass
                 elif self.action_image=="air_hurt":
                     self.action_image="fall"
                 else:
@@ -523,7 +522,7 @@ class MOB(pygame.sprite.Sprite):
         """sometimes actions and actions image are differents :
         when the player dash self.action = 'dash' and self.action_image = 'jump'
         because its has the same image, so we update it here"""
-        if self.action_image in ["roll","Edge_climb", "run", "idle", "fall","up_to_fall","Edge_Idle","Edge_grab","Wall_slide","ground_slide","crouch", "dying", "air_hurt", "dash_attack"]:
+        if self.action_image in ["roll","Edge_climb", "run", "idle", "fall","up_to_fall","Edge_Idle","Edge_grab","Wall_slide","ground_slide","crouch", "dying", "air_hurt", "dash_attack", "air_dying"]:
             self.action = self.action_image
         elif self.action_image == "jump":
             if self.is_dashing:

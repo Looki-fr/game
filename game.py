@@ -125,7 +125,7 @@ class Game:
         perso_manette=[]
         if pressed:
             for mob in self.get_all_mob():
-                if mob[0].action_image!="dying":
+                if not "dying" in mob[0].action_image:
                     #le joueur joue au clavier
                     # elif player[1]=="manette":
                     #     perso_manette.append(player[0])
@@ -245,7 +245,7 @@ class Game:
             self.tab_particule_dead.remove(p)
 
     def handle_action(self, mob):
-        if "player" not in mob.id and mob.action=="dying":
+        if "player" not in mob.id and not "dying" in mob.action:
             if mob.compteur_image==mob.images[mob.weapon][mob.action_image]["compteur_image_max"] and mob.current_image == mob.images[mob.weapon][mob.action_image]["nbr_image"]:
                 mob.particule.is_alive=False
                 self.tab_particule_dead.append(mob.particule)
@@ -381,14 +381,12 @@ class Game:
         while self.running:
             if time.time() -t1 > 3:
                 t1 = time.time()
-                self.player.take_damage()
+                self.player.start_dying()
             self.player.is_mouving_x = False
             self.handle_input()
             
             self.update()
             self.update_ecran()
-            #self.collision.draw_walls(self.player, self.screen, self.scroll_rect)
-            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ground")
             pygame.display.update()      
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:
