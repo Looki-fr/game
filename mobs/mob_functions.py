@@ -247,6 +247,10 @@ def gestion_chute(mob, collision):
         mob.fin_chute(jump_or_dash=True)
         mob.action_image = "hurt"
         mob.action="idle"
+    elif mob.action_image == "air_dying":
+        mob.fin_chute(jump_or_dash=True)
+        mob.action_image = "dying"
+        mob.action="idle"
     else:
         # sinon on stop la chute si il y en a une
         if mob.is_falling:

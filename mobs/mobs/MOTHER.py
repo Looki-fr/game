@@ -121,7 +121,7 @@ class MOB(pygame.sprite.Sprite):
                 return i[0]
     
     def _get_images(self, action, nbr_image, compteur_image_max, directory_name, image_name, weapon="default", coefficient=1, reverse=False):
-        
+
         self.images[weapon][action] = {
             "nbr_image":nbr_image,
             "compteur_image_max":compteur_image_max,
@@ -135,20 +135,22 @@ class MOB(pygame.sprite.Sprite):
             self.images[weapon][action]["left"][str(i)] = pygame.transform.flip(self.images[weapon][action]["right"][str(i)], True, False).convert_alpha()
             if reverse: self.images[weapon][action]["right"][str(i)], self.images[weapon][action]["left"][str(i)] = self.images[weapon][action]["left"][str(i)], self.images[weapon][action]["right"][str(i)]
 
-    def start_dying(self):
-        self.reset_actions()
-        if not self.is_falling or not "air_dying" in self.images[self.weapon].keys() : self.change_direction("dying", self.direction)
+
+    def start_dying(self, ground):
+        self.reset_actions(ground)
+        if ground or not "air_dying" in self.images[self.weapon].keys() : self.change_direction("dying", self.direction)
         else : self.change_direction("air_dying", self.direction)
+        self.update_action()
         self.health=self.max_health
       
-    def reset_actions(self, chute=False):
+    def reset_actions(self, ground,chute=False):
         """reset all actions except the fall"""
         if self.is_dashing:
             self.fin_dash()
         if self.is_dashing_attacking:
             self.fin_dash_attack()
         if self.is_jumping:
-            self.fin_saut(no_change=True)
+            self.fin_saut(ground=ground)
         if self.is_jumping_edge:
             self.fin_saut_edge()
         if self.is_attacking:
@@ -167,17 +169,18 @@ class MOB(pygame.sprite.Sprite):
             self.fin_chute()
         if not self.is_falling:
             self.action="idle"
+        print("reset    ", self.action_image, self.action)
         
     def take_damage(self):
         if self.is_falling and "air_hurt" in self.actions: 
-            self.reset_actions(chute=False)
+            self.reset_actions(False,chute=False)
             self.change_direction("air_hurt", self.direction)
         elif (self.is_jumping or self.is_jumping_edge or self.is_dashing or (self.is_dashing_attacking and self.is_falling)) and "air_hurt" in self.actions:
-            self.reset_actions()
+            self.reset_actions(False)
             self.debut_chute(attack=True)
             self.change_direction("air_hurt", self.direction)
         else:
-            self.reset_actions()
+            self.reset_actions(True)
             self.change_direction("hurt", self.direction)
   
     def update_tick(self, dt):
@@ -293,7 +296,7 @@ class MOB(pygame.sprite.Sprite):
         self.coord_debut_jump = [-999,-999]
         self.timer_cooldown_next_jump = time.time()
         if not no_change and ground and self.action_image=="jump": self.change_direction("idle", self.direction)
-        elif not no_change and self.action_image=="jump": self.debut_chute()
+        elif not no_change and not ground and self.action_image=="jump": self.debut_chute()
         self.update_action()
 
     def update_speed_jump(self):
@@ -323,19 +326,20 @@ class MOB(pygame.sprite.Sprite):
         self.update_action()
     
     def update_speed_gravity(self):
-        if self.speed_gravity < self.max_speed_gravity:
-            # self.speed_gravity augmente de plus en plus vite au file des ticks 
-            self.speed_gravity += self.speed_gravity*0.005 + self.original_speed_gravity*0.005
-            # reduction de la vitesse de defilement des images quand la vitesse augmente
-            if self.speed_gravity > 5:
-                if not self.is_attacking and not self.is_dashing_attacking:
-                    self.images[self.weapon][self.action_image]["compteur_image_max"] = 4
-            elif self.speed_gravity > 6.5:
-                if not self.is_attacking and not self.is_dashing_attacking:
-                    self.images[self.weapon][self.action_image]["compteur_image_max"] = 3
-        # vitesse maximal du defilement des images
-        elif self.images[self.weapon][self.action_image]["compteur_image_max"] != 2 and not self.is_attacking and not self.is_dashing_attacking:
-            self.images[self.weapon][self.action_image]["compteur_image_max"] = 2  
+        if self.action_image!="air_dying" and self.action_image!="air_hurt":
+            if self.speed_gravity < self.max_speed_gravity:
+                # self.speed_gravity augmente de plus en plus vite au file des ticks 
+                self.speed_gravity += self.speed_gravity*0.005 + self.original_speed_gravity*0.005
+                # reduction de la vitesse de defilement des images quand la vitesse augmente
+                if self.speed_gravity > 5:
+                    if not self.is_attacking and not self.is_dashing_attacking:
+                        self.images[self.weapon][self.action_image]["compteur_image_max"] = 4
+                elif self.speed_gravity > 6.5:
+                    if not self.is_attacking and not self.is_dashing_attacking:
+                        self.images[self.weapon][self.action_image]["compteur_image_max"] = 3
+            # vitesse maximal du defilement des images
+            elif self.images[self.weapon][self.action_image]["compteur_image_max"] != 2 and not self.is_attacking and not self.is_dashing_attacking:
+                self.images[self.weapon][self.action_image]["compteur_image_max"] = 2  
 
     def debut_ralentissement(self):
         """methode appele quand je joueur arretes de courir"""

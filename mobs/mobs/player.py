@@ -12,7 +12,7 @@ class Player(MOB):
         MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule,update_particle, directory, "assets\\Bounty Hunter\\Individual Sprite")
 
         #"up_to_fall", 
-        action=["air_hurt","roll","Edge_climb", "Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack"]
+        action=["air_dying","air_hurt","roll","Edge_climb", "Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack"]
         for a in action:
             self.actions.append(a)
         
@@ -28,7 +28,7 @@ class Player(MOB):
             self._get_images("hurt", 3, 4, "Hurt", "Hurt_", w, coefficient=coefficient) 
             self._get_images("air_hurt", 3, 4, "Air Hurt", "Air-Hurt_", w, coefficient=coefficient) 
             self._get_images("dying", 7, 4, "Death", "Death_", w, coefficient=coefficient) 
-            self._get_images("air_dying", 3, 5, "Death Fall", "Death-Fall_", w, coefficient=coefficient) 
+            self._get_images("air_dying", 3, 4, "Death Fall", "Death-Fall_", w, coefficient=coefficient) 
             self._get_images("ground_slide", 4, 3, "Slide", "Slide_", w, coefficient=coefficient) 
             self._get_images("dash_attack", 10, 3, "Dash Attack", "Dash-Attack_", w, coefficient=coefficient)
             self._get_images("crouch", 5, 2, "Croush", "Croush_", w, coefficient=coefficient) 
@@ -39,7 +39,6 @@ class Player(MOB):
             self._get_images("attack1", 8, 2, "Attack", "Attack_", w, coefficient=coefficient) 
             self._get_images("attack2", 6, 2, "Attack2", "Attack_", w, coefficient=coefficient)
             self._get_images("roll", 7, 3, "Roll", "Roll_", w, coefficient=coefficient)
-
         self._get_images("dash_attack_effect", 3, 0, "Dash-Attack-Effect", "Dash-Attack-Effect", weapon="effect", coefficient=2)
         
         self.image_pp=pygame.image.load(f'{self.directory}\\assets\\pp.png').convert_alpha()
@@ -202,6 +201,8 @@ class Player(MOB):
             "dash_attack":self.dash_attack,
             "air_dying":self.air_hurt,
         }       
+        
+
 
     def debut_edge_climb(self):
         if self.direction=="right":

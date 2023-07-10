@@ -16,8 +16,6 @@ if __name__ == "__main__":
 #  _
 # | |
 
-# BUG death falling xhen jumping
-
 
 # BUG  crab coin qd on est en bas il arete davancer
 
