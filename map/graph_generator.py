@@ -45,7 +45,6 @@ def get_shortest_path(start, end, mat):
 
 def get_all_neighboors(i, y, mat, vu):
     tab=[]
-    if not mat[i][y]: return tab
     if i>0 and mat[i-1][y] and mat[i][y][2] and (i-1, y) not in vu:tab.append((i-1, y))
     if i<len(mat)-1 and mat[i+1][y] and mat[i][y][3]  and (i+1, y) not in vu:tab.append((i+1, y))
     if y>0 and mat[i][y-1] and mat[i][y][0]  and (i, y-1) not in vu:tab.append((i, y-1))
@@ -114,26 +113,26 @@ def get_matrix():
     if corner == 1:
         for i in range(width):
             for y in range(height):
-                if mat[i][y]:
-                    path=[(i//(len(mat)-1), i%(len(mat)-1))]
+                if len(mat[i][y])>0:
+                    path=[(i,y)]
                     break
     elif corner==2:
         for i in range(width-1, -1, -1):
             for y in range(height):
-                if mat[i][y]:
-                    path=[(i//(len(mat)-1), i%(len(mat)-1))]
+                if len(mat[i][y])>0:
+                    path=[(i,y)]
                     break
     elif corner==3:
         for i in range(width-1, -1, -1):
             for y in range(height-1, -1, -1):
-                if mat[i][y]:
-                    path=[(i//(len(mat)-1), i%(len(mat)-1))]
+                if len(mat[i][y])>0:
+                    path=[(i,y)]
                     break
     elif corner==4:
         for i in range(width):
             for y in range(height-1, -1, -1):
-                if mat[i][y]:
-                    path=[(i//(len(mat)-1), i%(len(mat)-1))]
+                if len(mat[i][y])>0:
+                    path=[(i,y)]
                     break
     print("CORNER = ", corner)
 
@@ -145,6 +144,7 @@ def get_matrix():
     while (len(path))>0:
         node = path.pop()
         bool=True
+        print(node, path)
         tab=get_all_neighboors(node[0], node[1], mat, vu)
         if len(tab) > 0 :
             n = random.choice(tab)
