@@ -379,11 +379,6 @@ class Game:
         t1=time.time()
         self.running = True
         while self.running:
-            if time.time() -t1 > 3:
-                print("DYING   ", self.player.action, self.player.action)
-                t1 = time.time()
-                self.player.start_dying(ground=self.collision.joueur_sur_sol(self.player))
-                print("DEAD   ", self.player.action, self.player.action)
                 
             self.player.is_mouving_x = False
             self.handle_input()

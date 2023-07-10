@@ -45,6 +45,7 @@ def get_shortest_path(start, end, mat):
 
 def get_all_neighboors(i, y, mat, vu):
     tab=[]
+    if not mat[i][y]: return tab
     if i>0 and mat[i-1][y] and mat[i][y][2] and (i-1, y) not in vu:tab.append((i-1, y))
     if i<len(mat)-1 and mat[i+1][y] and mat[i][y][3]  and (i+1, y) not in vu:tab.append((i+1, y))
     if y>0 and mat[i][y-1] and mat[i][y][0]  and (i, y-1) not in vu:tab.append((i, y-1))
