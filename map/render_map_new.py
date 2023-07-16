@@ -12,6 +12,14 @@ class RenderMap:
         self.screen_height = screen_height
 
         self.graphe=get_matrix()
+        new_graph=[]
+        new_graph.insert(0, [[] for _ in range(len(self.graphe[0])+2)])
+        
+        for i in range(len(self.graphe)):
+            new_graph.append([[]]+[self.graphe[i][z] for z in range(len(self.graphe[i]))]+[[]])
+        
+        new_graph.append([[] for _ in range(len(self.graphe[0])+2)])
+        self.graphe=new_graph
         printTab(self.graphe)
 
         self.minimap_tile_width=50            
@@ -23,7 +31,7 @@ class RenderMap:
         self.increment=7*self.zoom
         self.increment_ground=30*self.zoom
         self.all_pic=[]
-        self._init_all_pics()
+        self._init_all_pics(directory)
 
         self.gen_max_height=4
         self.gen_min_width=6
@@ -35,6 +43,8 @@ class RenderMap:
         self.gen_min_hill_height=2
         self.gen_falaise_max_width=self.room_width/self.tile_width // 2
         self.gen_falaise_min_width=self.room_width/self.tile_width // 3
+
+        
         self.all_mat=[[None for _ in range(len(self.graphe[0]))] for _ in range(len(self.graphe))]
 
         # value : dictionnary : keys : id of the tile value : image of the tile
@@ -52,6 +62,16 @@ class RenderMap:
                     # E and S correspond to if the map has a neightboor on the right or on the bot
                 self.load_map(node, i, z)
         
+        # correcting id of pictures
+
+        for i in range(len(self.matrix_picture)):
+            for y in range(len(self.matrix_picture[i])):
+                for i_ in range(len(self.matrix_picture[i][y])):
+                    if self.matrix_picture[i][y][0]["img"] != len(self.all_pic)-2:
+                        if self._has_bot(i,y, i_): 
+                            self.matrix_picture[i][y][i_]["img"]=11
+
+
         self.minimap_picture=pygame.image.load(f"{directory}\\assets\\tiled_maps\\minimap.png")
         self.minimap_picture=pygame.transform.scale(self.minimap_picture, (self.minimap_tile_width,self.minimap_tile_width))
 
@@ -59,20 +79,45 @@ class RenderMap:
         
         self.get_first_map()["info"]["beated"]=True
 
+    def _has_left(self,i,y, i_):
+        mat = [(self.matrix_picture[i][y][z]["x"], self.matrix_picture[i][y][z]["y"]) for z in range(len(self.matrix_picture[i][y])) if z != i_]
+        if y>0: mat += [(self.matrix_picture[i][y-1][z]["x"], self.matrix_picture[i][y-1][z]["y"]) for z in range(len(self.matrix_picture[i][y-1]))]
+        return (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i][y-1] and self.matrix_picture[i][y-1][0]["img"]==len(self.all_pic)-2) or  ((self.matrix_picture[i][y][i_]["x"]-self.tile_width, self.matrix_picture[i][y][i_]["y"]) in mat)
+
+    def _has_top(self,i,y, i_):
+        mat = [(self.matrix_picture[i][y][z]["x"], self.matrix_picture[i][y][z]["y"]) for z in range(len(self.matrix_picture[i][y])) if z != i_]
+        if i>0: mat += [(self.matrix_picture[i-1][y][z]["x"], self.matrix_picture[i-1][y][z]["y"]) for z in range(len(self.matrix_picture[i-1][y]))]
+        return (self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and i>0 and self.matrix_picture[i-1][y] and self.matrix_picture[i-1][y][0]["img"]==len(self.all_pic)-2) or  ((self.matrix_picture[i][y][i_]["x"], self.matrix_picture[i][y][i_]["y"]-self.tile_width) in mat) 
+
+    def _has_right(self,i,y, i_):
+        mat = [(self.matrix_picture[i][y][z]["x"], self.matrix_picture[i][y][z]["y"]) for z in range(len(self.matrix_picture[i][y])) if z != i_]
+        if y<len(self.matrix_picture[i])-1: mat += [(self.matrix_picture[i][y+1][z]["x"], self.matrix_picture[i][y+1][z]["y"]) for z in range(len(self.matrix_picture[i][y+1]))]
+        return (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2) or  ((self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"]) in mat)
+
+    def _has_bot(self,i,y, i_):
+        mat = [(self.matrix_picture[i][y][z]["x"], self.matrix_picture[i][y][z]["y"]) for z in range(len(self.matrix_picture[i][y])) if z != i_]
+        if i<len(self.matrix_picture)-1: mat += [(self.matrix_picture[i+1][y][z]["x"], self.matrix_picture[i+1][y][z]["y"]) for z in range(len(self.matrix_picture[i+1][y]))]
+        return (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or ((self.matrix_picture[i][y][i_]["x"], self.matrix_picture[i][y][i_]["y"]+self.tile_width) in mat) 
+
     def re_initialize_gen_var(self, mat=True):
         self.gen_current_height=random.randint(1, self.gen_max_height)
         # 1 and not min because on the right it can be less than the min
         self.gen_current_width=random.randint(self.gen_min_width, self.gen_max_width)
         # self.gen_current_width=1
 
-    def _init_all_pics(self):
-        pic=pygame.Surface((self.tile_width, self.tile_width))
-        pic.fill((200,200,200))
-        pic2=pygame.Surface((self.room_width, self.room_height))
-        pic2.fill((200,200,200))
+    def _init_all_pics(self, directory):
+
+        for i in range(15):
+            pic=pygame.image.load(f"{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Terrain\\{str(i)}.png")
+            pic=pygame.transform.scale(pic, (self.tile_width,self.tile_width))
+            self.all_pic.append(pic)
+
+        # pic=pygame.Surface((self.tile_width, self.tile_width))
+        # pic.fill((200,200,200))
+        pic2=pygame.transform.scale(self.all_pic[11], (self.room_width,self.room_height))
         pic3=pygame.Surface((self.tile_width//2, self.tile_width//2))
         pic3.fill((200,200,200))
-        self.all_pic.append(pic)
+        # self.all_pic.append(pic)
         self.all_pic.append(pic2)
         self.all_pic.append(pic3)
 
@@ -254,19 +299,16 @@ class RenderMap:
         # falaise droite
         # generation of the top left corner
         if i<len(self.graphe)-1 and z<len(self.graphe[0])-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z+1][3] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z][1]:
-            print("FALAISE DROITE", i, z)
             self.re_initialize_gen_var()
             self._generate_relief_ground((self.room_width//self.tile_width)-1, (self.room_width//self.tile_width)-1, node, mat)
 
         # generation of the ground
         if i<len(self.graphe)-1 and z>0 and node[0] and node[3] and self.graphe[i][z-1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]  and not self.graphe[i+1][z-1][1]:
-            print("FALAISE DROITE 2", i, z)
             self.re_initialize_gen_var()
             self._generate_relief_ground(0, random.randint(self.gen_falaise_min_width, self.gen_falaise_max_width), node, mat)
 
         # generation of the bottom of the falaise
         if i>0 and z>0 and not node[0] and node[3] and node[2] and self.graphe[i-1][z][0] and self.graphe[i-1][z-1][3] and not self.graphe[i][z-1][3]:
-            print("FALAISE DROITE 3", i, z)
             tmp=0
             for y___ in range(len(mat[i])):
                 if self.all_mat[i-1][z][-1][y___]==0:
@@ -279,18 +321,15 @@ class RenderMap:
         # falaise gauche
         # generation of the top right corner
         if i<len(self.graphe)-1 and z>0 and node[0] and node[3] and self.graphe[i][z-1][3] and self.graphe[i+1][z-1][3] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z][0]:
-            print("FALAISE GAUCHE", i, z)
             self._generate_relief_ground(0, 0, node, mat)
 
         # generation of the ground
         if i<len(self.graphe)-1 and z<len(mat)-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3] and not self.graphe[i+1][z+1][0]:
-            print("FALAISE GAUCHE 2", i, z)
             self.re_initialize_gen_var()
             self._generate_relief_ground(random.randint(self.gen_falaise_min_width, self.gen_falaise_max_width), len(mat[0])-1, node, mat)
 
         # # generation of the bottom of the falaise
         if i>0 and z<len(mat)-1 and not node[1] and node[3] and node[2] and self.graphe[i-1][z][1] and self.graphe[i-1][z+1][3] and not self.graphe[i][z+1][3]:
-            print("FALAISE GAUCHE 3", i, z)
             tmp=len(mat[i])
             for y___ in range(len(mat[i])-1, -1, -1):
                 if self.all_mat[i-1][z][-1][y___]==0:
@@ -365,12 +404,12 @@ class RenderMap:
                     #adding little ground if there is a change of 
                     # left
                     if ((y_>g and not mat[i_][y_-1] and i_<len(mat)-1 and mat[i_+1][y_-1] and i_>0 and not mat[i_-1][y_]) or (y_==g and z>0 and self.all_mat[i][z-1] and not self.all_mat[i][z-1][i_][-1] and i_<len(mat)-1 and self.all_mat[i][z-1][i_+1][-1] and i_>0 and not mat[i_-1][y_])):
-                        self.matrix_picture[i][z].append({"x":z*self.room_width+(y_-0.5)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":2})
+                        self.matrix_picture[i][z].append({"x":z*self.room_width+(y_-0.5)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":len(self.all_pic)-1})
                         dico["little_ground"].append([pygame.Rect(z*self.room_width+(y_-0.6)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
                     #  or (y==d-1 and self.last_mat and not self.last_mat[i_][0])
                     # right
                     if ((y_<d-1 and not mat[i_][y_+1] and i_<len(mat)-1 and mat[i_+1][y_+1] and i_>0 and not mat[i_-1][y_]) or (y_==d-1 and node[1] and self.gen_current_width==0)):
-                        self.matrix_picture[i][z].append({"x":z*self.room_width+(y_+1)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":2})
+                        self.matrix_picture[i][z].append({"x":z*self.room_width+(y_+1)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":len(self.all_pic)-1})
                         dico["little_ground"].append([pygame.Rect(z*self.room_width+(y_+1.1)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
 
                     # ground
@@ -435,7 +474,7 @@ class RenderMap:
             self.generate_relief(i, z, dico, node)
             if node[3] and not node[0] and not node[1]:self.re_initialize_gen_var()
         else:
-            self.matrix_picture[i][z].append({"x":z*self.room_width,"y":i*self.room_height,"img":1})
+            self.matrix_picture[i][z].append({"x":z*self.room_width,"y":i*self.room_height,"img":len(self.all_pic)-2})
             self.re_initialize_gen_var()
 
 

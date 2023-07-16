@@ -9,6 +9,21 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+# TODO add empty map around
+# TODO add empty map around
+# TODO add empty map around
+# TODO add empty map around
+# TODO add empty map around
+# TODO add empty map around
+# TODO add empty map around
+# TODO add empty map around
+# TODO add empty map around
+# TODO add empty map around
+# TODO add empty map around
+# TODO add empty map around
+
+
+
 # BUG d'affichage qd dash dans mur ?
 
 # TODO map : 

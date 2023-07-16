@@ -134,7 +134,6 @@ def get_matrix():
                 if len(mat[i][y])>0:
                     path=[(i,y)]
                     break
-    print("CORNER = ", corner)
 
     # 1 get a random node not in path
     # 2 remove all other path
@@ -144,7 +143,6 @@ def get_matrix():
     while (len(path))>0:
         node = path.pop()
         bool=True
-        print(node, path)
         tab=get_all_neighboors(node[0], node[1], mat, vu)
         if len(tab) > 0 :
             n = random.choice(tab)
