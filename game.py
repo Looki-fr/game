@@ -382,9 +382,6 @@ class Game:
                 
             self.player.is_mouving_x = False
             self.handle_input()
-            if time.time()-t1>10:
-                print(self.player.position)
-                t1=time.time()
             self.update()
             self.update_ecran()
             pygame.display.update()      
