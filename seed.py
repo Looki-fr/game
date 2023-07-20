@@ -12,10 +12,11 @@
 # falaise gauche
 #seed = 1234
 
+# weird solo tile
+# seed = 1689526799.140814
 
-seed = 1689526799.140814
-# import time
-# seed=time.time()
+import time
+seed=time.time()
 
-# with open("seed.txt", "w") as file:
-#     file.write(str(seed))
+with open("seed.txt", "w") as file:
+    file.write(str(seed))

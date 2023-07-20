@@ -69,12 +69,14 @@ class RenderMap:
                 for i_ in range(len(self.matrix_picture[i][y])):
                     if self.matrix_picture[i][y][i_]["img"] not in (len(self.all_pic)-2, len(self.all_pic)-1):
                         base_mat=self._get_map(i,y,i_)
-                        bot, matleft=self._has_bot(i,y, i_, base_mat)
+                        bot, matbot=self._has_bot(i,y, i_, base_mat)
                         top, maptop=self._has_top(i,y, i_,base_mat)
                         left, matleft=self._has_left(i,y, i_,base_mat)
                         right, matright=self._has_right(i,y, i_,base_mat)
                         top_right=self.has_top_right(i,y,i_,base_mat,maptop,matright)
                         top_left=self.has_top_left(i,y,i_,base_mat,maptop,matleft)
+                        bot_right=self.has_bot_right(i,y,i_,base_mat,matbot,matright)
+                        bot_left=self.has_bot_left(i,y,i_,base_mat,matbot,matleft)
                         if not bot and not top and not left and not right: self.matrix_picture[i][y][i_]["img"]=0
                         elif bot and not top and not left and not right: self.matrix_picture[i][y][i_]["img"]=1
                         elif bot and top and not left and not right: self.matrix_picture[i][y][i_]["img"]=2
@@ -88,10 +90,14 @@ class RenderMap:
                         elif not bot and top and not left and right: self.matrix_picture[i][y][i_]["img"]=10
                         elif bot and top and left and right: self.matrix_picture[i][y][i_]["img"]=11
                         elif not bot and top and left and right : self.matrix_picture[i][y][i_]["img"]=12
-                        if bot and top and right and left and not (top_right and top_left):
+                        if bot and top and right and left and not (top_right and top_left and bot_right and bot_left):
                             if not top_left and not top_right: self.matrix_picture[i][y][i_]["img"]=15
                             elif not top_left and top_right: self.matrix_picture[i][y][i_]["img"]=16
                             elif top_left and not top_right: self.matrix_picture[i][y][i_]["img"]=17
+                            if not bot_left and not bot_right: self.matrix_picture[i][y][i_]["img"]=20
+                            elif not bot_left and bot_right: self.matrix_picture[i][y][i_]["img"]=19
+                            elif bot_left and not bot_right: self.matrix_picture[i][y][i_]["img"]=18
+                        
 
 
         self.minimap_picture=pygame.image.load(f"{directory}\\assets\\tiled_maps\\minimap.png")
@@ -130,10 +136,14 @@ class RenderMap:
         mat=mat+maptop+matright
         return (self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and i>0 and self.matrix_picture[i-1][y] and self.matrix_picture[i-1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"]-self.tile_width) in mat
     
-    def has_bot_left(self,i,y,i_,mat):
+    def has_bot_left(self,i,y,i_,mat, mapbot, matleft):
+        if y>0 and i<len(self.matrix_picture)-1: mat += [(self.matrix_picture[i+1][y-1][z]["x"], self.matrix_picture[i+1][y-1][z]["y"]) for z in range(len(self.matrix_picture[i+1][y-1]))]
+        mat=mat+mapbot+matleft
         return (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i][y-1] and self.matrix_picture[i][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]-self.tile_width, self.matrix_picture[i][y][i_]["y"]+self.tile_width) in mat
     
-    def has_bot_right(self,i,y,i_,mat):
+    def has_bot_right(self,i,y,i_,mat, mapbot, matright):
+        if y<len(self.matrix_picture[i])-1 and i<len(self.matrix_picture)-1: mat += [(self.matrix_picture[i+1][y+1][z]["x"], self.matrix_picture[i+1][y+1][z]["y"]) for z in range(len(self.matrix_picture[i+1][y+1]))]
+        mat=mat+mapbot+matright
         return (self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"]+self.tile_width) in mat
 
     def re_initialize_gen_var(self, mat=True):
@@ -144,7 +154,7 @@ class RenderMap:
 
     def _init_all_pics(self, directory):
 
-        for i in range(18):
+        for i in range(21):
             pic=pygame.image.load(f"{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Terrain\\{str(i)}.png")
             pic=pygame.transform.scale(pic, (self.tile_width,self.tile_width))
             self.all_pic.append(pic)
