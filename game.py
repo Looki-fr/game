@@ -384,6 +384,7 @@ class Game:
             self.handle_input()
             self.update()
             self.update_ecran()
+            #self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ground")
             pygame.display.update()      
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:

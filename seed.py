@@ -18,6 +18,9 @@
 # bug petit carre qui marche pas + generation plus haut
 #seed = 1689971114.8798003
 
+# # crash lancement
+# seed = 1690048963.873145
+
 import time
 seed=time.time()
 

@@ -10,6 +10,7 @@ if __name__ == "__main__":
     game.run()
 
 # TODO : faire spawn crab à chaque milieu de map si ya pas bas
+# TODO : optimisztion
 
 
 # BUG d'affichage qd dash dans mur ?
