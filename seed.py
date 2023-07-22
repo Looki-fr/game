@@ -16,10 +16,10 @@
 # seed = 1689526799.140814
 
 # bug petit carre qui marche pas + generation plus haut
-seed = 1689971114.8798003
+#seed = 1689971114.8798003
 
-# import time
-# seed=time.time()
+import time
+seed=time.time()
 
-# with open("seed.txt", "w") as file:
-#     file.write(str(seed))
+with open("seed.txt", "w") as file:
+    file.write(str(seed))

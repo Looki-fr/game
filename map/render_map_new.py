@@ -230,6 +230,8 @@ class RenderMap:
         return c
 
     def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0, debug=False):
+        if debug:
+            print(start, end, node, additionnal_height, hill)
         i_=start
         if hill : 
             if hill==1:tab=self._get_hill_heights(self.gen_current_height)
@@ -249,7 +251,6 @@ class RenderMap:
                 tab=self._get_hill_heights(starting_height)
             elif hill==5 or hill==6:
                 tab=self._get_hill_heights(0, width=end-start)
-            if debug : print(hill, tab, self.gen_current_height, self.gen_current_width)
             i____=0
         while i_ <= end:
             # if the map on the left didnt had enough place to finish generating its reliefs then we finish it here so that it doesnt abrutly stop
@@ -342,7 +343,7 @@ class RenderMap:
         # ground, generation is from left to right
         if not node[3]:
             self._generate_relief_ground(0, (self.room_width//self.tile_width)-1, node, mat)
-        
+
         # falaise droite
         # generation of the top left corner
         if i<len(self.graphe)-1 and z<len(self.graphe[0])-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z+1][3] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z][1]:
@@ -351,7 +352,7 @@ class RenderMap:
 
         # generation of the ground
         if i<len(self.graphe)-1 and z>0 and node[0] and node[3] and self.graphe[i][z-1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]  and not self.graphe[i+1][z-1][1]:
-            self.re_initialize_gen_var()
+            #self.re_initialize_gen_var()
             self._generate_relief_ground(0, random.randint(self.gen_falaise_min_width, self.gen_falaise_max_width), node, mat)
 
         # generation of the bottom of the falaise
@@ -373,7 +374,7 @@ class RenderMap:
         # generation of the ground
         if i<len(self.graphe)-1 and z<len(mat)-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3] and not self.graphe[i+1][z+1][0]:
             self.re_initialize_gen_var()
-            self._generate_relief_ground(random.randint(self.gen_falaise_min_width, self.gen_falaise_max_width), len(mat[0])-1, node, mat)
+            self._generate_relief_ground(random.randint(self.gen_falaise_min_width, self.gen_falaise_max_width), len(mat[0])-1, node, mat, debug=True)
 
         # # generation of the bottom of the falaise
         if i>0 and z<len(mat)-1 and not node[1] and node[3] and node[2] and self.graphe[i-1][z][1] and self.graphe[i-1][z+1][3] and not self.graphe[i][z+1][3]:
@@ -385,8 +386,6 @@ class RenderMap:
             self.gen_current_height, self.gen_current_width = 0, 0
             self._generate_relief_ground(tmp, len(mat[0])-1, node, mat, hill=6)
             self.re_initialize_gen_var()
-
-
                         
         # hills generation from left to right
         if i>0 and z<len(self.graphe[i])-1 and not node[3] and node[2] and not node[1] and self.graphe[i-1][z][1] and self.graphe[i-1][z+1][3] and not self.graphe[i][z+1][3]:
@@ -413,7 +412,9 @@ class RenderMap:
 
         if node[3] and node[1]:
             # not reset when falaise gauche
-            if not (i<len(self.graphe)-1 and z<len(mat)-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3] and not self.graphe[i+1][z+1][0]):self.re_initialize_gen_var(False)
+            if not (i<len(self.graphe)-1 and z<len(mat)-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3] and not self.graphe[i+1][z+1][0]):
+                self.re_initialize_gen_var(False)
+
             self.gen_current_width-=1
             for y in range(self.room_height//self.tile_width-self.gen_current_height-1, self.room_height//self.tile_width):
                 mat[y][-1]=1
@@ -509,7 +510,9 @@ class RenderMap:
 
         self.all_mat[i][z]=mat[::]
 
-    
+
+        if i==1 and z==1:
+            print(self.gen_current_height, self.gen_current_width)    
 
     def load_map(self, node, i, z, empty=False):
         """call load_objects_map if the map is not empty and load all tiles for the map widht the coordinates i and z""" 

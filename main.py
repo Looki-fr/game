@@ -9,6 +9,9 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+# TODO : faire spawn crab à chaque milieu de map si ya pas bas
+
+
 # BUG d'affichage qd dash dans mur ?
 
 # TODO map : 
