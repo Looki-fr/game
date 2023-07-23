@@ -61,24 +61,31 @@ class RenderMap:
             for z,node in enumerate(line):
                     # E and S correspond to if the map has a neightboor on the right or on the bot
                 self.load_map(node, i, z)
-        liste=[]
-        new_liste=[]
+        liste_top=[]
+        liste_current=[]
+        liste_bot=[]
         # correcting id of pictures
         self.cpt=0
         for i in range(len(self.matrix_picture)):
             matleft=[]
+
+            if i>0:
+                liste_top=liste_current[::]
+                liste_current=liste_bot[::]
+            liste_bot=[]
             for y in range(len(self.matrix_picture[i])):
-                if y==0:base_mat=self._get_map(i,y)
-                else: base_mat=matright[::][::]
-                if y<len(self.matrix_picture[i])-1: matright=self._get_map(i,y+1)
+                if i==0:liste_current.append(self._get_map(i,y))
+                if i<len(self.matrix_picture)-1: liste_bot.append(self._get_map(i+1,y))
 
-                if i<len(self.matrix_picture)-1: matbot=self._get_map(i+1,y)
+            for y in range(len(self.matrix_picture[i])):
+
+                if i>0: maptop=liste_top[y]
+                else:maptop=[]
+                if i<len(self.matrix_picture)-1: matbot=liste_bot[y]
                 else:matbot=[]
-
-                if i>0: 
-                    maptop=liste[y]
-                        
-                new_liste.append(base_mat[::][::])
+                base_mat=liste_current[y]
+                if y<len(self.matrix_picture[i])-1: matright=liste_current[y+1]
+                else:matright=[]
 
                 for i_ in range(len(self.matrix_picture[i][y])):
                     if self.matrix_picture[i][y][i_]["img"] not in (len(self.all_pic)-2, len(self.all_pic)-1):
@@ -111,8 +118,6 @@ class RenderMap:
                             elif not bot_left and bot_right: self.matrix_picture[i][y][i_]["img"]=19
                             elif bot_left and not bot_right: self.matrix_picture[i][y][i_]["img"]=18
                 matleft=base_mat[::]
-            liste=new_liste[::]
-            new_liste=[]
                 
         self.minimap_picture=pygame.image.load(f"{directory}\\assets\\tiled_maps\\minimap.png")
         self.minimap_picture=pygame.transform.scale(self.minimap_picture, (self.minimap_tile_width,self.minimap_tile_width))
