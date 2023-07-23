@@ -12,17 +12,11 @@
 # falaise gauche
 #seed = 1234
 
-# weird solo tile
-# seed = 1689526799.140814
+# solo tile en haut
+seed=1690106899.0068386
 
-# bug petit carre qui marche pas + generation plus haut
-#seed = 1689971114.8798003
+# import time
+# seed=time.time()
 
-# # crash lancement
-# seed = 1690048963.873145
-
-import time
-seed=time.time()
-
-with open("seed.txt", "w") as file:
-    file.write(str(seed))
+# with open("seed.txt", "w") as file:
+#     file.write(str(seed))
