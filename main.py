@@ -8,6 +8,11 @@ if __name__ == "__main__":
 
     game = Game()
     game.run()
+    
+
+# BUG carre tt seul
+#BUG hzut gauche pic vers le bas
+
 
 # TODO : faire spawn crab à chaque milieu de map si ya pas bas
 # TODO : optimisztion

@@ -78,11 +78,28 @@ class RenderMap:
                 if i<len(self.matrix_picture)-1: liste_bot.append(self._get_map(i+1,y))
 
             for y in range(len(self.matrix_picture[i])):
-
-                if i>0: maptop=liste_top[y]
-                else:maptop=[]
-                if i<len(self.matrix_picture)-1: matbot=liste_bot[y]
-                else:matbot=[]
+                maptopleft=[]
+                maptopright=[]
+                if i>0: 
+                    maptop=liste_top[y]
+                    if y>0: maptopleft=liste_top[y-1]
+                    else:maptopleft=[]
+                    if y<len(self.matrix_picture[i])-1: maptopright=liste_top[y+1]
+                    else:maptopright=[]
+                else:
+                    maptop=[]
+                    maptopleft=[]
+                    maptopright=[]
+                if i<len(self.matrix_picture)-1: 
+                    matbot=liste_bot[y]
+                    if y>0:matbotleft=liste_bot[y-1]
+                    else:matbotleft=[]
+                    if y<len(self.matrix_picture[i])-1: matbotright=liste_bot[y+1]
+                    else:matbotright=[]
+                else:
+                    matbot=[]
+                    matbotleft=[]
+                    matbotright=[]
                 base_mat=liste_current[y]
                 if y<len(self.matrix_picture[i])-1: matright=liste_current[y+1]
                 else:matright=[]
@@ -93,10 +110,10 @@ class RenderMap:
                         top=self._has_top(i,y, i_,base_mat+maptop)
                         left=self._has_left(i,y, i_,base_mat+matleft)
                         right=self._has_right(i,y, i_,base_mat+matright)
-                        top_right=self.has_top_right(i,y,i_,base_mat,maptop,matright)
-                        top_left=self.has_top_left(i,y,i_,base_mat,maptop,matleft)
-                        bot_right=self.has_bot_right(i,y,i_,base_mat,matbot,matright)
-                        bot_left=self.has_bot_left(i,y,i_,base_mat,matbot,matleft)
+                        top_right=self.has_top_right(i,y,i_,base_mat,maptop,matright,maptopright)
+                        top_left=self.has_top_left(i,y,i_,base_mat,maptop,matleft,maptopleft)
+                        bot_right=self.has_bot_right(i,y,i_,base_mat,matbot,matright,matbotright)
+                        bot_left=self.has_bot_left(i,y,i_,base_mat,matbot,matleft,matbotleft)
                         if not bot and not top and not left and not right: self.matrix_picture[i][y][i_]["img"]=0
                         elif bot and not top and not left and not right: self.matrix_picture[i][y][i_]["img"]=1
                         elif bot and top and not left and not right: self.matrix_picture[i][y][i_]["img"]=2
@@ -142,21 +159,17 @@ class RenderMap:
     def _has_bot(self,i,y, i_, mat):
         return (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or ((self.matrix_picture[i][y][i_]["x"], self.matrix_picture[i][y][i_]["y"]+self.tile_width) in mat)
 
-    def has_top_left(self,i,y,i_, mat, maptop, matleft):
-        if y>0 and i>0: mat2 = [(self.matrix_picture[i-1][y-1][z]["x"], self.matrix_picture[i-1][y-1][z]["y"]) for z in range(len(self.matrix_picture[i-1][y-1]))]
-        return (self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and i>0 and self.matrix_picture[i-1][y] and self.matrix_picture[i-1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i][y-1] and self.matrix_picture[i][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]-self.tile_width, self.matrix_picture[i][y][i_]["y"]-self.tile_width) in mat+mat2+maptop+matleft
+    def has_top_left(self,i,y,i_, mat, maptop, matleft, maptopleft):
+        return (self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and i>0 and self.matrix_picture[i-1][y] and self.matrix_picture[i-1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and i>0 and self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i][y-1] and self.matrix_picture[i][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i-1][y-1] and self.matrix_picture[i-1][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]-self.tile_width, self.matrix_picture[i][y][i_]["y"]-self.tile_width) in mat+maptopleft+maptop+matleft
 
-    def has_top_right(self,i,y,i_, mat, maptop, matright):
-        if y<len(self.matrix_picture[i])-1 and i>0: mat2 = [(self.matrix_picture[i-1][y+1][z]["x"], self.matrix_picture[i-1][y+1][z]["y"]) for z in range(len(self.matrix_picture[i-1][y+1]))]
-        return (self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and i>0 and self.matrix_picture[i-1][y] and self.matrix_picture[i-1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"]-self.tile_width) in mat2+mat+maptop+matright
+    def has_top_right(self,i,y,i_, mat, maptop, matright, maptopright):
+        return (self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and i>0 and self.matrix_picture[i-1][y] and self.matrix_picture[i-1][y][0]["img"]==len(self.all_pic)-2)or (self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and i>0 and self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i-1][y+1] and self.matrix_picture[i-1][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"]-self.tile_width) in maptopright+mat+maptop+matright
     
-    def has_bot_left(self,i,y,i_,mat, mapbot, matleft):
-        if y>0 and i<len(self.matrix_picture)-1: mat2 = [(self.matrix_picture[i+1][y-1][z]["x"], self.matrix_picture[i+1][y-1][z]["y"]) for z in range(len(self.matrix_picture[i+1][y-1]))]
-        return (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i][y-1] and self.matrix_picture[i][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]-self.tile_width, self.matrix_picture[i][y][i_]["y"]+self.tile_width) in mat+mat2+mapbot+matleft
+    def has_bot_left(self,i,y,i_,mat, mapbot, matleft, matbotleft):
+        return (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i][y-1] and self.matrix_picture[i][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y-1] and self.matrix_picture[i+1][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]-self.tile_width, self.matrix_picture[i][y][i_]["y"]+self.tile_width) in mat+matbotleft+mapbot+matleft
     
-    def has_bot_right(self,i,y,i_,mat, mapbot, matright):
-        if y<len(self.matrix_picture[i])-1 and i<len(self.matrix_picture)-1: mat2 = [(self.matrix_picture[i+1][y+1][z]["x"], self.matrix_picture[i+1][y+1][z]["y"]) for z in range(len(self.matrix_picture[i+1][y+1]))]
-        return (self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"]+self.tile_width) in mat+mat2+mapbot+matright
+    def has_bot_right(self,i,y,i_,mat, mapbot, matright, matbotright):
+        return (self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y+1] and self.matrix_picture[i+1][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"]+self.tile_width) in mat+matbotright+mapbot+matright
 
     def re_initialize_gen_var(self, mat=True):
         self.gen_current_height=random.randint(1, self.gen_max_height)
