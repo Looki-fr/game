@@ -254,7 +254,7 @@ class RenderMap:
         else:self.gen_current_height+=1
         return c
 
-    def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0, debug=False):
+    def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0, debug=False, noderight=None):
         if debug:
             print(start, end, node, additionnal_height, hill)
         i_=start
@@ -314,6 +314,10 @@ class RenderMap:
                         else:
                             for y in range(0, self.gen_current_height+additionnal_height):
                                 mat[y][i__]=1
+                    # to avoid a tile alone when down
+                    if i_+width_==len(mat[y]) and self.gen_current_width==0 and noderight and noderight[3]:
+                        self.gen_current_width=10
+
                 else:
                     if c==1: self.gen_current_height+=1
                     else:self.gen_current_height-=1
@@ -367,7 +371,9 @@ class RenderMap:
 
         # ground, generation is from left to right
         if not node[3]:
-            self._generate_relief_ground(0, (self.room_width//self.tile_width)-1, node, mat)
+            if z<len(self.graphe[i])-1:right_node=self.graphe[i][z+1]
+            else:right_node=None
+            self._generate_relief_ground(0, (self.room_width//self.tile_width)-1, node, mat, noderight=right_node)
 
         # falaise droite
         # generation of the top left corner

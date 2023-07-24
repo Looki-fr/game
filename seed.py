@@ -13,10 +13,10 @@
 #seed = 1234
 
 # solo tile en haut
-seed=1690106899.0068386
+#seed=1690106899.0068386
 
-# import time
-# seed=time.time()
+import time
+seed=time.time()
 
-# with open("seed.txt", "w") as file:
-#     file.write(str(seed))
+with open("seed.txt", "w") as file:
+    file.write(str(seed))
