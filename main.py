@@ -32,11 +32,6 @@ if __name__ == "__main__":
 
 # BUG d'affichage qd dash dans mur ?
 
-# TODO map : 
-# habiller coins de map => plus accentué sur les 
-#  _
-# | |
-
 
 # BUG  crab coin qd on est en bas il arete davancer
 
