@@ -10,7 +10,10 @@ if __name__ == "__main__":
     game.run()
     
 
-# idée, faire une matrice avec tt les iles et en relier si ya pas de mur entre les 2
+
+# BUG wall generation, se balader sur la map pour voir
+
+# TODO => bug island haut droite, traverse mur qd saut edge
 
 # BUG generation sol ou ile, un seul bloc vers haut avant fin de ile 
 # => trouver generation et corriger

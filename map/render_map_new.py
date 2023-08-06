@@ -48,10 +48,11 @@ class RenderMap:
         self.gen_island_random_horizontal=int(self.room_height/self.tile_width // 5)
         self.gen_island_start_height=int(self.room_height/self.tile_width // 2 - self.room_height/self.tile_width // 5)
         self.gen_island_max_height=2
-        self.gen_island_min_width=4
+        self.gen_island_min_width=3
         self.gen_island_max_width=7
 
         self.all_mat=[[None for _ in range(len(self.graphe[0]))] for _ in range(len(self.graphe))]
+        self.all_island=[[False for _ in range(len(self.graphe[0]))] for _ in range(len(self.graphe))]
 
         # value : dictionnary : keys : id of the tile value : image of the tile
         self.matrix_picture=[ [[] for _ in range(len(self.graphe[0]))] for _ in range(len(self.graphe))]
@@ -68,8 +69,6 @@ class RenderMap:
                     self.generate_relief(i, z, node)
                     if node[3] and not node[0] and not node[1]:self.re_initialize_gen_var()
         
-
-
         # spawn of object 
         for i,line in enumerate(self.graphe):
             for z,node in enumerate(line):
@@ -82,14 +81,35 @@ class RenderMap:
                     self.all_mat[i][z+1][-1][0]=0
                     self.all_mat[i+1][z][0][-1]=0
                     self.all_mat[i+1][z+1][0][0]=0
-
-                a=self.gen_max_height ; b=self.gen_min_width ; c=self.gen_max_width
-                self.gen_max_height=self.gen_island_max_height ; self.gen_min_width=self.gen_island_min_width ; self.gen_max_width=self.gen_island_max_width
+                
                 if (node and random.randint(1,20)==1) or (node and node[0] and node[1] and node[2] and node[3]) or (node and not node[0] and not node[1] and not node[2] and node[3] and random.randint(1,2)==1) or (node and node[2] and node[3] and random.randint(1,10)==1) or (node and (node[1] or node[0]) and node[2] and node[3] and random.randint(1,2)==1):
-                    self.re_initialize_gen_var()
-                    self._generate_relief_ground(int(self.room_width//self.tile_width//2 - self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal)), int(self.room_width//self.tile_width//2 + self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal)), node, self.all_mat[i][z], self.gen_island_additionnal_height, start_height=self.gen_island_start_height+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height))
-                self.gen_max_height=a ; self.gen_min_width=b ; self.gen_max_width=c
+                    self.all_island[i][z]=True
+                
+        a=self.gen_max_height ; b=self.gen_min_width ; c=self.gen_max_width
+        self.gen_max_height=self.gen_island_max_height ; self.gen_min_width=self.gen_island_min_width ; self.gen_max_width=self.gen_island_max_width
 
+        #test
+        self.all_island[2][1]=True
+        for i,line in enumerate(self.all_island):
+            for z,island in enumerate(line):
+                if island and z<len(self.all_island[i])-1 and self.all_island[i][z+1]:
+                    self.re_initialize_gen_var()
+                    start=int(self.room_width//self.tile_width//2 - self.gen_island_max_width//2 + random.randint(0,self.gen_island_random_horizontal))
+                    end=int(self.room_width//self.tile_width//2 + self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal))
+                    start_height= self.gen_island_start_height//2+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
+                    self._generate_relief_ground(start if start >=0 else 0, len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True)
+                    self._generate_relief_ground(0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z+1], self.all_mat[i][z+1], self.gen_island_additionnal_height, start_height=start_height, island=True)
+
+
+                elif island and (z==0 or not self.all_island[i][z-1]):
+                    self.re_initialize_gen_var()
+                    start=int(self.room_width//self.tile_width//2 - self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal))
+                    end=int(self.room_width//self.tile_width//2 + self.gen_island_max_width//2 + random.randint(0,self.gen_island_random_horizontal))
+                    start_height=self.gen_island_start_height+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
+                    self._generate_relief_ground(start if start >=0 else 0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True)
+                    self._better_bottom_island(start_height, start, end, i, z)
+
+        self.gen_max_height=a ; self.gen_min_width=b ; self.gen_max_width=c
 
         for i,line in enumerate(self.graphe):
             #parameters for the generation of reliefs
@@ -97,6 +117,31 @@ class RenderMap:
                     # E and S correspond to if the map has a neightboor on the right or on the bot
                 self.load_map(node, i, z)
 
+        self._load_pictures_tiles()
+                
+        self.minimap_picture=pygame.image.load(f"{directory}\\assets\\tiled_maps\\minimap.png")
+        self.minimap_picture=pygame.transform.scale(self.minimap_picture, (self.minimap_tile_width,self.minimap_tile_width))
+
+        self.current_map_is_wave=False
+        
+        self.get_first_map()["info"]["beated"]=True
+
+    def _better_bottom_island(self, start_height, start, end, i, z):
+        width=random.randint(self.gen_island_min_width, self.gen_island_max_width)
+        if True or random.randint(1,2)==1:
+            choice=random.randint(1,2)
+            x=random.randint(start, end)
+            for y in range(start, end+1):
+                if choice==1 and y>=x and y<=x+width:
+                    self.all_mat[i][z][-start_height-1][y]=0
+                elif choice==2 and y<=x and y>=x-width:
+                    self.all_mat[i][z][-start_height-1][y]=0
+            if self.all_mat[i][z][-start_height-1][start]==1 and self.all_mat[i][z][-start_height-1][start+1]==0:
+                self.all_mat[i][z][-start_height-1][start+1]=1
+            if self.all_mat[i][z][-start_height-1][end]==1 and self.all_mat[i][z][-start_height-1][end-1]==0:
+                self.all_mat[i][z][-start_height-1][end-1]=1
+
+    def _load_pictures_tiles(self):
         liste_top=[]
         liste_current=[]
         liste_bot=[]
@@ -171,13 +216,6 @@ class RenderMap:
                             elif not bot_left and bot_right: self.matrix_picture[i][y][i_]["img"]=19
                             elif bot_left and not bot_right: self.matrix_picture[i][y][i_]["img"]=18
                 matleft=base_mat[::]
-                
-        self.minimap_picture=pygame.image.load(f"{directory}\\assets\\tiled_maps\\minimap.png")
-        self.minimap_picture=pygame.transform.scale(self.minimap_picture, (self.minimap_tile_width,self.minimap_tile_width))
-
-        self.current_map_is_wave=False
-        
-        self.get_first_map()["info"]["beated"]=True
 
     def _get_map(self,i,y):
         self.cpt+=1
@@ -290,7 +328,7 @@ class RenderMap:
         else:self.gen_current_height+=1
         return c
 
-    def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0,start_height=0, debug=False, noderight=None):
+    def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0,start_height=0, debug=False, noderight=None, island=False):
         """
         hill : 
         1 : classique left / 2 : right
@@ -346,8 +384,7 @@ class RenderMap:
                     self.gen_current_width=0
                     width_=self.gen_width_width_hill
                     i____+=self.gen_width_width_hill-1
-
-                if width_>self.gen_min_width or node[1] or hill!=0:
+                if width_>self.gen_min_width or (not island and (node[1] or hill!=0)):
                     # also generating the tiles below the current height
                     for i__ in range(i_, i_+width_):
                         if hill != 3 and hill != 4 and hill!=5 and hill != 6:
@@ -442,17 +479,19 @@ class RenderMap:
             for i_ in range(h, b):
                 if mat[i_][y_]:
                     if tmp == -1 and  ((y_==0 or y_==len(mat[0])-1) or ((y_>0 and y_<len(mat[0])-1) and (not mat[i_][y_-1] or not mat[i_][y_+1]))):
-                        if (y_!=len(mat[0])-1 or not mat[i_][y_-1]) and (y_>0 or not mat[i_][y_+1]):
-                            if y_==0 or not mat[i_][y_-1]: type_=1
+                        if ((y_!=len(mat[0])-1 or not mat[i_][y_-1])or (y_==len(mat[0])-1 and z<len(self.all_mat[0])-1 and (not self.all_mat[i][z+1] or not self.all_mat[i][z+1][i_][0]))) and ((y_>0 or not mat[i_][y_+1]) or (y_==0 and z>0 and (not self.all_mat[i][z-1] or not self.all_mat[i][z-1][i_][-1]))):
+                            if (y_==0 and mat[i_][y_+1]) or not mat[i_][y_-1]: type_=1
                             tmp=i_
                         
                         # not elif because if lenght is 1
-                    if tmp != -1 and type_ == 1 and (i_ == b-1 or not mat[i_+1][y_] or (y_>0 and mat[i_][y_-1])):
+                    if tmp != -1 and type_ == 1 and (i_ == b-1 or not mat[i_+1][y_] or ((y_>0 and mat[i_][y_-1]) or (y_==0 and z>0 and (not self.all_mat[i][z-1] or self.all_mat[i][z-1][i_][-1])))):
                         if i_-tmp>=1 : self._spawn_big_walls(i, z, dico, i_+1, y_, tmp)
+                        elif (i_>0 and mat[i_-1][y_]) or (i_==0 and i>0 and self.all_mat[i-1][z] and self.all_mat[i-1][z][-1][y_]) :  self._spawn_big_walls(i, z, dico, i_+1, y_, tmp-1)
                         tmp=-1
                         
-                    elif tmp != -1 and type_ == 0 and (i_ == b-1 or not mat[i_+1][y_] or (not y_==len(mat[0])-1 and mat[i_][y_+1])):
+                    elif tmp != -1 and type_ == 0 and (i_ == b-1 or not mat[i_+1][y_] or ((not y_==len(mat[0])-1 and mat[i_][y_+1]) or (y_==len(mat[0])-1 and z<len(self.all_mat[0])-1 and (not self.all_mat[i][z+1] or self.all_mat[i][z+1][i_][0])))):
                         if i_-tmp>=1 : self._spawn_big_walls(i, z, dico, i_+1, y_, tmp)
+                        elif (i_>0 and mat[i_-1][y_]) or (i_==0 and i>0 and self.all_mat[i-1][z] and self.all_mat[i-1][z][-1][y_]) :  self._spawn_big_walls(i, z, dico, i_+1, y_, tmp-1)
                         tmp=-1
 
     def generate_relief(self, i, z, node):
