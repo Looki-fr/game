@@ -268,13 +268,7 @@ class Game:
         if mob.is_dashing and self.collision.joueur_se_cogne(mob):
             mob.fin_dash()
             
-        # slide on wall
-        if mob.is_sliding and self.collision.joueur_sur_sol(mob):
-            mob.fin_grab_edge()
-            if mob.direction == "right":
-                mob.change_direction("idle", "left")
-            elif mob.direction == "left":
-                mob.change_direction("idle", "right")
+        
         
         # gestion collision avec les murs
         
@@ -284,17 +278,29 @@ class Game:
             tmp=mob.direction_jump_edge
             mob.fin_saut_edge()
             self.collision.check_grab(mob, tmp)
-        
+            
+        temp_ground=False
         if mob.is_sliding_ground and self.collision.stop_if_collide(mob.slide_ground_direction_x, mob):
+            temp_ground=not mob.is_falling
             tmp=mob.slide_ground_direction_x
             mob.fin_slide_ground()
             self.collision.check_grab(mob, tmp)
+
         
         if mob.is_rolling and self.collision.stop_if_collide(mob.roll_direction_x, mob):
             tmp=mob.roll_direction_x
             mob.fin_roll()
             if mob.is_falling : 
                 self.collision.check_grab(mob, tmp)
+        
+        # after because if slide ground we need to cancel the grab wall before we see it on screen
+        # slide on wall
+        if temp_ground or (mob.is_sliding and self.collision.joueur_sur_sol(mob)):
+            mob.fin_grab_edge()
+            if mob.direction == "right":
+                mob.change_direction("idle", "left")
+            elif mob.direction == "left":
+                mob.change_direction("idle", "right")
 
         # called every tick because distance change every tick
         

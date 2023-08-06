@@ -11,7 +11,7 @@ if __name__ == "__main__":
     
 
 
-# BUG wall generation, se balader sur la map pour voir
+# BUG passage a travers mur qd dash au sol
 
 # TODO => bug island haut droite, traverse mur qd saut edge
 

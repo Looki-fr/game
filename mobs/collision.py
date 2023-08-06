@@ -149,7 +149,7 @@ class Collision:
                             if direction== 'right' and wall[0].x < temp.x: temp=wall[0]
                             elif direction == 'left' and wall[0].x+wall[0].w > temp.x+temp.w : temp=wall[0]
                     else:
-                        if direction == 'right' and wall[0].x < mob.body.x + mob.body.w and mob.body.x + mob.body.w-wall[0].x < mob.max_distance_collide:
+                        if direction == 'right' and wall[0].x < mob.body.x + mob.body.w and(mob.is_sliding_ground or (mob.body.x + mob.body.w-wall[0].x < mob.max_distance_collide)):
                             if dontmove: return True
                             if not mob.is_dashing and not mob.is_dashing_attacking and move_back: 
                                 mob.move_back()   
