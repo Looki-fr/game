@@ -10,8 +10,23 @@ if __name__ == "__main__":
     game.run()
     
 
+# idée, faire une matrice avec tt les iles et en relier si ya pas de mur entre les 2
+
+# BUG generation sol ou ile, un seul bloc vers haut avant fin de ile 
+# => trouver generation et corriger
 
 # generer ile, trouver longueur et largeur, coordonne en x du pic vers le bas, modif ou sinspirer du pic vers bas
+
+# petite ile condition : [1,1,1,1]
+
+# plus grande ile condition : [1,0,1,1] or [0,1,1,1]
+#                         
+#       and gauche ou droite [0,1,0/1,1] or [1,0,0/1,1]
+# 
+#   /!\ mini ile existe deja faut juste agrandir
+
+# TODO add plateforme / arbre / rocher / bateau ....
+
 
 # TODO spawn plateforme
 # mat[i][y]=1 = normal
@@ -23,9 +38,6 @@ if __name__ == "__main__":
 #  _|__  faire comme grotte
 # 
 
-# TODO île qd g d h b
-
-# TODO add plateforme / arbre / rocher / bateau ....
 
 # TODO : faire spawn crab à chaque milieu de map si ya pas bas
 

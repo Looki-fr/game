@@ -43,8 +43,14 @@ class RenderMap:
         self.gen_min_hill_height=2
         self.gen_falaise_max_width=self.room_width/self.tile_width // 2
         self.gen_falaise_min_width=self.room_width/self.tile_width // 3
+        self.gen_island_max_width=int(self.room_width/self.tile_width // 3)
+        self.gen_island_additionnal_height=int(self.room_height/self.tile_width // 10)
+        self.gen_island_random_horizontal=int(self.room_height/self.tile_width // 5)
+        self.gen_island_start_height=int(self.room_height/self.tile_width // 2 - self.room_height/self.tile_width // 5)
+        self.gen_island_max_height=2
+        self.gen_island_min_width=4
+        self.gen_island_max_width=7
 
-        
         self.all_mat=[[None for _ in range(len(self.graphe[0]))] for _ in range(len(self.graphe))]
 
         # value : dictionnary : keys : id of the tile value : image of the tile
@@ -53,15 +59,44 @@ class RenderMap:
         # matrix map is used to load all the map objects
         self.matrix_map=[[None for _ in range(len(self.graphe[0]))] for _ in range(len(self.graphe))]
         
-        # we dont start at 0 since the map as empty maps around it
-        i=0; z=0
         for i,line in enumerate(self.graphe):
             self.re_initialize_gen_var()
             #parameters for the generation of reliefs
             for z,node in enumerate(line):
                     # E and S correspond to if the map has a neightboor on the right or on the bot
-                self.load_map(node, i, z)
+                if node:
+                    self.generate_relief(i, z, node)
+                    if node[3] and not node[0] and not node[1]:self.re_initialize_gen_var()
         
+
+
+        # spawn of object 
+        for i,line in enumerate(self.graphe):
+            for z,node in enumerate(line):
+                # marche pas car il faut aussi droite du node en bas et c trop rare flemme
+                # if node and not node[0] and node[1] and node[2] and node[3] and line[z+1][2] and line[z+1][3]:
+                #     print(i,z)
+
+                if node and node[2] and node[3] and node[1] and self.graphe[i+1][z] and self.graphe[i+1][z][1] and self.graphe[i][z+1] and self.graphe[i][z+1][3]:
+                    self.all_mat[i][z][-1][-1]=0
+                    self.all_mat[i][z+1][-1][0]=0
+                    self.all_mat[i+1][z][0][-1]=0
+                    self.all_mat[i+1][z+1][0][0]=0
+
+                a=self.gen_max_height ; b=self.gen_min_width ; c=self.gen_max_width
+                self.gen_max_height=self.gen_island_max_height ; self.gen_min_width=self.gen_island_min_width ; self.gen_max_width=self.gen_island_max_width
+                if (node and random.randint(1,20)==1) or (node and node[0] and node[1] and node[2] and node[3]) or (node and not node[0] and not node[1] and not node[2] and node[3] and random.randint(1,2)==1) or (node and node[2] and node[3] and random.randint(1,10)==1) or (node and (node[1] or node[0]) and node[2] and node[3] and random.randint(1,2)==1):
+                    self.re_initialize_gen_var()
+                    self._generate_relief_ground(int(self.room_width//self.tile_width//2 - self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal)), int(self.room_width//self.tile_width//2 + self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal)), node, self.all_mat[i][z], self.gen_island_additionnal_height, start_height=self.gen_island_start_height+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height))
+                self.gen_max_height=a ; self.gen_min_width=b ; self.gen_max_width=c
+
+
+        for i,line in enumerate(self.graphe):
+            #parameters for the generation of reliefs
+            for z,node in enumerate(line):
+                    # E and S correspond to if the map has a neightboor on the right or on the bot
+                self.load_map(node, i, z)
+
         liste_top=[]
         liste_current=[]
         liste_bot=[]
@@ -255,7 +290,7 @@ class RenderMap:
         else:self.gen_current_height+=1
         return c
 
-    def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0, debug=False, noderight=None):
+    def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0,start_height=0, debug=False, noderight=None):
         """
         hill : 
         1 : classique left / 2 : right
@@ -316,7 +351,7 @@ class RenderMap:
                     # also generating the tiles below the current height
                     for i__ in range(i_, i_+width_):
                         if hill != 3 and hill != 4 and hill!=5 and hill != 6:
-                            for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height)-1, self.room_height//self.tile_width):
+                            for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height)-1 -start_height, self.room_height//self.tile_width - start_height):
                                 mat[y][i__]=1
                         else:
                             for y in range(0, self.gen_current_height+additionnal_height):
@@ -329,7 +364,7 @@ class RenderMap:
                     if c==1: self.gen_current_height+=1
                     else:self.gen_current_height-=1
                     for i__ in range(i_, i_+width_):
-                        for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height)-1, self.room_height//self.tile_width):
+                        for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height)-1 -start_height, self.room_height//self.tile_width - start_height):
                             mat[y][i__]=1
                 i_+=width_
                 
@@ -342,7 +377,7 @@ class RenderMap:
                     self.gen_current_width=0
                 # finishing the last relief of the map on the left 
                 for i__ in range(i_, i_+width_):
-                    for y in range(self.room_height//self.tile_width-self.gen_current_height-1-additionnal_height, self.room_height//self.tile_width):
+                    for y in range(self.room_height//self.tile_width-self.gen_current_height-1-additionnal_height-start_height, self.room_height//self.tile_width - start_height):
                         mat[y][i__]=1
 
                 i_+=width_
@@ -512,7 +547,7 @@ class RenderMap:
             self.gen_current_height, self.gen_current_width = old_height, old_width    
 
         # continuing relief when down and (right or left)
-        if node[3] and node[0]:
+        if node[3] and node[0] and not (node[2] and self.graphe[i+1][z] and self.graphe[i+1][z][0] and self.graphe[i][z-1] and self.graphe[i][z-1][3]):
             if self.gen_current_width==0:
                 self._change_height_ground()
             for y in range(self.room_height//self.tile_width-self.gen_current_height-1, self.room_height//self.tile_width):
@@ -520,7 +555,7 @@ class RenderMap:
                 if i<len(mat)-1 and z>0 and self.graphe[i][z-1][3] and not self.graphe[i+1][z][0] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]:
                     mat[y][1]=1
 
-        if node[3] and node[1]:
+        if node[3] and node[1] and not (node[2] and self.graphe[i+1][z] and self.graphe[i+1][z][1] and self.graphe[i][z+1] and self.graphe[i][z+1][3]):
             # not reset when falaise gauche
             if not (i<len(self.graphe)-1 and z<len(mat)-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3] and not self.graphe[i+1][z+1][0]):
                 self.re_initialize_gen_var(False)
@@ -556,7 +591,6 @@ class RenderMap:
         dico=self.matrix_map[i][z]
         # [g, d, h, b]
         if node:
-            self.generate_relief(i, z, node)
             self.complete_picture_matrix(i, z, dico, node)
             if node[3] and not node[0] and not node[1]:self.re_initialize_gen_var()
         else:
