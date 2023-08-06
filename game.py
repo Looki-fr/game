@@ -281,17 +281,20 @@ class Game:
         mob.save_location()    
 
         if mob.is_jumping_edge and self.collision.stop_if_collide(mob.direction_jump_edge, mob):
+            tmp=mob.direction_jump_edge
             mob.fin_saut_edge()
-            self.collision.check_grab(mob, mob.direction_jump_edge)
+            self.collision.check_grab(mob, tmp)
         
         if mob.is_sliding_ground and self.collision.stop_if_collide(mob.slide_ground_direction_x, mob):
+            tmp=mob.slide_ground_direction_x
             mob.fin_slide_ground()
-            self.collision.check_grab(mob, mob.slide_ground_direction_x)
+            self.collision.check_grab(mob, tmp)
         
         if mob.is_rolling and self.collision.stop_if_collide(mob.roll_direction_x, mob):
+            tmp=mob.roll_direction_x
             mob.fin_roll()
             if mob.is_falling : 
-                self.collision.check_grab(mob, mob.roll_direction_x)
+                self.collision.check_grab(mob, tmp)
 
         # called every tick because distance change every tick
         
@@ -384,7 +387,7 @@ class Game:
             self.handle_input()
             self.update()
             self.update_ecran()
-            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "wall")
+            #self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "wall")
             pygame.display.update()      
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:
