@@ -116,11 +116,13 @@ class Collision:
             return True
         return False
 
-    def joueur_se_cogne(self, mob):
+    def joueur_se_cogne(self, mob, dash=False):
         """renvoie True si la tete du joueur est en collision avec un plafond"""
+        if dash : rect=mob.body
+        else: rect=mob.head
         for dico in self._get_dico(mob.coord_map):
             for ceilling in dico["ceilling"]:
-                if mob.head.collidelist(ceilling) > -1:
+                if rect.collidelist(ceilling) > -1:
                     return True
         return False
         
@@ -233,21 +235,29 @@ class Collision:
         Moreover the distance parcoured in x is equal to the one in y so we can use i in the loop to 
         add the distance in the y axix little by little"""
         step=round(tile_width-2)
+        if dist == 0 and distance_y!=0:
+            dist=distance_y
         if dist != 0 and step > 0:
             tmp=[mob.position[0], mob.position[1]]
             for i in [y for y in range(step, abs(round(dist)), step)]+[abs(round(dist))+1]:
+                
                 if direction == "right":mob.position[0]+=i
                 else:mob.position[0]-=i
                 if distance_y>0:mob.position[1]+=i
                 elif distance_y<0:mob.position[1]-=i
-                if self.stop_if_collide(direction, mob, dash=True) or self.joueur_se_cogne(mob) or (ground and self.joueur_sur_sol(mob, dash=True, change_pos=False)):
+                cogne=self.joueur_se_cogne(mob, dash=True) ; sol=self.joueur_sur_sol(mob, dash=True, change_pos=False)
+
+                if self.stop_if_collide(direction, mob, dash=True) or cogne or (ground and sol):
                     fin_dash()
                     self.check_grab(mob, direction)
-                    if fall and not mob.is_grabing_edge and (not ground or not self.joueur_sur_sol(mob, dash=True, change_pos=False)):
+                    if fall and not mob.is_grabing_edge and (not ground or not sol or not cogne):
                         mob.debut_chute()
-                    if not mob.is_grabing_edge:
-                        mob.position=[tmp[0], tmp[1]]
-                    if not mob.is_grabing_edge and ground and self.joueur_sur_sol(mob, dash=True) : 
+                    
+                    if not cogne and not mob.is_grabing_edge and ground and sol : 
+                        self.joueur_sur_sol(mob, dash=True)
                         mob.debut_crouch()
+
+                    if not mob.is_grabing_edge and not (not cogne and ground and sol):
+                        mob.position=[tmp[0], tmp[1]]
                     return
             mob.position=[tmp[0], tmp[1]]

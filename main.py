@@ -10,23 +10,11 @@ if __name__ == "__main__":
     game.run()
     
 
+# BUG les particules sont pas continues qd on slide sur un mur
 
-# BUG passage a travers mur qd dash au sol
+# BUG transi animation qd slide ground dans un little ground => crouch ?
 
-# TODO => bug island haut droite, traverse mur qd saut edge
-
-# BUG generation sol ou ile, un seul bloc vers haut avant fin de ile 
-# => trouver generation et corriger
-
-# generer ile, trouver longueur et largeur, coordonne en x du pic vers le bas, modif ou sinspirer du pic vers bas
-
-# petite ile condition : [1,1,1,1]
-
-# plus grande ile condition : [1,0,1,1] or [0,1,1,1]
-#                         
-#       and gauche ou droite [0,1,0/1,1] or [1,0,0/1,1]
-# 
-#   /!\ mini ile existe deja faut juste agrandir
+# variation de plafond sur tt les plafonds, faire un truc general inter map comme le sol avec un reset et tt, qui marche avec les iles
 
 # TODO add plateforme / arbre / rocher / bateau ....
 
