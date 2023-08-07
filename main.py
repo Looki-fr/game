@@ -9,7 +9,6 @@ if __name__ == "__main__":
     game = Game()
     game.run()
     
-
 # BUG les particules sont pas continues qd on slide sur un mur
 
 # BUG transi animation qd slide ground dans un little ground => crouch ?

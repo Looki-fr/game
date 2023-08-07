@@ -45,6 +45,7 @@ class Game:
         self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images)
         
         self.pressed_up_bool = [False]
+        self.pressed_dash_bool = [False]
         self.last_player_position=self.player.position.copy()
         
         pygame.joystick.init()
@@ -151,7 +152,8 @@ class Game:
                         handle_input_ralentissement(mob, self.collision)
                 if up:pressed_up(control["perso"], down, left, right, self.pressed_up_bool, self.collision, self.render.zoom)
                 if down:pressed_down(control["perso"])
-                if pressed[control["touches"][4]]:pressed_dash(control["perso"], left, right, pressed[control["touches"][3]], pressed[control["touches"][2]], self.collision.joueur_sur_sol, self.collision, self.render.tile_width)
+                if pressed[control["touches"][4]]:pressed_dash(control["perso"], left, right, pressed[control["touches"][3]], pressed[control["touches"][2]], self.collision.joueur_sur_sol, self.collision, self.render.tile_width, self.pressed_dash_bool)
+                else: self.pressed_dash_bool[0]=False
                 if pressed[control["touches"][5]]:pressed_attack(control["perso"])
                 if pressed[control["touches"][6]]:pressed_heavy_attack(control["perso"], self.collision, left, right)     
                 if pressed[control["touches"][7]]:pressed_pary(control["perso"], left, right, self.collision)                                                    

@@ -83,12 +83,13 @@ def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
                         if mob.direction=="right":mob.position[0]-=5*zoom
                         else:mob.position[0]+=5*zoom
 
-def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, collision, tile_width):
+def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, collision, tile_width, pressed_dash_bool):
     for mob in liste_mob:
         if 'dash' in mob.actions:
+            
             if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_dashing and not mob.a_dash and not mob.is_sliding_ground and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking:           
                 if not joueur_sur_sol(mob) and not collision.joueur_se_cogne(mob):
-                    if time.time() - mob.timer_dash > mob.cooldown_dash  and ((not mob.is_grabing_edge and not collision.stop_if_collide(mob.direction, mob, dash=True, dontmove=True)) or ( mob.is_grabing_edge and mob.direction_wall == "left" and right ) or ( mob.direction_wall == "right" and left )):
+                    if not pressed_dash_bool[0] and time.time() - mob.timer_dash > mob.cooldown_dash  and ((not mob.is_grabing_edge and not collision.stop_if_collide(mob.direction, mob, dash=True, dontmove=True)) or ( mob.is_grabing_edge and mob.direction_wall == "left" and right ) or ( mob.direction_wall == "right" and left )):
                         if ( mob.direction_wall == "left" and right ) or ( mob.direction_wall == "right" and left ):
                             mob.timer_debut_dash_grabedge=time.time()
                         if mob.is_parying:
@@ -111,6 +112,7 @@ def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, collision, ti
                         if dir_y == "" and dir_x == "":dir_y = "up"
                         mob.debut_dash(dir_x, dir_y, bool_) 
                         collision.handle_collisions_wall_dash(mob, mob.distance_dash(), mob.fin_dash, mob.dash_direction_x,tile_width, distance_y=mob.distance_dash_y(), ground=True)         
+                        pressed_dash_bool[0] = True
                 elif down and not ((left and collision.stop_if_collide("left",mob, dontmove=True)) or (right and collision.stop_if_collide("right",mob, dontmove=True)))and time.time() - mob.timer_cooldown_slide_ground > mob.cooldown_slide_ground : 
                     if mob.is_parying:
                         mob.is_parying=False
