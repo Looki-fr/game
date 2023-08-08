@@ -99,6 +99,7 @@ class RenderMap:
                     start_height= self.gen_island_start_height//2+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
                     self._generate_relief_ground(start if start >=0 else 0, len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True)
                     self._generate_relief_ground(0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z+1], self.all_mat[i][z+1], self.gen_island_additionnal_height, start_height=start_height, island=True)
+                    self._better_bottom_island(-start_height-1, start, [(i,z), (i,z+1)], island=True)
 
 
                 elif island and (z==0 or not self.all_island[i][z-1]):
@@ -107,7 +108,7 @@ class RenderMap:
                     end=int(self.room_width//self.tile_width//2 + self.gen_island_max_width//2 + random.randint(0,self.gen_island_random_horizontal))
                     start_height=self.gen_island_start_height+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
                     self._generate_relief_ground(start if start >=0 else 0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True)
-                    self._better_bottom_island(start_height, start, end, i, z)
+                    self._better_bottom_island(-start_height-1, start, [(i,z)], island=True)
 
         self.gen_max_height=a ; self.gen_min_width=b ; self.gen_max_width=c
 
@@ -126,20 +127,40 @@ class RenderMap:
         
         self.get_first_map()["info"]["beated"]=True
 
-    def _better_bottom_island(self, start_height, start, end, i, z):
-        width=random.randint(self.gen_island_min_width, self.gen_island_max_width)
-        if True or random.randint(1,2)==1:
-            choice=random.randint(1,2)
-            x=random.randint(start, end)
-            for y in range(start, end+1):
-                if choice==1 and y>=x and y<=x+width:
-                    self.all_mat[i][z][-start_height-1][y]=0
-                elif choice==2 and y<=x and y>=x-width:
-                    self.all_mat[i][z][-start_height-1][y]=0
-            if self.all_mat[i][z][-start_height-1][start]==1 and self.all_mat[i][z][-start_height-1][start+1]==0:
-                self.all_mat[i][z][-start_height-1][start+1]=1
-            if self.all_mat[i][z][-start_height-1][end]==1 and self.all_mat[i][z][-start_height-1][end-1]==0:
-                self.all_mat[i][z][-start_height-1][end-1]=1
+    def _better_bottom_island(self, start_height, start, mats, island=False, switch=None, width=0, old_mat=[]):
+        if switch==None:switch=random.randint(1,2)==1
+        if len(mats)==0:return
+        mat=mats[0]
+        while self.all_mat[mat[0]][mat[1]][start_height][start]:
+            if width<=0:
+                if island: width=random.randint(self.gen_island_min_width, self.gen_island_max_width)
+                switch=not switch
+            if switch:
+                self.all_mat[mat[0]][mat[1]][start_height][start]=0
+            if start < len(self.all_mat[mat[0]][mat[1]][start_height])-1:
+                start+=1
+                width-=1
+            else: return self._better_bottom_island(start_height, 0, mats[1::], island=island, switch=switch, width=width-1, old_mat=mat)
+
+        for i in range(2,0,-1):
+            if start-i-1>0:old=self.all_mat[mat[0]][mat[1]][start_height][start-i-1]
+            elif len(old_mat)>0:old=self.all_mat[old_mat[0]][old_mat[1]][start_height][start-i-1]
+            if start-i>0 and self.all_mat[mat[0]][mat[1]][start_height][start-i] != old : self.all_mat[mat[0]][mat[1]][start_height][start-i] =old
+            elif len(old_mat)>0 and self.all_mat[old_mat[0]][old_mat[1]][start_height][start-i] != old:self.all_mat[old_mat[0]][old_mat[1]][start_height][start-i]=old
+        
+
+        # if True or random.randint(1,2)==1:
+        #     choice=random.randint(1,2)
+        #     x=random.randint(start, end)
+        #     for y in range(start, end+1):
+        #         if choice==1 and y>=x and y<=x+width:
+        #             self.all_mat[i][z][-start_height-1][y]=0
+        #         elif choice==2 and y<=x and y>=x-width:
+        #             self.all_mat[i][z][-start_height-1][y]=0
+        #     if self.all_mat[i][z][-start_height-1][start]==1 and self.all_mat[i][z][-start_height-1][start+1]==0:
+        #         self.all_mat[i][z][-start_height-1][start+1]=1
+        #     if self.all_mat[i][z][-start_height-1][end]==1 and self.all_mat[i][z][-start_height-1][end-1]==0:
+        #         self.all_mat[i][z][-start_height-1][end-1]=1
 
     def _load_pictures_tiles(self):
         liste_top=[]
@@ -394,7 +415,148 @@ class RenderMap:
                             for y in range(0, self.gen_current_height+additionnal_height):
                                 mat[y][i__]=1
                     # to avoid a tile alone when down
-                    if i_+width_==len(mat[y]) and self.gen_current_width==0 and noderight and noderight[3]:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                #    if i_+width_==len(mat[y]) and self.gen_current_width==0 and noderight and noderight[3]:
+                # y pas 0
+
+
+                
+
+                # gros bugs chelou ???? remettre y
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    if i_+width_==len(mat[0]) and self.gen_current_width==0 and noderight and noderight[3]:
                         self.gen_current_width=10
 
                 else:
