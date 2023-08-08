@@ -226,6 +226,8 @@ class Game:
         # si l'action du joueur a changer on l'update dans la classe particule
         
         for parti in [i[0].particule for i in self.get_all_mob()]+[p for p in self.tab_particule_dead]:
+            if "player" in parti.player.id and "jump_edge" in parti.player.action:
+                parti.pieds_collide_jump_edge = self.collision.check_pieds_collide_wall(parti.player)
             parti.update()
 
             i=0

@@ -51,6 +51,7 @@ class Particule:
         self.all_particle["wall_slide"] = []
         self.all_particle["jump_edge"]= []
         self.all_particle["ground_slide"] = []
+        self.all_particle["roll"]=[]
         
         self.update_particle=update_particle
     
@@ -69,10 +70,13 @@ class Particule:
             if self.player.direction=="right":x=self.player.position[0]+15*self.zoom
             else:x=self.player.position[0]+self.player.rect.w-15*self.zoom
             y=self.player.position[1]+self.player.rect.h
-                
-            if action == "run" or action == "crouch":
-                if self.player.direction=="left":self.add_particle_base_mouvement("run", LittleParticle(x, y, self.directory, self.zoom, self.speed_dt, random.uniform(0, math.pi/4)))
-                elif self.player.direction=="right":self.add_particle_base_mouvement("run", LittleParticle(x, y, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi, 3*math.pi/4)))
+            if (action == "run" or action == "crouch") and random.random()*self.player.speed>self.player.origin_speed_run:
+                if action == "crouch":
+                    if self.player.direction=="left":self.add_particle_base_mouvement("run", LittleParticle(x-25*self.zoom, y, self.directory, self.zoom, self.speed_dt, random.uniform(0, math.pi/4)))
+                    elif self.player.direction=="right":self.add_particle_base_mouvement("run", LittleParticle(x+20*self.zoom, y, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi, 3*math.pi/4)))
+                else:
+                    if self.player.direction=="left":self.add_particle_base_mouvement("run", LittleParticle(x-8*self.zoom, y, self.directory, self.zoom, self.speed_dt, random.uniform(0, math.pi/4)))
+                    elif self.player.direction=="right":self.add_particle_base_mouvement("run", LittleParticle(x+5*self.zoom, y, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi, 3*math.pi/4)))
                 
             elif action == "jump":
                 # reajustement de la position des particles
@@ -99,32 +103,41 @@ class Particule:
                         self.add_particle_base_mouvement("dash", LittleParticle(self.player.coord_debut_dash[0]+c, self.player.coord_debut_dash[1]+self.player.rect.h, self.directory, self.zoom, self.speed_dt, alpha))
             
             elif action == "Wall_slide":
-                if self.player.direction == "right": c=9*self.zoom       
-                elif self.player.direction == "left": c=47*self.zoom-self.player.rect.w
-                if self.player.direction=="right":self.add_particle_base_mouvement("wall_slide", LittleParticle(x + self.player.body.w +c, y - self.player.body.h, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi/2, math.pi)))
-                elif self.player.direction=="left": self.add_particle_base_mouvement("wall_slide", LittleParticle(x + self.player.body.w +c, y - self.player.body.h, self.directory, self.zoom, self.speed_dt, random.uniform(0, math.pi/2)))
+                if self.player.direction == "right": c=30*self.zoom       
+                elif self.player.direction == "left": c=27*self.zoom-self.player.rect.w
+                if self.player.direction=="right":self.add_particle_base_mouvement("wall_slide", LittleParticle(x + self.player.body.w +c, y - self.player.body.h+10*self.zoom, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi/2, math.pi)))
+                elif self.player.direction=="left": self.add_particle_base_mouvement("wall_slide", LittleParticle(x + self.player.body.w +c, y - self.player.body.h+10*self.zoom, self.directory, self.zoom, self.speed_dt, random.uniform(0, math.pi/2)))
             
             elif action == 'jump_edge':
                 # apparition de deux particles, une a gauche et une a droite
                 if self.player.direction_jump_edge=="left":
-                    self.add_particle_base_mouvement("jump_edge", LittleParticle(self.player.coord_debut_jump_edge[0]+76*self.zoom, self.player.coord_debut_jump_edge[1]+self.player.rect.h, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi/2, math.pi)))
-                    self.add_particle_base_mouvement("jump_edge", LittleParticle(self.player.coord_debut_jump_edge[0]+76*self.zoom, self.player.coord_debut_jump_edge[1]+self.player.rect.h, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi/2, 3*math.pi/2)))
+                    for _ in range(7):self.add_particle_base_mouvement("jump_edge", LittleParticle(self.player.coord_debut_jump_edge[0]+103*self.zoom, self.player.coord_debut_jump_edge[1]+self.player.rect.h, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi/2, math.pi)))
+                    for _ in range(7):self.add_particle_base_mouvement("jump_edge", LittleParticle(self.player.coord_debut_jump_edge[0]+103*self.zoom, self.player.coord_debut_jump_edge[1]+self.player.rect.h, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi/2, 3*math.pi/2)))
                 elif self.player.direction_jump_edge=="right":
-                    self.add_particle_base_mouvement("jump_edge", LittleParticle(self.player.coord_debut_jump_edge[0]+54*self.zoom, self.player.coord_debut_jump_edge[1]+self.player.rect.h, self.directory, self.zoom, self.speed_dt, random.uniform(0, math.pi/2)))
-                    self.add_particle_base_mouvement("jump_edge", LittleParticle(self.player.coord_debut_jump_edge[0]+54*self.zoom, self.player.coord_debut_jump_edge[1]+self.player.rect.h, self.directory, self.zoom, self.speed_dt, random.uniform(0, -math.pi/2)))
+                    for _ in range(7):self.add_particle_base_mouvement("jump_edge", LittleParticle(self.player.coord_debut_jump_edge[0]+37*self.zoom, self.player.coord_debut_jump_edge[1]+self.player.rect.h, self.directory, self.zoom, self.speed_dt, random.uniform(0, math.pi/2)))
+                    for _ in range(7):self.add_particle_base_mouvement("jump_edge", LittleParticle(self.player.coord_debut_jump_edge[0]+37*self.zoom, self.player.coord_debut_jump_edge[1]+self.player.rect.h, self.directory, self.zoom, self.speed_dt, random.uniform(0, -math.pi/2)))
             
             elif action == 'ground_slide':
-                self.add_particle_base_mouvement("ground_slide",LittleParticle(x, y, self.directory, self.zoom, self.speed_dt, random.uniform(0, math.pi/4)))
+                if self.player.direction=="left":self.add_particle_base_mouvement("ground_slide",LittleParticle(x, y, self.directory, self.zoom, self.speed_dt, random.uniform(0, math.pi/4)))
+                else:self.add_particle_base_mouvement("ground_slide",LittleParticle(x, y, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi, 3*math.pi/4)))
             
+            elif action == "roll":
+                if self.player.direction=="left":
+                    for _ in range(2):
+                        self.add_particle_base_mouvement("roll",LittleParticle(x, y, self.directory, self.zoom, self.speed_dt, random.uniform(0, math.pi/4)))
+                if self.player.direction=="right":
+                    for _ in range(2):
+                        self.add_particle_base_mouvement("roll",LittleParticle(x, y, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi, 3*math.pi/4)))
+                
         
     def update(self):
         """methode appeler a chaque tick"""
-
-        # when the dictonnarie of the current mouvement are not 'full' we add particles in it
-        if self.player.action == "run" and len(self.all_particle["run"]) < 20: self.spawn_particle("run")
-        elif self.player.action == "crouch" and len(self.all_particle["run"]) < 10: self.spawn_particle("run")
-        elif self.player.action == "jump" and len(self.all_particle["jump"]) < 30: self.spawn_particle("jump")
+        # when the dictonnary of the current mouvement are not 'full' we add particles in it
+        if self.player.action == "run" and len(self.all_particle["run"]) < 40: self.spawn_particle("run")
+        elif self.player.action == "crouch" and len(self.all_particle["run"]) < 20: self.spawn_particle("crouch")
+        elif self.player.action == "jump" and len(self.all_particle["jump"]) < 25: self.spawn_particle("jump")
         elif self.player.action == "dash" and len(self.all_particle["dash"]) < 30: self.spawn_particle("dash")
-        elif self.player.action == "Wall_slide" and len(self.all_particle["wall_slide"]) < 20: self.spawn_particle("Wall_slide")
+        elif self.player.action == "Wall_slide" and len(self.all_particle["wall_slide"]) < 50: self.spawn_particle("Wall_slide")
         elif self.player.action == "jump_edge" and len(self.all_particle["jump_edge"]) < 20 and self.pieds_collide_jump_edge: self.spawn_particle("jump_edge")
         elif self.player.action == "ground_slide" and len(self.all_particle["ground_slide"]) < 20: self.spawn_particle("ground_slide")
+        elif self.player.action == "roll" and len(self.all_particle["roll"]) < 10: self.spawn_particle("roll")
