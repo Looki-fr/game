@@ -168,7 +168,7 @@ class Collision:
                             return True
         if dash and temp != None:
             if direction == 'right':mob.position[0]=temp.x+5-mob.image.get_width()
-            else:mob.position[0]=temp.x+temp.w-5
+            elif direction=="left":mob.position[0]=temp.x+temp.w-5
             return True                
     
         return False
@@ -242,7 +242,6 @@ class Collision:
         wont go through the grounds / ceillings.
         Moreover the distance parcoured in x is equal to the one in y so we can use i in the loop to 
         add the distance in the y axix little by little"""
-        print(mob.position)
         step=round(tile_width-2)
         if dist == 0 and distance_y!=0:
             dist=distance_y
@@ -257,10 +256,9 @@ class Collision:
 
                 if self.stop_if_collide(direction, mob, dash=True) or cogne or (ground and sol):
                     fin_dash()
-                    if not cogne : self.check_grab(mob, direction, no_head=True)
+                    if not cogne and not (distance_y>0 and direction==""): self.check_grab(mob, direction, no_head=True)
                     if fall and not mob.is_grabing_edge and (not ground or not sol or not cogne):
                         mob.debut_chute()
-                    
                     if not cogne and ground and sol:
                         if mob.is_grabing_edge:
                             self.check_head_collide_ground(mob, True, True)

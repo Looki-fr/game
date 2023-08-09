@@ -492,6 +492,7 @@ class MOB(pygame.sprite.Sprite):
         self.feet.midbottom = (self.body.midbottom[0], self.body.midbottom[1]-self.increment_foot)
         self.head.midtop = self.body.midtop
         if "Edge_climb" in self.actions : self.big_head.midtop = self.body.midtop
+        if "dash" in self.actions: self.chest.midtop=self.head.midtop
 
     def update(self):
         """methode appele a chaque tick"""

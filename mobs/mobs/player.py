@@ -55,6 +55,7 @@ class Player(MOB):
         self.feet = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.1)
         self.head = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.2)
         self.big_head = pygame.Rect(0,0,self.rect.width * 1, self.rect.height*0.2)
+        self.chest = pygame.Rect(0,0, self.rect.width * 0.3, self.rect.height*0.4)
         self.body = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.7)
         self.body_wallslide = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.7)
         self.rect_attack = pygame.Rect(0,0,self.rect.width * 1, self.rect.height*1)
