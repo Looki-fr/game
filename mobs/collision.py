@@ -190,13 +190,13 @@ class Collision:
         else: mob.position[0] = temp.x - 2.11 * mob.body.w
         return True 
                         
-    def check_grab(self, mob, direction, no_head=False):
+    def check_grab(self, mob, direction, chest=False):
         """Grab SSI head collide"""
         for dico in self._get_dico(mob.coord_map):
             for wall in dico["wall"]:
                 # check method collide wall pour la collision
                 #  and ((mob.direction == 'right' and wall[0].x < mob.body.x + mob.body.w  and mob.body.x + mob.body.w-wall[0].x < mob.max_distance_collide) or (mob.direction == 'left' and wall[0].x + wall[0].w > mob.body.x and wall[0].x + wall[0].w-mob.body.x < mob.max_distance_collide))
-                if mob.body.collidelist(wall) > -1 and (no_head or mob.head.collidelist(wall) > -1):
+                if mob.body.collidelist(wall) > -1 and ((chest and mob.chest.collidelist(wall) > -1) or mob.head.collidelist(wall) > -1):
                     if "Edge_grab" in mob.actions:
                         if not mob.is_jumping_edge:
                             mob.fin_chute()
@@ -256,7 +256,7 @@ class Collision:
 
                 if self.stop_if_collide(direction, mob, dash=True) or cogne or (ground and sol):
                     fin_dash()
-                    if not cogne and not (distance_y>0 and direction==""): self.check_grab(mob, direction, no_head=True)
+                    if not cogne and not (distance_y>0 and direction==""): self.check_grab(mob, direction, chest=True)
                     if fall and not mob.is_grabing_edge and (not ground or not sol or not cogne):
                         mob.debut_chute()
                     if not cogne and ground and sol:

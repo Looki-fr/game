@@ -9,9 +9,10 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# TODO ile plus petite qd hill à cote 
+# BUG ce serait mieux si dash attack continue qd on collide un little ground au lieu de sarreter
+# , uniquement si pas chest collide
 
-# BUG dash attack dans little ground
+# TODO ile plus petite qd hill à cote 
 
 # TODO add plateforme / arbre / rocher / bateau ....
 
