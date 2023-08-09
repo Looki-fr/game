@@ -9,6 +9,7 @@ if __name__ == "__main__":
     game = Game()
     game.run()
     
+# merge dico et self.matrice mes couilels dans load map ??
 
 # BUG faire full tile autour de empty map et grosse image au milieu
 

@@ -98,9 +98,13 @@ class RenderMap:
                         if self.graphe[i][z_+1][2]: break
                         z_+=1
 
-                    for temp_i in range(len(self.all_mat[i][z])):
-                        if self.all_mat[i][z][0][temp_i] and not self.all_mat[i][z][1][temp_i] : break
-                    self._better_bottom_ceilling(0, temp_i, temp, island=False)
+                    if self.graphe[i][z-1] and self.graphe[i][z-1][2]: 
+                        temp = [(i,z-1)] + temp
+                        self._better_bottom_ceilling(0, len(self.all_mat[i][z][0])-1, temp, island=False)
+                    else:     
+                        for temp_i in range(0,len(self.all_mat[i][z])):
+                            if self.all_mat[i][z][0][temp_i] and not self.all_mat[i][z][1][temp_i] : break
+                        self._better_bottom_ceilling(0, temp_i, temp, island=False)
 
         a=self.gen_max_height ; b=self.gen_min_width ; c=self.gen_max_width
         self.gen_max_height=self.gen_island_max_height ; self.gen_min_width=self.gen_island_min_width ; self.gen_max_width=self.gen_island_max_width
@@ -800,6 +804,8 @@ class RenderMap:
             self.complete_picture_matrix(i, z, dico, node)
             if node[3] and not node[0] and not node[1]:self.re_initialize_gen_var()
         else:
+            #self._spawn_big_walls(i,z,dico,0,0,len(self.all_mat[i][z]))
+            self._spawn_big_ceilling(i,z,dico,self.room_height//self.tile_width-1,0,self.room_width//self.tile_width)
             self.matrix_picture[i][z].append({"x":z*self.room_width+self.tile_width,"y":i*self.room_height+self.tile_width,"img":len(self.all_pic)-2})
 
             for i_ in range(self.room_height//self.tile_width):
