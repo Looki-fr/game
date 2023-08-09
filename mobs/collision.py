@@ -242,15 +242,15 @@ class Collision:
         wont go through the grounds / ceillings.
         Moreover the distance parcoured in x is equal to the one in y so we can use i in the loop to 
         add the distance in the y axix little by little"""
+        print(mob.position)
         step=round(tile_width-2)
         if dist == 0 and distance_y!=0:
             dist=distance_y
         if dist != 0 and step > 0:
             tmp=[mob.position[0], mob.position[1]]
             for i in [y for y in range(step, abs(round(dist)), step)]+[abs(round(dist))+1]:
-                
                 if direction == "right":mob.position[0]+=i
-                else:mob.position[0]-=i
+                elif direction=="left":mob.position[0]-=i
                 if distance_y>0:mob.position[1]+=i
                 elif distance_y<0:mob.position[1]-=i
                 cogne=self.joueur_se_cogne(mob, dash=True) ; sol=self.joueur_sur_sol(mob, dash=True, change_pos=False)

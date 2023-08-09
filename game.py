@@ -387,7 +387,6 @@ class Game:
         t1=time.time()
         self.running = True
         while self.running:
-                
             self.player.is_mouving_x = False
             self.handle_input()
             self.update()
