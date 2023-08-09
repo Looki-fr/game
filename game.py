@@ -268,11 +268,6 @@ class Game:
         
         if mob.is_jumping and self.collision.joueur_se_cogne(mob):
             mob.fin_saut(ground=self.collision.joueur_sur_sol(mob))
-              
-        if mob.is_dashing and self.collision.joueur_se_cogne(mob):
-            mob.fin_dash()
-            
-        
         
         # gestion collision avec les murs
         

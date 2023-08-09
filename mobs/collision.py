@@ -257,15 +257,13 @@ class Collision:
 
                 if self.stop_if_collide(direction, mob, dash=True) or cogne or (ground and sol):
                     fin_dash()
-                    self.check_grab(mob, direction, no_head=True)
+                    if not cogne : self.check_grab(mob, direction, no_head=True)
                     if fall and not mob.is_grabing_edge and (not ground or not sol or not cogne):
                         mob.debut_chute()
                     
                     if not cogne and ground and sol:
                         if mob.is_grabing_edge:
-                            print(mob.position)
                             self.check_head_collide_ground(mob, True, True)
-                            print(mob.position)
                             mob.fin_grab_edge()
                             mob.debut_edge_climb()
                         else:
