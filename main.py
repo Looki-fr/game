@@ -9,12 +9,11 @@ if __name__ == "__main__":
     game = Game()
     game.run()
     
-# dash_attack paerticle ??
-# BUG les particules sont pas continues qd on slide sur un mur
 
-# BUG transi animation qd slide ground dans un little ground => crouch ?
+# BUG faire full tile autour de empty map et grosse image au milieu
 
-# variation de plafond sur tt les plafonds, faire un truc general inter map comme le sol avec un reset et tt, qui marche avec les iles
+# TODO faire bottom island mais pour tt plafond avec plus grandes valeurs, valeurs du sol ???
+
 
 # TODO add plateforme / arbre / rocher / bateau ....
 
