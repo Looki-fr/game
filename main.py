@@ -8,11 +8,10 @@ if __name__ == "__main__":
 
     game = Game()
     game.run()
-    
-# bug qd dash au sol on se deplace a gauche
 
+# TODO ile plus petite qd hill à cote 
 
-# merge dico et self.matrice mes couilels dans load map ??
+# BUG dash attack dans little ground
 
 # TODO add plateforme / arbre / rocher / bateau ....
 
