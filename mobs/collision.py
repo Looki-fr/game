@@ -190,18 +190,20 @@ class Collision:
         else: mob.position[0] = temp.x - 2.11 * mob.body.w
         return True 
                         
-    def check_grab(self, mob, direction):
+    def check_grab(self, mob, direction, no_head=False):
         """Grab SSI head collide"""
         for dico in self._get_dico(mob.coord_map):
             for wall in dico["wall"]:
                 # check method collide wall pour la collision
                 #  and ((mob.direction == 'right' and wall[0].x < mob.body.x + mob.body.w  and mob.body.x + mob.body.w-wall[0].x < mob.max_distance_collide) or (mob.direction == 'left' and wall[0].x + wall[0].w > mob.body.x and wall[0].x + wall[0].w-mob.body.x < mob.max_distance_collide))
-                if mob.body.collidelist(wall) > -1 and mob.head.collidelist(wall) > -1:
+                if mob.body.collidelist(wall) > -1 and (no_head or mob.head.collidelist(wall) > -1):
                     if "Edge_grab" in mob.actions:
                         if not mob.is_jumping_edge:
                             mob.fin_chute()
                             mob.debut_grab_edge()
                         self.stick_to_wall(mob, direction)
+                        # REMOVE RETURN TRUE SI BUG
+                        return True
                           
     def check_pieds_collide_wall(self, mob):
         for dico in self._get_dico(mob.coord_map):
@@ -210,11 +212,11 @@ class Collision:
                     return True
         return False
 
-    def check_head_collide_ground(self, mob, changing_y=False):
+    def check_head_collide_ground(self, mob, changing_y=False, body=False):
         pos=-999999
         for dico in self._get_dico(mob.coord_map):
             for ground in dico["ground"]:
-                if mob.big_head.collidelist(ground) > -1:
+                if mob.big_head.collidelist(ground) > -1 or (body and mob.body.collidelist(ground) > -1):
                     if changing_y==True:
                         if pos == -999999 or ground[0].y < pos : pos = ground[0].y
                     if not changing_y : return True
@@ -229,6 +231,12 @@ class Collision:
                     return
         mob.fin_grab_edge()
     
+    def go_to_top_wall(self, mob):
+        for dico in self._get_dico(mob.coord_map):
+            for wall in dico["wall"]:
+                if mob.body.collidelist(wall) > -1:
+                    mob.position[1]=wall[0].y-mob.head.h*0.5
+
     def handle_collisions_wall_dash(self, mob, dist, fin_dash, direction, tile_width, fall=True, distance_y=0, ground=False):   
         """only check when dist != 0 because if the player only go up or down the body is big enough that the player
         wont go through the grounds / ceillings.
@@ -249,13 +257,20 @@ class Collision:
 
                 if self.stop_if_collide(direction, mob, dash=True) or cogne or (ground and sol):
                     fin_dash()
-                    self.check_grab(mob, direction)
+                    self.check_grab(mob, direction, no_head=True)
                     if fall and not mob.is_grabing_edge and (not ground or not sol or not cogne):
                         mob.debut_chute()
                     
-                    if not cogne and not mob.is_grabing_edge and ground and sol : 
-                        self.joueur_sur_sol(mob, dash=True)
-                        mob.debut_crouch()
+                    if not cogne and ground and sol:
+                        if mob.is_grabing_edge:
+                            print(mob.position)
+                            self.check_head_collide_ground(mob, True, True)
+                            print(mob.position)
+                            mob.fin_grab_edge()
+                            mob.debut_edge_climb()
+                        else:
+                            self.joueur_sur_sol(mob, dash=True)
+                            mob.debut_crouch()
 
                     if not mob.is_grabing_edge and not (not cogne and ground and sol):
                         mob.position=[tmp[0], tmp[1]]

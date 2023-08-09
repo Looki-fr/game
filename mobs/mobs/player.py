@@ -201,8 +201,6 @@ class Player(MOB):
             "dash_attack":self.dash_attack,
             "air_dying":self.air_hurt,
         }       
-        
-
 
     def debut_edge_climb(self):
         if self.direction=="right":

@@ -84,7 +84,7 @@ class RenderMap:
                     self.all_mat[i+1][z][0][-1]=0
                     self.all_mat[i+1][z+1][0][0]=0
                 
-                if (node and random.randint(1,20)==1) or (node and node[0] and node[1] and node[2] and node[3]) or (node and not node[0] and not node[1] and not node[2] and node[3] and random.randint(1,2)==1) or (node and node[2] and node[3] and random.randint(1,10)==1) or (node and (node[1] or node[0]) and node[2] and node[3] and random.randint(1,2)==1):
+                if (node and random.randint(1,10)==1) or (node and node[0] and node[1] and node[2] and node[3]) or (node and not node[0] and not node[1] and not node[2] and node[3] and random.randint(1,2)==1) or (node and node[2] and node[3] and random.randint(1,10)==1) or (node and (node[1] or node[0]) and node[2] and node[3] and random.randint(1,2)==1):
                     self.all_island[i][z]=True
 
                 # better bottom of ceillings
@@ -109,8 +109,6 @@ class RenderMap:
         a=self.gen_max_height ; b=self.gen_min_width ; c=self.gen_max_width
         self.gen_max_height=self.gen_island_max_height ; self.gen_min_width=self.gen_island_min_width ; self.gen_max_width=self.gen_island_max_width
 
-        #test
-        self.all_island[2][1]=True
         for i,line in enumerate(self.all_island):
             for z,island in enumerate(line):
                 if island and z<len(self.all_island[i])-1 and self.all_island[i][z+1]:

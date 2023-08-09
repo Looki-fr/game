@@ -9,12 +9,10 @@ if __name__ == "__main__":
     game = Game()
     game.run()
     
+# bug qd dash au sol on se deplace a gauche
+
+
 # merge dico et self.matrice mes couilels dans load map ??
-
-# BUG faire full tile autour de empty map et grosse image au milieu
-
-# TODO faire bottom island mais pour tt plafond avec plus grandes valeurs, valeurs du sol ???
-
 
 # TODO add plateforme / arbre / rocher / bateau ....
 
@@ -22,12 +20,6 @@ if __name__ == "__main__":
 # TODO spawn plateforme
 # mat[i][y]=1 = normal
 # mat[i][y]=2 = plateforme
-
-
-# TODO map : 
-#  _
-#  _|__  faire comme grotte
-# 
 
 
 # TODO : faire spawn crab à chaque milieu de map si ya pas bas
