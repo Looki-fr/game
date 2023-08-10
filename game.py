@@ -279,7 +279,8 @@ class Game:
             self.collision.check_grab(mob, tmp)
             
         temp_ground=False
-        if mob.is_sliding_ground and self.collision.stop_if_collide(mob.slide_ground_direction_x, mob):
+
+        if mob.is_sliding_ground and self.collision.stop_if_collide(mob.slide_ground_direction_x, mob, dash=True, dontmove=True):
             temp_ground=not mob.is_falling
             tmp=mob.slide_ground_direction_x
             mob.fin_slide_ground()
@@ -295,11 +296,11 @@ class Game:
         # after because if slide ground we need to cancel the grab wall before we see it on screen
         # slide on wall
         if temp_ground or (mob.is_sliding and self.collision.joueur_sur_sol(mob)):
-            mob.fin_grab_edge()
+            mob.fin_grab_edge(change_dir=temp_ground)
             if mob.direction == "right":
-                mob.change_direction("idle", "left")
+                mob.change_direction("run", "left")
             elif mob.direction == "left":
-                mob.change_direction("idle", "right")
+                mob.change_direction("run", "right")
 
         # called every tick because distance change every tick
         
@@ -391,7 +392,7 @@ class Game:
             self.handle_input()
             self.update()
             self.update_ecran()
-            #self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling")
+            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "wall")
             pygame.display.update()      
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:

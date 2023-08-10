@@ -8,7 +8,8 @@ if __name__ == "__main__":
 
     game = Game()
     game.run()
-# BUG qd dash en diagonal to a ground
+
+# BUG daffichage qd dash dans le coin
 
 # TODO possibilite de mixer ile et hill (falaise) pour faire un balcon simpa
 # => interdire ile qd ya une hill mais la mettre en calculant les coordonnées comme on veut
@@ -41,10 +42,6 @@ if __name__ == "__main__":
 
 
 # TODO : faire spawn crab à chaque milieu de map si ya pas bas
-
-
-# BUG d'affichage qd dash dans mur ?
-
 
 # BUG  crab coin qd on est en bas il arete davancer
 

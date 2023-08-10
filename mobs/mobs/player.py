@@ -374,11 +374,10 @@ class Player(MOB):
     
     def fin_slide_ground(self):
         self.is_sliding_ground = False
+        if not self.is_falling:self.change_direction("run", self.slide_ground_direction_x)
+        else: self.change_direction("fall", self.slide_ground_direction_x)
         self.slide_ground_direction_x = ""
         self.compteur_slide_ground = self.compteur_slide_ground_min
-        # the player was running before the slide so he should run after 
-        if not self.is_falling:self.change_direction("run", self.direction)
-        else: self.change_direction("fall", self.direction)
             
         self.timer_cooldown_slide_ground = time.time()
         self.update_action()
@@ -402,7 +401,7 @@ class Player(MOB):
         if self.is_sliding:
             self.position[1] += self.speed_sliding * self.zoom * self.speed_dt
         
-    def fin_grab_edge(self, mouvement = True):
+    def fin_grab_edge(self, mouvement = True, change_dir=False):
         """
         ne pas appeler quand on veut wallslide
         """
@@ -415,6 +414,11 @@ class Player(MOB):
                 self.position[0] -= 15*self.zoom
             elif self.direction == "left":
                 self.position[0] += 15*self.zoom
+        if change_dir:
+            if self.direction=="right":
+                self.direction="left"
+            elif self.direction=="left":
+                self.direction="right"
         self.speed_gravity = self.original_speed_gravity 
         self.update_action()
 
