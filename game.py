@@ -152,7 +152,7 @@ class Game:
                         handle_input_ralentissement(mob, self.collision)
                 if up:pressed_up(control["perso"], down, left, right, self.pressed_up_bool, self.collision, self.render.zoom)
                 if down:pressed_down(control["perso"])
-                if pressed[control["touches"][4]]:pressed_dash(control["perso"], left, right, pressed[control["touches"][3]], pressed[control["touches"][2]], self.collision.joueur_sur_sol, self.collision, self.render.tile_width, self.pressed_dash_bool)
+                if pressed[control["touches"][4]]:pressed_dash(control["perso"], left, right, pressed[control["touches"][3]], pressed[control["touches"][2]], self.collision.joueur_sur_sol, self.collision, self.pressed_dash_bool)
                 else: self.pressed_dash_bool[0]=False
                 if pressed[control["touches"][5]]:pressed_attack(control["perso"])
                 if pressed[control["touches"][6]]:pressed_heavy_attack(control["perso"], self.collision, left, right)     
@@ -192,7 +192,7 @@ class Game:
                     if self.motion[1]<-0.4:up=True
                     if self.motion[0]>0.4:right=True
                     if self.motion[0]<-0.4:left=True
-                    pressed_dash(perso_manette, left, right, down, up, self.collision.joueur_sur_sol, self.particule, self.collision, self.render.tile_width)
+                    pressed_dash(perso_manette, left, right, down, up, self.collision.joueur_sur_sol, self.particule, self.collision)
                 if event.button == 2:    
                     pressed_attack(perso_manette)   
                 if event.button == 3:
@@ -304,10 +304,10 @@ class Game:
         # called every tick because distance change every tick
         
         if mob.is_dashing_attacking and time.time()-mob.timer_debut_dash_attack_grabedge > mob.cooldown_not_collide_dash_attack:
-            self.collision.handle_collisions_wall_dash(mob, mob.distance_dash_attack(), mob.fin_dash_attack, mob.direction, self.render.tile_width, fall=False)     
+            self.collision.handle_collisions_wall_dash(mob, mob.fin_dash_attack, mob.direction, fall=False)     
 
         if mob.is_dashing and time.time()-mob.timer_debut_dash_grabedge > mob.cooldown_not_collide_dash:   
-            self.collision.handle_collisions_wall_dash(mob, mob.distance_dash(), mob.fin_dash, mob.dash_direction_x,self.render.tile_width, distance_y=mob.distance_dash_y(), ground=True)  
+            self.collision.handle_collisions_wall_dash(mob, mob.fin_dash, mob.dash_direction_x, ground=True)  
         
         # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
         if mob.is_jumping and mob.compteur_jump > mob.compteur_jump_min * 0.4 and self.collision.stop_if_collide(mob.direction, mob):

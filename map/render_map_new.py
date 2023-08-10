@@ -475,8 +475,6 @@ class RenderMap:
                         self.matrix_map[i][z]["little_ground"].append([pygame.Rect(z*self.room_width+(y_-0.6)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
                     #  or (y==d-1 and self.last_mat and not self.last_mat[i_][0])
                     # right
-                    if i==2 and z==1 and y_==d-1:
-                        print(self.gen_current_width,node)
                     if ((y_<d-1 and not mat[i_][y_+1] and i_<len(mat)-1 and mat[i_+1][y_+1] and i_>0 and not mat[i_-1][y_]) or (y_==d-1 and node[1] and (self.gen_current_width==0 or (z<len(self.all_mat[i])-1 and self.all_mat[i][z+1] and not self.all_mat[i][z+1][i_][0] and self.all_mat[i][z+1][i_+1][0])))):
                         self.matrix_picture[i][z].append({"x":z*self.room_width+(y_+1)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":len(self.all_pic)-1})
                         self.matrix_map[i][z]["little_ground"].append([pygame.Rect(z*self.room_width+(y_+1.1)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])

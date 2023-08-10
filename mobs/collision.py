@@ -57,6 +57,11 @@ class Collision:
                 new_y = screen.get_height()/2 + obj[0].top - scroll_rect.y
                 pygame.draw.rect(screen, (255, 0, 0), (new_x, new_y, obj[0].w, obj[0].h))
 
+    def foot_on_little_ground(self, mob):
+        for dico in self._get_dico(mob.coord_map):
+            for little_ground in dico["little_ground"]:
+                if mob.feet.collidelist(little_ground) > -1:
+                    return True
 
     def joueur_sur_sol(self, mob, platform_only=False, dash=False, change_pos=True):
         """renvoie True si les pieds du joueur est sur une plateforme ou sur le sol.
@@ -126,7 +131,7 @@ class Collision:
                     return True
         return False
         
-    def stop_if_collide(self, direction,mob, head = False, move_back=True, dash=False, dontmove=False):
+    def stop_if_collide(self, direction,mob, head = False, move_back=True, dash=False, dontmove=False, chest=False):
         """fait en sorte que le joueur avance plus lorsque qu'il avance dans un mur
         /!\           /!\          /!\        /!\ 
         
@@ -136,6 +141,7 @@ class Collision:
                 /!\           /!\         /!\         /!\ 
         """
         if head:rect = mob.head
+        elif chest: rect=mob.chest
         else:rect = mob.body
         if dash: temp=None
         for dico in self._get_dico(mob.coord_map):
@@ -149,7 +155,7 @@ class Collision:
                         if temp==None: temp=wall[0]
                         else:
                             if direction== 'right' and wall[0].x < temp.x: temp=wall[0]
-                            elif direction == 'left' and wall[0].x+wall[0].w > temp.x+temp.w : temp=wall[0]
+                            elif direction == 'left' and wall[0].x+wall[0].w > temp.x+temp.w :temp=wall[0]
                     else:
                         if direction == 'right' and wall[0].x < mob.body.x + mob.body.w and(mob.is_sliding_ground or (mob.body.x + mob.body.w-wall[0].x < mob.max_distance_collide)):
                             if dontmove: return True
@@ -237,38 +243,25 @@ class Collision:
                 if mob.body.collidelist(wall) > -1:
                     mob.position[1]=wall[0].y-mob.head.h*0.5
 
-    def handle_collisions_wall_dash(self, mob, dist, fin_dash, direction, tile_width, fall=True, distance_y=0, ground=False):   
+    def handle_collisions_wall_dash(self, mob, fin_dash, direction, fall=True, ground=False):   
         """only check when dist != 0 because if the player only go up or down the body is big enough that the player
         wont go through the grounds / ceillings.
         Moreover the distance parcoured in x is equal to the one in y so we can use i in the loop to 
         add the distance in the y axix little by little"""
-        step=round(tile_width-2)
-        if dist == 0 and distance_y!=0:
-            dist=distance_y
-        if dist != 0 and step > 0:
-            tmp=[mob.position[0], mob.position[1]]
-            for i in [y for y in range(step, abs(round(dist)), step)]+[abs(round(dist))+1]:
-                if direction == "right":mob.position[0]+=i
-                elif direction=="left":mob.position[0]-=i
-                if distance_y>0:mob.position[1]+=i
-                elif distance_y<0:mob.position[1]-=i
-                cogne=self.joueur_se_cogne(mob, dash=True) ; sol=self.joueur_sur_sol(mob, dash=True, change_pos=False)
 
-                if self.stop_if_collide(direction, mob, dash=True) or cogne or (ground and sol):
-                    fin_dash()
-                    if not cogne and not (distance_y>0 and direction==""): self.check_grab(mob, direction, chest=True)
-                    if fall and not mob.is_grabing_edge and (not ground or not sol or not cogne):
-                        mob.debut_chute()
-                    if not cogne and ground and sol:
-                        if mob.is_grabing_edge:
-                            self.check_head_collide_ground(mob, True, True)
-                            mob.fin_grab_edge()
-                            mob.debut_edge_climb()
-                        else:
-                            self.joueur_sur_sol(mob, dash=True)
-                            mob.debut_crouch()
+        wall = self.stop_if_collide(direction, mob, dash=True, dontmove=True) ; cogne=self.joueur_se_cogne(mob, dash=True) ; sol=self.joueur_sur_sol(mob, dash=True, change_pos=False)
 
-                    if not mob.is_grabing_edge and not (not cogne and ground and sol):
-                        mob.position=[tmp[0], tmp[1]]
-                    return
-            mob.position=[tmp[0], tmp[1]]
+        if ( wall and not (mob.action=="dash_attack" and self.foot_on_little_ground(mob) and not self.stop_if_collide(direction, mob, dash=True, chest=True, dontmove=True)))  or cogne or (ground and sol):
+            if wall : self.stop_if_collide(direction, mob, dash=True)
+            fin_dash()
+            if not direction=="": self.check_grab(mob, direction, chest=True)
+            if fall and not mob.is_grabing_edge and (not ground or not sol or not cogne):
+                mob.debut_chute()
+            if not cogne and ground and sol:
+                if mob.is_grabing_edge:
+                    self.check_head_collide_ground(mob, True, True)
+                    mob.fin_grab_edge()
+                    mob.debut_edge_climb()
+                else:
+                    self.joueur_sur_sol(mob, dash=True)
+                    mob.debut_crouch()
