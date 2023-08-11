@@ -9,6 +9,8 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+
+
 # TODO possibilite de mixer ile et hill (falaise) pour faire un balcon simpa
 # => interdire ile qd ya une hill mais la mettre en calculant les coordonnées comme on veut
 
@@ -25,6 +27,7 @@ if __name__ == "__main__":
 # TODO qd 3 bas daffile sans gauche ou droite il faut au moins une ile
 
 # TODO ile plus petite qd hill à cote 
+# => changer tableau hills pour pas confondre les top des falaises
 
 # TODO add plateforme / arbre / rocher / bateau ....
 
