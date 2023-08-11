@@ -309,4 +309,6 @@ class Collision:
                     if mob.is_grabing_edge: mob.fin_grab_edge()
                     self.joueur_sur_sol(mob, dash=True)
                     mob.debut_crouch()
-                    
+            if mob.is_grabing_edge and self.joueur_se_cogne(mob, chest=True):
+                mob.fin_grab_edge()
+                mob.debut_chute()

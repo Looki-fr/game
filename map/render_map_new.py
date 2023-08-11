@@ -137,8 +137,15 @@ class RenderMap:
                     self.re_initialize_gen_var()
                     start=int(self.room_width//self.tile_width//2 - self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal))
                     end=int(self.room_width//self.tile_width//2 + self.gen_island_max_width//2 + random.randint(0,self.gen_island_random_horizontal))
-                    if not self.graphe[i][z][3]:start_height=len(self.all_mat[i][z])-1-self.gen_max_height-3-random.randint(0, self.gen_island_additionnal_height)
+                    if self.all_hills[i][z]==50:
+                        start=0
+                        start_height=random.randint(0, self.gen_island_additionnal_height)
+                    elif self.all_hills[i][z]==60:
+                        end=len(self.all_mat[i][z][0])-1
+                        start_height=random.randint(0, self.gen_island_additionnal_height)
+                    elif not self.graphe[i][z][3]:start_height=len(self.all_mat[i][z])-1-self.gen_max_height-3-random.randint(0, self.gen_island_additionnal_height)
                     else:start_height=self.gen_island_start_height+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
+                    print(i,z,start_height)
                     self._generate_relief_ground(start if start >=0 else 0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True)
                     self._better_bottom_ceilling(-start_height-1, start, [(i,z)], island=True)
 

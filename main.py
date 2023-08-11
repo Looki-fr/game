@@ -23,8 +23,6 @@ if __name__ == "__main__":
 
 # TODO cacher salles que l'on voit pas à travers les murs => polygone pour si on est sur une crete ?
 
-# TODO qd 3 bas daffile sans gauche ou droite il faut au moins sune ile
-
 # TODO ile plus petite qd hill à cote 
 # => changer tableau hills pour pas confondre les top des falaises
 

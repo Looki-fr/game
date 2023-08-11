@@ -12,10 +12,10 @@
 # seed=1691663197.5484853
 
 # baton tt seul trop chelou qui vbole
-seed=1691674131.9426541
+# seed=1691674131.9426541
 
 # weird
-# seed=1691671385.29449
+seed=1691671385.29449
 
 
 # import time
