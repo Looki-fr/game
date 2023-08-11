@@ -1,9 +1,9 @@
 
 # interesting generation with isle
-seed=1690213340.3968208
+# seed=1690213340.3968208
 
-# 2 bugs de generation : une barre tt seul et une tile tt seul à un  bord
-#seed=1691662771.3016784
+# falaise gauche
+# seed=1691662771.3016784
 
 # bug 2 hills en mm temps + ile ? = passage bouche
 # seed=1691663098.4508078
