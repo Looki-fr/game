@@ -1,6 +1,6 @@
 
 # interesting generation with isle
-#seed=1690213340.3968208
+seed=1690213340.3968208
 
 # 2 bugs de generation : une barre tt seul et une tile tt seul à un  bord
 #seed=1691662771.3016784
@@ -18,8 +18,8 @@
 # seed=1691671385.29449
 
 
-import time
-seed=time.time()
+# import time
+# seed=time.time()
 
-with open("seed.txt", "w") as file:
-    file.write(str(seed))
+# with open("seed.txt", "w") as file:
+#     file.write(str(seed))

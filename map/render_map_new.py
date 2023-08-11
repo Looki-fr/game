@@ -111,6 +111,7 @@ class RenderMap:
         for i,line in enumerate(self.all_island):
             for z,island in enumerate(line):
                 if island and z<len(self.all_island[i])-1 and self.all_island[i][z+1]:
+                    self.gen_max_height=a ; self.gen_min_width=b ; self.gen_max_width=c
                     self.re_initialize_gen_var()
                     start=int(self.room_width//self.tile_width//2 - self.gen_island_max_width//2 + random.randint(0,self.gen_island_random_horizontal))
                     end=int(self.room_width//self.tile_width//2 + self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal))
@@ -118,7 +119,9 @@ class RenderMap:
                     else:start_height= self.gen_island_start_height//2+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
                     self._generate_relief_ground(start if start >=0 else 0, len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True)
                     self._generate_relief_ground(0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z+1], self.all_mat[i][z+1], self.gen_island_additionnal_height, start_height=start_height, island=True)
-                    self._better_bottom_ceilling(-start_height-1, start, [(i,z), (i,z+1)], island=True)
+                    self._better_bottom_ceilling(-start_height-1, start, [(i,z), (i,z+1)])
+                    self.gen_max_height=self.gen_island_max_height ; self.gen_min_width=self.gen_island_min_width ; self.gen_max_width=self.gen_island_max_width
+
 
                 elif island and (z==0 or not self.all_island[i][z-1]):
                     self.re_initialize_gen_var()
