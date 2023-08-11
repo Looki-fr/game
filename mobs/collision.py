@@ -168,7 +168,7 @@ class Collision:
                             
                             return True
                         # si le joueur va a gauche en etant a droite du mur
-                        if direction == 'left' and wall[0].x + wall[0].w > mob.body.x and wall[0].x + wall[0].w-mob.body.x < mob.max_distance_collide:  
+                        if direction == 'left' and wall[0].x + wall[0].w > mob.body.x and (mob.is_sliding_ground or (wall[0].x + wall[0].w-mob.body.x < mob.max_distance_collide)):  
                             if dontmove: return True
                             
                             if not mob.is_dashing and not mob.is_dashing_attacking and move_back:  

@@ -10,7 +10,6 @@ if __name__ == "__main__":
     game.run()
 
 
-
 # TODO possibilite de mixer ile et hill (falaise) pour faire un balcon simpa
 # => interdire ile qd ya une hill mais la mettre en calculant les coordonnées comme on veut
 
