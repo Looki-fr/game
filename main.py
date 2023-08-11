@@ -9,16 +9,6 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# TODO pour carre : 
-# 2 choix : 
-
-#           - 4 petites iles en N S W E ; W  qui sont soient tt en bas de la map du haut, 
-# soit tt en haut de la map du bas, E inversement
-#
-#           - 3
-
-# TODO possibilite de mixer ile et hill (falaise) pour faire un balcon simpa
-# => interdire ile qd ya une hill mais la mettre en calculant les coordonnées comme on veut
 
 # TODO si barre alors mettre ile collé ou gros champignon ou arbre dessus ? ?? ou grosse hill si compatible
 

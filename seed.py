@@ -15,8 +15,10 @@
 # seed=1691674131.9426541
 
 # weird
-seed=1691671385.29449
+#seed=1691671385.29449
 
+# bug to close
+#seed=1691785120.476092
 
 # import time
 # seed=time.time()

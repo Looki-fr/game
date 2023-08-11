@@ -76,7 +76,7 @@ class RenderMap:
                 if node:
                     self.generate_relief(i, z, node)
                     if node[3] and not node[0] and not node[1]:self.re_initialize_gen_var()
-                    if (node[2] and (i==0 or not self.all_island[i-1][z]) and random.randint(1,7)==1) or (node[0] and node[1] and node[2] and node[3]) or (not node[0] and not node[1] and not node[2] and node[3] and random.randint(1,2)==1) or (node[2] and node[3] and random.randint(1,10)==1) or ((node[1] or node[0]) and node[2] and node[3] and random.randint(1,2)==1):
+                    if (node[2] and (i==0 or not self.all_island[i-1][z]) and random.randint(1,5)==1) or (node[0] and node[1] and node[2] and node[3]) or (not node[0] and not node[1] and not node[2] and node[3] and random.randint(1,2)==1) or (node[2] and node[3] and random.randint(1,4)==1) or ((node[1] or node[0]) and node[2] and node[3] and random.randint(1,2)==1):
                         self.all_island[i][z]=True
 
         seen_better_bottom=[]
@@ -142,7 +142,8 @@ class RenderMap:
             for z,node in enumerate(line):
                     # E and S correspond to if the map has a neightboor on the right or on the bot
                 self.load_map(node, i, z)
-
+        for line in self.all_hills:
+            print(line)
         self._load_pictures_tiles()
                 
         self.minimap_picture=pygame.image.load(f"{directory}\\assets\\tiled_maps\\minimap.png")
@@ -163,11 +164,11 @@ class RenderMap:
                     self.re_initialize_gen_var()
                     start=int(self.room_width//self.tile_width//2 - self.gen_island_max_width//2 + random.randint(0,self.gen_island_random_horizontal))
                     end=int(self.room_width//self.tile_width//2 + self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal))
-                    if self.graphe[i][z] and self.graphe[i][z][1] and self.graphe[i][z][3] and self.graphe[i+1][z][1] and self.graphe[i][z+1][3]: 
-                        print("jndsgjndsjvj dsjb sjc xnvjkwkv nkjdslknjvdnsj vlknjdflknj qldnsj flnjQ Flj")
-                        start_height= round(self.gen_island_start_height*(1.3))+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
+                    if self.graphe[i][z] and self.graphe[i][z][1] and self.graphe[i][z][3] and self.graphe[i+1][z][1] and self.graphe[i][z+1][3]:  start_height= round(self.gen_island_start_height*(1.3))+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
                     elif not self.graphe[i][z][3] or not self.graphe[i][z+1][3]:start_height=len(self.all_mat[i][z])-1-self.gen_max_height-3-random.randint(0, self.gen_island_additionnal_height)
                     else:start_height= self.gen_island_start_height//2+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
+                    if self.all_hills[i][z]==4:start+=self.room_width//self.tile_width//10
+                    elif self.all_hills[i][z+1]==3:end-=self.room_width//self.tile_width//10
                     self._generate_relief_ground(start if start >=0 else 0, len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True)
                     self._generate_relief_ground(0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z+1], self.all_mat[i][z+1], self.gen_island_additionnal_height, start_height=start_height, island=True)
                     self._better_bottom_ceilling(-start_height-1, start, [(i,z), (i,z+1)])
@@ -194,6 +195,12 @@ class RenderMap:
                         start_height=random.randint(0, self.gen_island_additionnal_height)
                     elif not self.graphe[i][z][3]:start_height=len(self.all_mat[i][z])-1-self.gen_max_height-3-random.randint(0, self.gen_island_additionnal_height)
                     else:start_height=self.gen_island_start_height+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
+                    if self.all_hills[i][z]==4:
+                        start+=self.room_width//self.tile_width//10
+                        if end-start<self.gen_island_min_width: end +=self.room_width//self.tile_width//10
+                    elif self.all_hills[i][z]==3:
+                        end-=self.room_width//self.tile_width//10
+                        if end-start<self.gen_island_min_width: start -=self.room_width//self.tile_width//10
                     self._generate_relief_ground(start if start >=0 else 0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True)
                     self._better_bottom_ceilling(-start_height-1, start, [(i,z)], island=island)
 
@@ -603,7 +610,7 @@ class RenderMap:
             self.all_hills[i][z]=2
         if self.all_hills[i][z]==0 and i<len(self.graphe) and z<len(self.graphe[i])-1 and not node[2] and node[3] and not node[1] and self.graphe[i+1][z][1] and self.graphe[i+1][z+1][2] and not self.graphe[i][z+1][2]:
             self.all_hills[i][z]=3
-        if self.all_hills[i][z]==0 and i<len(self.graphe) and z>0 and not node[2] and node[3] and not node[0] and self.graphe[i+1][z][0] and self.graphe[i+1][z-1][2] and not self.graphe[i][z-1][2]:
+        if self.all_hills[i][z]==0 and i<len(self.graphe) and z>0 and self.all_hills[i][z-1]==3 and not node[2] and node[3] and not node[0] and self.graphe[i+1][z][0] and self.graphe[i+1][z-1][2] and not self.graphe[i][z-1][2]:
             self.all_hills[i][z]=4
 
     def generate_relief(self, i, z, node):
