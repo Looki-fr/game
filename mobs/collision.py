@@ -183,8 +183,8 @@ class Collision:
             return True                
     
         if stick and temp!=None:
-            if direction=="right":mob.body.x=temp.x-mob.body.w+mob.max_distance_collide+8*self.zoom
-            elif direction=="left":mob.body.x=temp.x+temp.w-mob.max_distance_collide-8*self.zoom
+            if direction=="right":mob.body.x=temp.x-mob.body.w+mob.max_distance_collide
+            elif direction=="left":mob.body.x=temp.x+temp.w-mob.max_distance_collide
             mob.rect.midbottom = mob.body.midbottom
             mob.position=[mob.rect.topleft[0], mob.rect.topleft[1]]
             mob.speed=mob.max_speed_run
