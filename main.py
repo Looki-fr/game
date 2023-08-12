@@ -9,10 +9,8 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# TODO couper vision => parametre visible => si invisible alors image noire
 
-# BUG peut pas grab edge les bords fin, faire en sorte que on peut pas qd on se cogne seulement si le mur ns traverse, quil est pas juste a gauche ou droite
-# MARCHE PAS QD GRAB FIN PLAFOND 
+# TODO couper vision => parametre visible => si invisible alors image noire
 
 # Puis generer truc dans salle vide ??
 

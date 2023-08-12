@@ -397,7 +397,6 @@ class Player(MOB):
 
     def sliding(self):
         if self.action_image != "Wall_slide" and time.time() - self.timer_jump_edge_cogne < self.cooldown_jump_edge_cogne:
-            print(self.cooldown_jump_edge_cogne, time.time() - self.timer_jump_edge_cogne)
             self.debut_wallslide()
         if self.is_sliding:
             self.position[1] += self.speed_sliding * self.zoom * self.speed_dt

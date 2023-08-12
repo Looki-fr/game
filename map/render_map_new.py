@@ -435,7 +435,7 @@ class RenderMap:
         self.matrix_map[i][z]["ground"].append([pygame.Rect(z*self.room_width+(tmp)*self.tile_width, i*self.room_height+i_*self.tile_width, self.tile_width*(y_-tmp), self.tile_width)])
 
     def _spawn_big_ceilling(self, i, z, i_, y_, tmp):
-        self.matrix_map[i][z]["ceilling"].append([pygame.Rect(z*self.room_width+(tmp)*self.tile_width, i*self.room_height+i_*self.tile_width, self.tile_width*(y_-tmp), self.tile_width)])
+        self.matrix_map[i][z]["ceilling"].append([pygame.Rect(z*self.room_width+(tmp)*self.tile_width+self.increment, i*self.room_height+i_*self.tile_width, self.tile_width*(y_-tmp)-2*self.increment, self.tile_width)])
 
     def _spawn_big_walls(self, i, z, i_, y_, tmp):
         self.matrix_map[i][z]["wall"].append([pygame.Rect(z*self.room_width+y_*(self.tile_width), i*self.room_height+(tmp)*self.tile_width+self.increment, self.tile_width, self.tile_width*(i_-tmp) - 2*+self.increment)])
@@ -621,7 +621,10 @@ class RenderMap:
                         if tmp2 == -1 and (not mat[i_+1][y_]) :tmp2=y_
                         # not elif because if lenght is 1
                         if tmp2 != -1 and (y_ == d-1 or not mat[i_][y_+1] or (i_<len(mat)-1 and ( mat[i_+1][y_+1] or mat[i_+1][y_]))):
-                            self._spawn_big_ceilling(i, z, i_, y_+1, tmp2)
+                            plus1=plus2=0
+                            if (tmp2==0 and z>0 and self.all_mat[i][z-1] and self.all_mat[i][z-1][i_][-1]) or ( tmp2>0 and mat[i_][tmp2-1]): plus1=1
+                            if (y_==d-1 and z<len(self.all_mat)-1 and self.all_mat[i][z+1] and self.all_mat[i][z+1][i_][0]) or (y_<len(mat[i_])-1 and mat[i_][y_+1]): plus2=1
+                            self._spawn_big_ceilling(i, z, i_, y_+1+plus2, tmp2-plus1)
                             tmp2=-1
         if i>0:
             tmp=-1
