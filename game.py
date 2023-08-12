@@ -18,8 +18,8 @@ class Game:
         self.directory = os.path.dirname(os.path.realpath(__file__))
         
         info_screen = pygame.display.Info()
-        self.screen = pygame.display.set_mode((round(info_screen.current_w*1),round(info_screen.current_h*1)))
-        self.screen.fill((200,100,100))       
+        self.screen = pygame.display.set_mode((round(info_screen.current_w*0.7),round(info_screen.current_h*0.7)))
+        self.screen.fill((0,0,0))       
         self.bg = pygame.Surface((self.screen.get_width(), self.screen.get_height()), flags=SRCALPHA)
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
         self.dt = 1/30
@@ -262,13 +262,6 @@ class Game:
                     self.group.remove(mob)
                     self.all_mobs.remove([mob, "bot"])
         
-        # le joueur ne peut pas de cogner pendant 2 ticks car sinon il ne peut pas sauter si il tiens un wall du bout des doigts
-        if mob.is_jumping_edge and self.collision.joueur_se_cogne(mob) and (mob.jump_edge_pieds or (not mob.jump_edge_pieds and mob.compteur_jump_edge >= mob.compteur_jump_edge_min + mob.increment_jump_edge*4)):
-            mob.fin_saut_edge(cogne=True)
-        
-        if mob.is_jumping and self.collision.joueur_se_cogne(mob):
-            mob.fin_saut(ground=self.collision.joueur_sur_sol(mob))
-        
         # gestion collision avec les murs
         
         mob.save_location()    
@@ -301,6 +294,13 @@ class Game:
                 mob.change_direction("run", "left")
             elif mob.direction == "left":
                 mob.change_direction("run", "right")
+
+        # le joueur ne peut pas de cogner pendant 2 ticks car sinon il ne peut pas sauter si il tiens un wall du bout des doigts
+        if mob.is_jumping_edge and self.collision.joueur_se_cogne(mob) and (mob.jump_edge_pieds or (not mob.jump_edge_pieds and mob.compteur_jump_edge >= mob.compteur_jump_edge_min + mob.increment_jump_edge*4)):
+            mob.fin_saut_edge(cogne=True)
+        
+        if mob.is_jumping and self.collision.joueur_se_cogne(mob):
+            mob.fin_saut(ground=self.collision.joueur_sur_sol(mob))
 
         # called every tick because distance change every tick
         
@@ -367,8 +367,9 @@ class Game:
         
         self.blit.update_camera(self.player.position[0], self.player.position[1], self.player.speed_dt)
 
-    def update_ecran(self):     
-        self.bg.fill((155,100,100))
+    def update_ecran(self):    
+        #self.bg.fill((155,100,100)) 
+        self.bg.fill((100,100,155))
         self.minimap.fill((200, 155,155))
         self.render.render(self.bg,self.minimap, self.blit.scroll_rect.x, self.blit.scroll_rect.y)
         all_coords_mobs_screen, all_coords_particule = self.blit.blit_group(self.bg, self.all_groups)

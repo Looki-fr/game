@@ -122,16 +122,20 @@ class Collision:
             return True
         return False
 
-    def joueur_se_cogne(self, mob, dash=False,chest=False):
+    def joueur_se_cogne(self, mob, dash=False,chest=False, traverse=False):
         """renvoie True si la tete du joueur est en collision avec un plafond"""
         if dash : rect=mob.body
         elif chest: rect=mob.chest
         else: rect=mob.head
+        if traverse: bool_left = bool_right=False
         for dico in self._get_dico(mob.coord_map):
             for ceilling in dico["ceilling"]:
                 if rect.collidelist(ceilling) > -1:
-                    return True
-        return False
+                    if not traverse:return True
+                    if ceilling[0].x < mob.body.x and ceilling[0].x+ceilling[0].w > mob.body.x:bool_left=True
+                    if ceilling[0].x < mob.body.x+mob.body.w and ceilling[0].x+ceilling[0].w > mob.body.x+mob.body.w:bool_left=True
+        if not traverse:return False
+        return bool_right and bool_left
         
     def stop_if_collide(self, direction,mob, head = False, move_back=True, dash=False, dontmove=False, chest=False, stick=False):
         """fait en sorte que le joueur avance plus lorsque qu'il avance dans un mur
@@ -309,6 +313,6 @@ class Collision:
                     if mob.is_grabing_edge: mob.fin_grab_edge()
                     self.joueur_sur_sol(mob, dash=True)
                     mob.debut_crouch()
-            if mob.is_grabing_edge and self.joueur_se_cogne(mob, chest=True):
+            if mob.is_grabing_edge and self.joueur_se_cogne(mob, chest=True, traverse=True):
                 mob.fin_grab_edge()
                 mob.debut_chute()

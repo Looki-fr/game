@@ -208,6 +208,7 @@ def pressed_down(liste_mob):
             # le joueur passe a travers les plateformes pendant X secondes
             mob.t1_passage_a_travers_plateforme = time.time()
         if mob.action != "Edge_climb" and mob.action != "Wall_slide" and mob.is_grabing_edge and "Wall_slide" in mob.actions:
+            print("MOB FONCTION")
             mob.debut_wallslide()
         
 def handle_input_ralentissement(mob,collision):

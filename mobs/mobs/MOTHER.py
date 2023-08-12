@@ -418,6 +418,7 @@ class MOB(pygame.sprite.Sprite):
                     else:
                         self.change_direction("idle", dir)
                 elif self.action_image == "Edge_grab":
+                    print("FIN MOTHER")
                     self.debut_wallslide()
                 elif self.action_image == "attack1" or self.action_image == "attack2" or self.action_image=="hurt" or self.action_image=="pary":
                     self.is_attacking=False
