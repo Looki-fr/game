@@ -287,8 +287,9 @@ class MOB(pygame.sprite.Sprite):
             else:
                 self.fin_saut(False)
         
-    def fin_saut(self, ground=True, no_change=False):
+    def fin_saut(self, ground=True, no_change=False, cogne=False):
         """reinitialisation des vvariables du saut"""
+        if cogne and "jump_edge" in self.actions: self.timer_jump_edge_cogne = time.time()
         self.is_jumping = False
         self.compteur_jump = self.compteur_jump_min        
         self.a_sauter = True

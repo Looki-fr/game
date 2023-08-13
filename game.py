@@ -300,7 +300,7 @@ class Game:
             mob.fin_saut_edge(cogne=True)
         
         if mob.is_jumping and self.collision.joueur_se_cogne(mob):
-            mob.fin_saut(ground=self.collision.joueur_sur_sol(mob))
+            mob.fin_saut(ground=self.collision.joueur_sur_sol(mob), cogne=True)
 
         # called every tick because distance change every tick
         

@@ -9,14 +9,11 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-
 # TODO couper vision => parametre visible => si invisible alors image noire
 
 # Puis generer truc dans salle vide ??
 # rajouter des trucs en bois dans les maps
 
-
-# BUG carre tt seul map carre bug
 
 # TODO faire salle enfermé par plateforme à sauter
 
