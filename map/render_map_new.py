@@ -57,6 +57,7 @@ class RenderMap:
         self.gen_island_max_width=7
         self.gen_min_width_bottom=10
         self.gen_max_width_bottom=20
+        self.gen_reboucher_mur_max_height=4
         # carre map 
         self.gen_carre_width=2*(self.room_width//self.tile_width)//5
 
@@ -222,6 +223,7 @@ class RenderMap:
 
 
                 elif  not self.all_island[i][z]==None and island and (z==0 or not (self.all_island[i][z-1] and self.graphe[i][z][0] and self.graphe[i][z][3] and self.graphe[i][z-1][3])):
+                    complete=False
                     self.re_initialize_gen_var()
                     start=int(self.room_width//self.tile_width//2 - self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal))
                     end=int(self.room_width//self.tile_width//2 + self.gen_island_max_width//2 + random.randint(0,self.gen_island_random_horizontal))
@@ -234,9 +236,11 @@ class RenderMap:
                         elif not self.graphe[i][z][0]: start=0
                         else : end=len(self.all_mat[i][z][0])-1
                     if self.all_hills[i][z]==50:
+                        complete=True
                         start=0
                         start_height=random.randint(0, self.gen_island_additionnal_height)
                     elif self.all_hills[i][z]==60:
+                        complete=True
                         end=len(self.all_mat[i][z][0])-1
                         start_height=random.randint(0, self.gen_island_additionnal_height)
                     elif not self.graphe[i][z][3]:start_height=len(self.all_mat[i][z])-1-self.gen_max_height-3-random.randint(0, self.gen_island_additionnal_height)
@@ -247,7 +251,7 @@ class RenderMap:
                     elif self.all_hills[i][z]==3:
                         end-=self.room_width//self.tile_width//10
                         if end-start<self.gen_island_min_width: start -=self.room_width//self.tile_width//10
-                    self._generate_relief_ground(start if start >=0 else 0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True)
+                    self._generate_relief_ground(start if start >=0 else 0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True, complete=complete)
                     self._better_bottom_ceilling(-start_height-1, start, [(i,z)], island=island)
 
         self.gen_max_height=a ; self.gen_min_width=b ; self.gen_max_width=c
@@ -471,8 +475,22 @@ class RenderMap:
         if c==1: self.gen_current_height-=1
         else:self.gen_current_height+=1
         return c
+    
+    def _condition_top_is_close(self,mat, max_height,i):
+        if max_height-self.gen_reboucher_mur_max_height < 0 : return True
+        for y in range(max_height-self.gen_reboucher_mur_max_height,max_height):
+            if mat[y][i]: return True
+        return False
 
-    def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0,start_height=0, debug=False, noderight=None, island=False, not_right=True):
+    def _top_is_close(self, mat, max_height,i, texture=1):
+        if self._condition_top_is_close(mat, max_height, i):
+            start=max_height-self.gen_reboucher_mur_max_height
+            if start < 0: start=0
+            for y in range(start,max_height):
+                mat[y][i]=texture
+
+
+    def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0,start_height=0, debug=False, noderight=None, island=False, not_right=True, complete=False):
         """
         hill : 
         1 : classique left / 2 : right
@@ -536,6 +554,7 @@ class RenderMap:
                     # also generating the tiles below the current height
                     for i__ in range(i_, i_+width_):
                         if hill != 3 and hill != 4 and hill!=5 and hill != 6:
+                            if complete :self._top_is_close(mat,self.room_height//self.tile_width-(self.gen_current_height+additionnal_height)-1 -start_height,i__)
                             for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height)-1 -start_height, self.room_height//self.tile_width - start_height):
                                 mat[y][i__]=1
                         else:
@@ -555,6 +574,7 @@ class RenderMap:
                     if c==1: self.gen_current_height+=1
                     else:self.gen_current_height-=1
                     for i__ in range(i_, i_+width_):
+                        if complete :self._top_is_close(mat,self.room_height//self.tile_width-(self.gen_current_height+additionnal_height)-1 -start_height,i__)
                         for y in range(self.room_height//self.tile_width-(self.gen_current_height+additionnal_height)-1 -start_height, self.room_height//self.tile_width - start_height):
                             mat[y][i__]=1
                 i_+=width_
@@ -568,6 +588,7 @@ class RenderMap:
                     self.gen_current_width=0
                 # finishing the last relief of the map on the left 
                 for i__ in range(i_, i_+width_):
+                    if complete :self._top_is_close(mat,self.room_height//self.tile_width-(self.gen_current_height+additionnal_height)-1 -start_height,i__)
                     for y in range(self.room_height//self.tile_width-self.gen_current_height-1-additionnal_height-start_height, self.room_height//self.tile_width - start_height):
                         mat[y][i__]=1
 
