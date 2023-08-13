@@ -222,13 +222,14 @@ class RenderMap:
                     self.gen_max_height=self.gen_island_max_height ; self.gen_min_width=self.gen_island_min_width ; self.gen_max_width=self.gen_island_max_width
 
 
-                elif  not self.all_island[i][z]==None and island and (z==0 or not (self.all_island[i][z-1] and self.graphe[i][z][0] and self.graphe[i][z][3] and self.graphe[i][z-1][3])):
+                elif not self.all_island[i][z]==None and island and (z==0 or not (self.all_island[i][z-1] and self.graphe[i][z][0] and self.graphe[i][z][3] and self.graphe[i][z-1][3])):
                     complete=False
                     self.re_initialize_gen_var()
                     start=int(self.room_width//self.tile_width//2 - self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal))
                     end=int(self.room_width//self.tile_width//2 + self.gen_island_max_width//2 + random.randint(0,self.gen_island_random_horizontal))
                     island=True
                     if self.all_island[i][z]==0 and (not self.graphe[i][z][0] or not self.graphe[i][z][1]) and random.randint(1,3)==1:
+                        print("self.all_island[i][z]==0",self.all_island[i][z])
                         island=False
                         if not self.graphe[i][z][0] and not not self.graphe[i][z][1]:
                             if random.randint(1,2)==1: start=0
@@ -243,6 +244,7 @@ class RenderMap:
                         complete=True
                         end=len(self.all_mat[i][z][0])-1
                         start_height=random.randint(0, self.gen_island_additionnal_height)
+                    elif self.all_hills[i][z] in (5,6):start_height=len(self.all_mat[i][z])-1-self.gen_max_height*2-self.gen_reboucher_mur_max_height-1
                     elif not self.graphe[i][z][3]:start_height=len(self.all_mat[i][z])-1-self.gen_max_height-3-random.randint(0, self.gen_island_additionnal_height)
                     else:start_height=self.gen_island_start_height+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
                     if self.all_hills[i][z]==4:

@@ -9,10 +9,10 @@
 # seed=1691671385.29449
 
 # map très aerienne
-seed=1691937020.8591151
+# seed=1691937020.8591151
 
-# import time
-# seed=time.time()
+import time
+seed=time.time()
 
-# with open("seed.txt", "w") as file:
-#     file.write(str(seed))
+with open("seed.txt", "w") as file:
+    file.write(str(seed))
