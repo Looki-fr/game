@@ -13,18 +13,14 @@ if __name__ == "__main__":
 # TODO couper vision => parametre visible => si invisible alors image noire
 
 # Puis generer truc dans salle vide ??
+# rajouter des trucs en bois dans les maps
+
 
 # BUG carre tt seul map carre bug
 
-# TODO bouche trou qd falaise et island
-
-# BUG 2 islands spawn on top of each other
-
-# TODO si barre alors mettre ile collé ou gros champignon ou arbre dessus ? ?? ou grosse hill si compatible
-
 # TODO faire salle enfermé par plateforme à sauter
 
-# TODO cacher salles que l'on voit pas à travers les murs => polygone pour si on est sur une crete ?
+# TODO cacher salles que l'on voit pas à travers les musrs => polygone pour si on est sur une crete ?
 
 # TODO add plateforme / arbre / rocher / bateau ....
 

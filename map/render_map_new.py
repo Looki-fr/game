@@ -792,10 +792,9 @@ class RenderMap:
                 if i<len(mat)-1 and z>0 and self.graphe[i][z-1][3] and not self.graphe[i+1][z][0] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]:
                     mat[y][1]=1
 
-        if node[3] and node[1] and not (node[2] and self.graphe[i+1][z] and self.graphe[i+1][z][1] and self.graphe[i][z+1] and self.graphe[i][z+1][3]):
+        if not self.all_hills[i][z] == 6 and node[3] and node[1] and not (node[2] and self.graphe[i+1][z] and self.graphe[i+1][z][1] and self.graphe[i][z+1] and self.graphe[i][z+1][3]):
             # not reset when falaise gauche
-            if not (i<len(self.graphe)-1 and z<len(mat)-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3] and not self.graphe[i+1][z+1][0]):
-                self.re_initialize_gen_var(False)
+            self.re_initialize_gen_var(False)
 
             self.gen_current_width-=1
             for y in range(self.room_height//self.tile_width-self.gen_current_height-1, self.room_height//self.tile_width):

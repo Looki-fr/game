@@ -11,9 +11,6 @@
 # carre bug
 # seed=1691786783.4500773
 
-# pilier bug 
-seed=1691842763.830945
-
 # import time
 # seed=time.time()
 
