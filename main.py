@@ -9,10 +9,33 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# TODO couper vision => parametre visible => si invisible alors image noire
+# BUG manque dimage en 2
 
-# Puis generer truc dans salle vide ??
-# rajouter des trucs en bois dans les maps
+# bug grab edge qd hills == 8
+
+# BUG edge grab les murs qd on dash => mm solution que cogne avec les co
+
+# TODO petite construction en bois aux extremités des piliers
+
+# BUG better bottom marche pas qd hill == 5 (a gauche) et que ile : 1691949104.8551548
+
+# EN BOIS
+# faire plateforme en bois lorsqu'il y a des longs pics verticaux de tailles random (et de nbr)
+#
+# __  _____
+# ____ __|
+# ___  ____
+#
+
+# => faire la mm pour les salles vides nn vertical
+
+#
+#  |      _|
+#  |  |  |
+#     |  | 
+#  |  |   
+
+# TODO couper vision => parametre visible => si invisible alors image noire
 
 
 # TODO faire salle enfermé par plateforme à sauter

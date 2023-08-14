@@ -1,4 +1,11 @@
 
+#-----------------------------------------------------------------
+#                                                                |
+#          Before l'addition du mur suppr au pif                 |
+#                                                                |
+#-----------------------------------------------------------------
+
+
 # interesting generation with isle
 # seed=1690213340.3968208
 
@@ -11,8 +18,24 @@
 # map très aerienne
 # seed=1691937020.8591151
 
-import time
-seed=time.time()
 
-with open("seed.txt", "w") as file:
-    file.write(str(seed))
+#-----------------------------------------------------------------
+#                                                                |
+#          After                                                 |
+#                                                                |
+#-----------------------------------------------------------------
+
+# BUG generation carre, pilier inconnu
+# 1691948406.90053
+
+# map stylé
+# seed=1691948484.45544
+
+# map avec gros pilier qui vole
+seed=1691955286.989919
+
+# import time
+# seed=time.time()
+
+# with open("seed.txt", "w") as file:
+#     file.write(str(seed))

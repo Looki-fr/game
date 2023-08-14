@@ -3,10 +3,11 @@ from seed import seed
 random.seed(seed)
 
 class Graph:
-    def __init__(self, height, width,room_to_remove):
+    def __init__(self, height, width,room_to_remove, remove_wall):
         self.height=height
         self.width=width
         self.room_to_remove=room_to_remove
+        self.remove_wall=remove_wall
 
     def printTab(self,mat):
         for line in mat:
@@ -163,6 +164,32 @@ class Graph:
                         
                 path.append(node)
                 path.append(n)
+
+        self.printTab(mat)
+
+        tmp=0
+        while tmp<self.remove_wall:
+            i=random.randint(0,self.height-1)
+            z=random.randint(0,self.width-1)
+            if not mat[i][z]: continue
+            lst=[]
+            for i_ in range(4):
+                bool_=False
+                if i_==0 and z>0 and mat[i][z-1]:bool_=True
+                elif i_==1 and z< len(mat[i])-1 and mat[i][z+1]:bool_=True
+                elif i_==2 and i>0 and mat[i-1][z]:bool_=True
+                elif i_==3 and i<len(mat)-1 and mat[i+1][z]:bool_=True
+                if bool_ and not mat[i][z][i_]: lst.append(i_)
+            if len(lst)==0: continue
+            choice=random.choice(lst)
+            mat[i][z][choice]=True
+            if choice==0:mat[i][z-1][1]=True
+            if choice==1:mat[i][z+1][0]=True
+            if choice==2:mat[i-1][z][3]=True
+            if choice==3:mat[i+1][z][2]=True
+            print(mat[i][z],i,z,choice)
+            tmp+=1
+    
         return mat
 
 

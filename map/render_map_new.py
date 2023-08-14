@@ -6,11 +6,10 @@ from seed import seed
 random.seed(seed)
 class RenderMap:
     def __init__(self, screen_width, screen_height, directory):
-        """cf la documentation de pytmx"""
         self.directory=directory
         self.screen_width = screen_width
         self.screen_height = screen_height
-        g = Graph(5,5,3)
+        g = Graph(5,5,3,1)
 
         self.graphe=g.get_matrix()
         new_graph=[]
@@ -92,6 +91,9 @@ class RenderMap:
                 # marche pas car il faut aussi droite du node en bas et c trop rare flemme
                 # if node and not node[0] and node[1] and node[2] and node[3] and line[z+1][2] and line[z+1][3]:
                 #     print(i,z)
+                
+                if node : self._get_hills(i,z,node, after_island=True)
+                
                 if node and node[2] and node[3] and node[1] and self.graphe[i+1][z] and self.graphe[i+1][z][1] and self.graphe[i][z+1] and self.graphe[i][z+1][3]:
                     self.all_mat[i][z][-1][-1]=0
                     self.all_mat[i][z+1][-1][0]=0
@@ -118,7 +120,7 @@ class RenderMap:
                             if self.all_mat[i][z][0][temp_i] and not self.all_mat[i][z][1][temp_i] : break
                         self._better_bottom_ceilling(0, temp_i, temp, island=False)
                 
-                if node and not self.all_island[i][z] and not self.all_island[i][z]==None and node[3] and not self.all_island[i+1][z] and self.graphe[i+1][z][3] and not self.all_island[i+2][z]:  
+                if node and not self.all_island[i][z] and node[3] and not self.all_island[i+1][z] and self.graphe[i+1][z][3] and not self.all_island[i+2][z]:  
                     self.all_island[i+random.randint(0,2)][z]=True
 
                 if node and node[1] and node[3] and self.graphe[i+1][z][1] and self.graphe[i][z+1][3]:
@@ -132,6 +134,11 @@ class RenderMap:
                     self.all_island[i][z+1]=None
                     self.all_island[i+1][z]=None
                     self.all_island[i+1][z+1]=None
+
+                    self.all_hills[i][z]=None
+                    self.all_hills[i][z+1]=None
+                    self.all_hills[i+1][z]=None
+                    self.all_hills[i+1][z+1]=None
 
                     list_wall, list_ceilling=self._get_lists_carre()
 
@@ -155,18 +162,6 @@ class RenderMap:
                                     for w in range(self.gen_carre_width):
                                         self.all_mat[i+(1 if posy>=0 else 0)][z+(1 if w+posx>=0 else 0)][posy][w+posx]=3
 
-                    # for i___,co in enumerate([(i+1,z), (i+1,z+1)]):
-                    #     self.re_initialize_gen_var()
-                    #     start=int(self.room_width//self.tile_width//2 - self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal)+ ((-1 if i___==0 else 1)*(self.room_width//self.tile_width//10 )))
-                    #     end=int(self.room_width//self.tile_width//2 + self.gen_island_max_width//2 + random.randint(0,self.gen_island_random_horizontal)+ ((-1 if i___==0 else 1)*(self.room_width//self.tile_width//10)))
-                    #     island=True
-                    #     start_height=len(self.all_mat[i][z])-1-self.gen_max_height-3-random.randint(0, self.gen_island_additionnal_height)
-                    #     if not self.graphe[i][z][3]:start_height=self.gen_island_start_height+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
-                    #     self._generate_relief_ground(start if start >=0 else 0, end if end <= len(self.all_mat[co[0]][co[1]][0])-1 else len(self.all_mat[co[0]][co[1]][0])-1, self.graphe[co[0]][co[1]], self.all_mat[co[0]][co[1]], self.gen_island_additionnal_height, start_height=start_height, island=True)
-                    #     self._better_bottom_ceilling(-start_height-1, start, [(co[0],co[1])], island=island)
-                    
-
-
         self._spawn_island()
         
         for i,line in enumerate(self.graphe):
@@ -184,7 +179,7 @@ class RenderMap:
         self.get_first_map()["info"]["beated"]=True
 
     def _get_lists_carre(self,print=False):
-        g=Graph(4,4,0)
+        g=Graph(4,4,0,0)
         mat=g.get_matrix()
         if print:g.printTab(mat)
         tab_wall = [[True for _ in range(3)] for _ in range(2)]
@@ -228,8 +223,8 @@ class RenderMap:
                     start=int(self.room_width//self.tile_width//2 - self.gen_island_max_width//2 - random.randint(0,self.gen_island_random_horizontal))
                     end=int(self.room_width//self.tile_width//2 + self.gen_island_max_width//2 + random.randint(0,self.gen_island_random_horizontal))
                     island=True
-                    if self.all_island[i][z]==0 and (not self.graphe[i][z][0] or not self.graphe[i][z][1]) and random.randint(1,3)==1:
-                        print("self.all_island[i][z]==0",self.all_island[i][z])
+                    # if self.all_island[i][z]==0
+                    if self.all_island[i][z] and (not self.graphe[i][z][0] or not self.graphe[i][z][1]) and not self.all_hills[i-1][z] in (7,8) and not self.all_hills[i+1][z] in (7,8) and random.randint(1,3)==1:
                         island=False
                         if not self.graphe[i][z][0] and not not self.graphe[i][z][1]:
                             if random.randint(1,2)==1: start=0
@@ -255,6 +250,13 @@ class RenderMap:
                         if end-start<self.gen_island_min_width: start -=self.room_width//self.tile_width//10
                     self._generate_relief_ground(start if start >=0 else 0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True, complete=complete)
                     self._better_bottom_ceilling(-start_height-1, start, [(i,z)], island=island)
+            
+                if self.all_hills[i][z]==7:
+                    self._spawn_hills_7_8(self.all_mat[i][z], horizontal=True)
+                
+                if self.all_hills[i][z]==8:
+                    self._spawn_hills_7_8(self.all_mat[i][z], horizontal=False)
+
 
         self.gen_max_height=a ; self.gen_min_width=b ; self.gen_max_width=c
 
@@ -328,14 +330,14 @@ class RenderMap:
 
                 for i_ in range(len(self.matrix_picture[i][y])):
                     if self.matrix_picture[i][y][i_]["img"] not in (len(self.all_pic)-2, len(self.all_pic)-1):
-                        bot=self._has_bot(i,y, i_, base_mat+matbot)
-                        top=self._has_top(i,y, i_,base_mat+maptop)
-                        left=self._has_left(i,y, i_,base_mat+matleft)
-                        right=self._has_right(i,y, i_,base_mat+matright)
-                        top_right=self.has_top_right(i,y,i_,base_mat,maptop,matright,maptopright)
-                        top_left=self.has_top_left(i,y,i_,base_mat,maptop,matleft,maptopleft)
-                        bot_right=self.has_bot_right(i,y,i_,base_mat,matbot,matright,matbotright)
-                        bot_left=self.has_bot_left(i,y,i_,base_mat,matbot,matleft,matbotleft)
+                        bot=self._has_bot(i,y, i_, base_mat+matbot, self.matrix_picture[i][y][i_]["type_image"])
+                        top=self._has_top(i,y, i_,base_mat+maptop, self.matrix_picture[i][y][i_]["type_image"])
+                        left=self._has_left(i,y, i_,base_mat+matleft, self.matrix_picture[i][y][i_]["type_image"])
+                        right=self._has_right(i,y, i_,base_mat+matright, self.matrix_picture[i][y][i_]["type_image"])
+                        top_right=self.has_top_right(i,y,i_,base_mat,maptop,matright,maptopright, self.matrix_picture[i][y][i_]["type_image"])
+                        top_left=self.has_top_left(i,y,i_,base_mat,maptop,matleft,maptopleft, self.matrix_picture[i][y][i_]["type_image"])
+                        bot_right=self.has_bot_right(i,y,i_,base_mat,matbot,matright,matbotright, self.matrix_picture[i][y][i_]["type_image"])
+                        bot_left=self.has_bot_left(i,y,i_,base_mat,matbot,matleft,matbotleft, self.matrix_picture[i][y][i_]["type_image"])
                         if not bot and not top and not left and not right: self.matrix_picture[i][y][i_]["img"]=0
                         elif bot and not top and not left and not right: self.matrix_picture[i][y][i_]["img"]=1
                         elif bot and top and not left and not right: self.matrix_picture[i][y][i_]["img"]=2
@@ -360,31 +362,31 @@ class RenderMap:
 
     def _get_map(self,i,y):
         self.cpt+=1
-        return [(self.matrix_picture[i][y][z]["x"], self.matrix_picture[i][y][z]["y"]) for z in range(len(self.matrix_picture[i][y]))]
+        return [(self.matrix_picture[i][y][z]["x"], self.matrix_picture[i][y][z]["y"], self.matrix_picture[i][y][z]["type_image"]) for z in range(len(self.matrix_picture[i][y]))]
 
-    def _has_left(self,i,y, i_, mat):
-        return (self.matrix_picture[i][y][i_]["x"]%self.room_width > 0 and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i][y-1] and self.matrix_picture[i][y-1][0]["img"]==len(self.all_pic)-2) or  ((self.matrix_picture[i][y][i_]["x"]-self.tile_width, self.matrix_picture[i][y][i_]["y"]) in mat)
+    def _has_left(self,i,y, i_, mat, texture):
+        return (texture == 1 and self.matrix_picture[i][y][i_]["x"]%self.room_width > 0 and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or (texture == 1 and self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i][y-1] and self.matrix_picture[i][y-1][0]["img"]==len(self.all_pic)-2) or  ((self.matrix_picture[i][y][i_]["x"]-self.tile_width, self.matrix_picture[i][y][i_]["y"],texture) in mat)
 
-    def _has_top(self,i,y, i_, mat):
-        return (self.matrix_picture[i][y][i_]["y"]%self.room_height>0 and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2)or(self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and i>0 and self.matrix_picture[i-1][y] and self.matrix_picture[i-1][y][0]["img"]==len(self.all_pic)-2) or  ((self.matrix_picture[i][y][i_]["x"], self.matrix_picture[i][y][i_]["y"]-self.tile_width) in mat)
+    def _has_top(self,i,y, i_, mat, texture):
+        return (texture == 1 and self.matrix_picture[i][y][i_]["y"]%self.room_height>0 and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2)or(texture == 1 and self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and i>0 and self.matrix_picture[i-1][y] and self.matrix_picture[i-1][y][0]["img"]==len(self.all_pic)-2) or  ((self.matrix_picture[i][y][i_]["x"], self.matrix_picture[i][y][i_]["y"]-self.tile_width,texture) in mat)
 
-    def _has_right(self,i,y, i_, mat):
-        return (self.matrix_picture[i][y][i_]["x"]%self.room_width < self.room_width-self.tile_width and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2) or  ((self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"]) in mat)
+    def _has_right(self,i,y, i_, mat, texture):
+        return (texture == 1 and self.matrix_picture[i][y][i_]["x"]%self.room_width < self.room_width-self.tile_width and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or (texture == 1 and self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2) or  ((self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"],texture) in mat)
 
-    def _has_bot(self,i,y, i_, mat):
-        return (self.matrix_picture[i][y][i_]["y"]%self.room_height < self.room_height-self.tile_width and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or ((self.matrix_picture[i][y][i_]["x"], self.matrix_picture[i][y][i_]["y"]+self.tile_width) in mat)
+    def _has_bot(self,i,y, i_, mat, texture):
+        return (texture == 1 and self.matrix_picture[i][y][i_]["y"]%self.room_height < self.room_height-self.tile_width and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or (texture == 1 and self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or ((self.matrix_picture[i][y][i_]["x"], self.matrix_picture[i][y][i_]["y"]+self.tile_width,texture) in mat)
 
-    def has_top_left(self,i,y,i_, mat, maptop, matleft, maptopleft):
-        return ( self.matrix_picture[i][y][i_]["y"]%self.room_height > 0 and self.matrix_picture[i][y][i_]["x"]%self.room_width > 0 and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and not self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and i>0 and self.matrix_picture[i-1][y] and self.matrix_picture[i-1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and not self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and y>0 and self.matrix_picture[i][y-1] and self.matrix_picture[i][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and y>0 and i>0 and self.matrix_picture[i-1][y-1] and self.matrix_picture[i-1][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]-self.tile_width, self.matrix_picture[i][y][i_]["y"]-self.tile_width) in mat+maptopleft+maptop+matleft
+    def has_top_left(self,i,y,i_, mat, maptop, matleft, maptopleft, texture):
+        return (texture == 1 and  self.matrix_picture[i][y][i_]["y"]%self.room_height > 0 and self.matrix_picture[i][y][i_]["x"]%self.room_width > 0 and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or (texture == 1 and self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and not self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and i>0 and self.matrix_picture[i-1][y] and self.matrix_picture[i-1][y][0]["img"]==len(self.all_pic)-2) or (texture == 1 and self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and not self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and y>0 and self.matrix_picture[i][y-1] and self.matrix_picture[i][y-1][0]["img"]==len(self.all_pic)-2) or (texture == 1 and self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and y>0 and i>0 and self.matrix_picture[i-1][y-1] and self.matrix_picture[i-1][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]-self.tile_width, self.matrix_picture[i][y][i_]["y"]-self.tile_width,texture) in mat+maptopleft+maptop+matleft
 
-    def has_top_right(self,i,y,i_, mat, maptop, matright, maptopright):
-        return ( self.matrix_picture[i][y][i_]["y"]%self.room_height > 0 and self.matrix_picture[i][y][i_]["x"]%self.room_width < self.room_width-self.tile_width and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or  (self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and not self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2)or (self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and not self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and i>0 and self.matrix_picture[i-1][y] and self.matrix_picture[i-1][y][0]["img"]==len(self.all_pic)-2)or(self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and i>0 and self.matrix_picture[i-1][y+1] and self.matrix_picture[i-1][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"]-self.tile_width) in maptopright+mat+maptop+matright
+    def has_top_right(self,i,y,i_, mat, maptop, matright, maptopright, texture):
+        return (texture == 1 and  self.matrix_picture[i][y][i_]["y"]%self.room_height > 0 and self.matrix_picture[i][y][i_]["x"]%self.room_width < self.room_width-self.tile_width and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or  (texture == 1 and self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and not self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2)or (texture == 1 and self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and not self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and i>0 and self.matrix_picture[i-1][y] and self.matrix_picture[i-1][y][0]["img"]==len(self.all_pic)-2)or(texture == 1 and self.matrix_picture[i][y][i_]["y"]%self.room_height == 0 and self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and i>0 and self.matrix_picture[i-1][y+1] and self.matrix_picture[i-1][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"]-self.tile_width,texture) in maptopright+mat+maptop+matright
     
-    def has_bot_left(self,i,y,i_,mat, mapbot, matleft, matbotleft):
-        return ( self.matrix_picture[i][y][i_]["y"]%self.room_height < self.room_height-self.tile_width and self.matrix_picture[i][y][i_]["x"]%self.room_width > 0 and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or  (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and not self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and not self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and y>0 and self.matrix_picture[i][y-1] and self.matrix_picture[i][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y-1] and self.matrix_picture[i+1][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]-self.tile_width, self.matrix_picture[i][y][i_]["y"]+self.tile_width) in mat+matbotleft+mapbot+matleft
+    def has_bot_left(self,i,y,i_,mat, mapbot, matleft, matbotleft, texture):
+        return (texture == 1 and  self.matrix_picture[i][y][i_]["y"]%self.room_height < self.room_height-self.tile_width and self.matrix_picture[i][y][i_]["x"]%self.room_width > 0 and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or  (texture == 1 and self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and not self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or (texture == 1 and self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and not self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and y>0 and self.matrix_picture[i][y-1] and self.matrix_picture[i][y-1][0]["img"]==len(self.all_pic)-2) or (texture == 1 and self.matrix_picture[i][y][i_]["x"]%self.room_width == 0 and y>0 and self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y-1] and self.matrix_picture[i+1][y-1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]-self.tile_width, self.matrix_picture[i][y][i_]["y"]+self.tile_width,texture) in mat+matbotleft+mapbot+matleft
     
-    def has_bot_right(self,i,y,i_,mat, mapbot, matright, matbotright):
-        return ( self.matrix_picture[i][y][i_]["y"]%self.room_height < self.room_height-self.tile_width and self.matrix_picture[i][y][i_]["x"]%self.room_width < self.room_width-self.tile_width and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or  (self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and not self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and not self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y+1] and self.matrix_picture[i+1][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"]+self.tile_width) in mat+matbotright+mapbot+matright
+    def has_bot_right(self,i,y,i_,mat, mapbot, matright, matbotright, texture):
+        return (texture == 1 and  self.matrix_picture[i][y][i_]["y"]%self.room_height < self.room_height-self.tile_width and self.matrix_picture[i][y][i_]["x"]%self.room_width < self.room_width-self.tile_width and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or  (texture == 1 and self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and not self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2) or (texture == 1 and self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and not self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or (texture == 1 and self.matrix_picture[i][y][i_]["y"]%self.room_height == self.room_height-self.tile_width and self.matrix_picture[i][y][i_]["x"]%self.room_width == self.room_width-self.tile_width and y<len(self.matrix_picture[i])-1 and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y+1] and self.matrix_picture[i+1][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]+self.tile_width, self.matrix_picture[i][y][i_]["y"]+self.tile_width,texture) in mat+matbotright+mapbot+matright
 
     def re_initialize_gen_var(self, mat=True):
         self.gen_current_height=random.randint(1, self.gen_max_height)
@@ -493,12 +495,6 @@ class RenderMap:
 
 
     def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0,start_height=0, debug=False, noderight=None, island=False, not_right=True, complete=False):
-        """
-        hill : 
-        1 : classique left / 2 : right
-        3 : vers le bas left / 4 : right
-        5 : falaise left / 6 : right
-        """
         if debug:
             print(start, end, node, additionnal_height, hill)
         i_=start
@@ -617,12 +613,12 @@ class RenderMap:
                     #adding little ground if there is a change of 
                     # left
                     if (y_>g and not mat[i_][y_-1] and i_<len(mat)-1 and mat[i_+1][y_-1] and i_>0 and not mat[i_-1][y_]) or (y_==g and z>0 and self.all_mat[i][z-1] and not self.all_mat[i][z-1][i_][-1] and i_<len(mat)-1 and self.all_mat[i][z-1][i_+1][-1] and i_>0 and not mat[i_-1][y_]):
-                        self.matrix_picture[i][z].append({"x":z*self.room_width+(y_-0.5)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":len(self.all_pic)-1,"type_image":mat[i_][y_]})
+                        self.matrix_picture[i][z].append({"x":z*self.room_width+(y_-0.5)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":len(self.all_pic)-1,"type_image":1})
                         self.matrix_map[i][z]["little_ground"].append([pygame.Rect(z*self.room_width+(y_-0.6)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
                     #  or (y==d-1 and self.last_mat and not self.last_mat[i_][0])
                     # right
                     if ((y_<d-1 and not mat[i_][y_+1] and i_<len(mat)-1 and mat[i_+1][y_+1] and i_>0 and not mat[i_-1][y_]) or (y_==d-1 and node[1] and (self.gen_current_width==0 or (z<len(self.all_mat[i])-1 and self.all_mat[i][z+1] and not self.all_mat[i][z+1][i_][0] and self.all_mat[i][z+1][i_+1][0])))):
-                        self.matrix_picture[i][z].append({"x":z*self.room_width+(y_+1)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":len(self.all_pic)-1,"type_image":mat[i_][y_]})
+                        self.matrix_picture[i][z].append({"x":z*self.room_width+(y_+1)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":len(self.all_pic)-1,"type_image":1})
                         self.matrix_map[i][z]["little_ground"].append([pygame.Rect(z*self.room_width+(y_+1.1)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
 
                     # ground
@@ -678,21 +674,69 @@ class RenderMap:
                         elif (i_>0 and mat[i_-1][y_]) or (i_==0 and i>0 and self.all_mat[i-1][z] and self.all_mat[i-1][z][-1][y_]) :  self._spawn_big_walls(i, z, i_+1, y_, tmp-1)
                         tmp=-1
 
-    def _get_hills(self,i,z,node):
-        if self.all_hills[i][z]==0 and (not (i<len(self.graphe)-1 and z<len(self.all_mat[i])-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3] and not self.graphe[i+1][z+1][0]) or random.randint(1,2)==1) and i<len(self.graphe)-1 and z>0 and node[0] and node[3] and self.graphe[i][z-1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]  and not self.graphe[i+1][z-1][1]:
-            self.all_hills[i][z]=5
-            self.all_hills[i+1][z]=50
-        if self.all_hills[i][z]==0 and i<len(self.graphe)-1 and z<len(self.all_mat[i])-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3] and not self.graphe[i+1][z+1][0]:
-            self.all_hills[i][z]=6
-            self.all_hills[i+1][z]=60
-        if self.all_hills[i][z]==0 and i>0 and z<len(self.graphe[i])-1 and not node[3] and node[2] and not node[1] and self.graphe[i-1][z][1] and self.graphe[i-1][z+1][3] and not self.graphe[i][z+1][3]:
-            self.all_hills[i][z]=1
-        if self.all_hills[i][z]==0 and i>0 and z>0 and not node[3] and node[2] and not node[0] and self.graphe[i-1][z][0] and self.graphe[i-1][z-1][3] and not self.graphe[i][z-1][3]:
-            self.all_hills[i][z]=2
-        if self.all_hills[i][z]==0 and i<len(self.graphe) and z<len(self.graphe[i])-1 and not node[2] and node[3] and not node[1] and self.graphe[i+1][z][1] and self.graphe[i+1][z+1][2] and not self.graphe[i][z+1][2]:
-            self.all_hills[i][z]=3
-        if self.all_hills[i][z]==0 and i<len(self.graphe) and z>0 and self.all_hills[i][z-1]==3 and not node[2] and node[3] and not node[0] and self.graphe[i+1][z][0] and self.graphe[i+1][z-1][2] and not self.graphe[i][z-1][2]:
-            self.all_hills[i][z]=4
+    def _get_hills(self,i,z,node, after_island=False):
+        """
+        hill : 
+        1 : classique left / 2 : right
+        3 : vers le bas left / 4 : right
+        5 : falaise left / 6 : right
+        7 : barre en bois qui bouche le passage de gauche à droite / 8 de haut en bas
+        """
+        if self.all_hills[i][z]==0 and self.all_hills[i][z]!=None: 
+            if  (not (i<len(self.graphe)-1 and z<len(self.all_mat[i])-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3] and not self.graphe[i+1][z+1][0]) or random.randint(1,2)==1) and i<len(self.graphe)-1 and z>0 and node[0] and node[3] and self.graphe[i][z-1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]  and not self.graphe[i+1][z-1][1]:
+                self.all_hills[i][z]=5
+                self.all_hills[i+1][z]=50
+            elif i<len(self.graphe)-1 and z<len(self.all_mat[i])-1 and node[1] and node[3] and self.graphe[i][z+1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z+1][3] and not self.graphe[i+1][z+1][0]:
+                self.all_hills[i][z]=6
+                self.all_hills[i+1][z]=60
+            elif i>0 and z<len(self.graphe[i])-1 and not node[3] and node[2] and not node[1] and self.graphe[i-1][z][1] and self.graphe[i-1][z+1][3] and not self.graphe[i][z+1][3]:
+                self.all_hills[i][z]=1
+            elif i>0 and z>0 and not node[3] and node[2] and not node[0] and self.graphe[i-1][z][0] and self.graphe[i-1][z-1][3] and not self.graphe[i][z-1][3]:
+                self.all_hills[i][z]=2
+            elif i<len(self.graphe) and z<len(self.graphe[i])-1 and not node[2] and node[3] and not node[1] and self.graphe[i+1][z][1] and self.graphe[i+1][z+1][2] and not self.graphe[i][z+1][2]:
+                self.all_hills[i][z]=3
+            elif i<len(self.graphe) and z>0 and self.all_hills[i][z-1]==3 and not node[2] and node[3] and not node[0] and self.graphe[i+1][z][0] and self.graphe[i+1][z-1][2] and not self.graphe[i][z-1][2]:
+                self.all_hills[i][z]=4
+            if after_island:
+                if self.all_island[i][z]!=None and not self.all_island[i][z] and node[3] and node[2] and not node[1] and not node[0] and not self.all_hills[i-1][z] == 7 and not self.all_hills[i+1][z] == 7:
+                    self.all_hills[i][z]=7
+                    self.all_island[i][z]=None
+                elif self.all_island[i][z]!=None and not self.all_island[i][z] and node[0] and node[1] and not node[3] and not node[2] and not self.all_hills[i][z-1] == 8 and not self.all_hills[i][z+1] == 8:
+                    self.all_hills[i][z]=8
+                    self.all_island[i][z]=None
+
+    def _spawn_hills_7_8(self,mat, horizontal):
+        if horizontal:
+            for i in range(self.room_height//self.tile_width//2, 0, -1):
+                if i*2+(i-1)*self.gen_reboucher_mur_max_height<=self.room_height//self.tile_width:
+                    break
+            
+            for y in range(i):
+                hole=random.randint(1,len(mat[0])-2-self.gen_reboucher_mur_max_height)
+                for z in [ h for h in range(0,hole)]+[ h for h in range(hole+self.gen_reboucher_mur_max_height,len(mat[0]))]: 
+                    if mat[y*(self.gen_reboucher_mur_max_height+2)][z]==0: mat[y*(self.gen_reboucher_mur_max_height+2)][z]=2
+                    if mat[y*(self.gen_reboucher_mur_max_height+2)+1][z]==0: mat[y*(self.gen_reboucher_mur_max_height+2)+1][z]=2
+        else:
+            for i in range(self.room_width//self.tile_width//2, 0, -1):
+                if i*2+(i-1)*self.gen_reboucher_mur_max_height<=self.room_width//self.tile_width:
+                    break
+
+            for y in range(i):
+                last=len(mat)-2-self.gen_reboucher_mur_max_height
+                cpt=0
+                for u in range(len(mat)-1, -1,-1):
+                    if mat[u][y*(self.gen_reboucher_mur_max_height+2)]==0 and mat[u][y*(self.gen_reboucher_mur_max_height+2)+1]==0: cpt+=1
+                    if cpt==self.gen_reboucher_mur_max_height: 
+                        last=u
+                        break
+
+                hole=random.randint(1,last)
+                for z in [ h for h in range(0,hole)]+[ h for h in range(hole+self.gen_reboucher_mur_max_height,len(mat))]: 
+                    if mat[z][y*(self.gen_reboucher_mur_max_height+2)]==0: mat[z][y*(self.gen_reboucher_mur_max_height+2)]=2
+                    if mat[z][y*(self.gen_reboucher_mur_max_height+2)+1]==0: mat[z][y*(self.gen_reboucher_mur_max_height+2)+1]=2
+            
+
+
 
     def generate_relief(self, i, z, node):
         # matrix used after for objects and images
