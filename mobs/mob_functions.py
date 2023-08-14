@@ -82,9 +82,8 @@ def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
             if "Edge_climb" in mob.actions and ((mob.direction=="right" and right) or (mob.direction=="left" and left) or (mob.direction=="right" and not left) or (mob.direction=="left" and not right)) and not pressed_up_bool[0] and collision.check_head_collide_ground(mob) and mob.is_grabing_edge:
                 wall, w = collision.stop_if_collide(mob.direction, mob, dontmove=True, get_pos=True, dash=True, big_head=True)  
                 sol, s=collision.check_head_collide_ground(mob, changing_y=False, get_pos=mob.direction)
-                if wall and sol and s==w:
-                    mob.position[1]-=20
-                    collision.check_head_collide_ground(mob, True)
+                if wall and sol and w in s:
+                    collision.check_head_collide_ground(mob, changing_y=True, x=w)
                     mob.fin_grab_edge()
                     mob.debut_edge_climb()
                 else:

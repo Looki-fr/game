@@ -351,6 +351,8 @@ class RenderMap:
                         elif not bot and top and not left and right: self.matrix_picture[i][y][i_]["img"]=10
                         elif bot and top and left and right: self.matrix_picture[i][y][i_]["img"]=11
                         elif not bot and top and left and right : self.matrix_picture[i][y][i_]["img"]=12
+                        elif left and not top and not bot and not right: self.matrix_picture[i][y][i_]["img"]=21
+                        elif right and not top and not bot and not left: self.matrix_picture[i][y][i_]["img"]=22
                         if bot and top and right and left and not (top_right and top_left and bot_right and bot_left):
                             if not top_left and not top_right: self.matrix_picture[i][y][i_]["img"]=15
                             elif not top_left and top_right: self.matrix_picture[i][y][i_]["img"]=16
@@ -396,10 +398,13 @@ class RenderMap:
 
     def _init_all_pics(self, directory):
 
-        for i in range(21):
-            pic=pygame.image.load(f"{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Terrain\\{str(i)}.png")
-            pic=pygame.transform.scale(pic, (self.tile_width,self.tile_width))
-            self.all_pic.append(pic)
+        for i in range(23):
+            try:
+                pic=pygame.image.load(f"{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Terrain\\{str(i)}.png")
+                pic=pygame.transform.scale(pic, (self.tile_width,self.tile_width))
+                self.all_pic.append(pic)
+            except:
+                self.all_pic.append(None)
             for n in range(2,3+1):
                 if n-1==len(self.all_pics):
                     self.all_pics.append([])
@@ -706,16 +711,23 @@ class RenderMap:
                     self.all_island[i][z]=None
 
     def _spawn_hills_7_8(self,mat, horizontal):
+        texture=3
         if horizontal:
+            choice=random.randint(1,2)
+            if choice==1:choice2=random.randint(1,2)
             for i in range(self.room_height//self.tile_width//2, 0, -1):
                 if i*2+(i-1)*self.gen_reboucher_mur_max_height<=self.room_height//self.tile_width:
                     break
             
             for y in range(i):
                 hole=random.randint(1,len(mat[0])-2-self.gen_reboucher_mur_max_height)
-                for z in [ h for h in range(0,hole)]+[ h for h in range(hole+self.gen_reboucher_mur_max_height,len(mat[0]))]: 
-                    if mat[y*(self.gen_reboucher_mur_max_height+2)][z]==0: mat[y*(self.gen_reboucher_mur_max_height+2)][z]=2
-                    if mat[y*(self.gen_reboucher_mur_max_height+2)+1][z]==0: mat[y*(self.gen_reboucher_mur_max_height+2)+1][z]=2
+                if choice==1 and choice2==1: lst=[ h for h in range(0,hole)]
+                elif choice==1 and choice2==2: lst=[ h for h in range(hole+self.gen_reboucher_mur_max_height,len(mat[0]))]
+                else: lst=[ h for h in range(0,hole)] + [ h for h in range(hole+self.gen_reboucher_mur_max_height,len(mat[0]))]
+                
+                for z in lst: 
+                    if mat[y*(self.gen_reboucher_mur_max_height+2)][z]==0: mat[y*(self.gen_reboucher_mur_max_height+2)][z]=texture
+                    if mat[y*(self.gen_reboucher_mur_max_height+2)+1][z]==0: mat[y*(self.gen_reboucher_mur_max_height+2)+1][z]=texture
         else:
             for i in range(self.room_width//self.tile_width//2, 0, -1):
                 if i*2+(i-1)*self.gen_reboucher_mur_max_height<=self.room_width//self.tile_width:
@@ -732,8 +744,8 @@ class RenderMap:
 
                 hole=random.randint(1,last)
                 for z in [ h for h in range(0,hole)]+[ h for h in range(hole+self.gen_reboucher_mur_max_height,len(mat))]: 
-                    if mat[z][y*(self.gen_reboucher_mur_max_height+2)]==0: mat[z][y*(self.gen_reboucher_mur_max_height+2)]=2
-                    if mat[z][y*(self.gen_reboucher_mur_max_height+2)+1]==0: mat[z][y*(self.gen_reboucher_mur_max_height+2)+1]=2
+                    if mat[z][y*(self.gen_reboucher_mur_max_height+2)]==0: mat[z][y*(self.gen_reboucher_mur_max_height+2)]=texture
+                    if mat[z][y*(self.gen_reboucher_mur_max_height+2)+1]==0: mat[z][y*(self.gen_reboucher_mur_max_height+2)+1]=texture
 
     def generate_relief(self, i, z, node):
         # matrix used after for objects and images
@@ -938,7 +950,8 @@ class RenderMap:
                         if img["type_image"]==1:img_=self.all_pic[img["img"]]
                         elif img["type_image"]==2:img_=self.all_pics[1][img["img"]]
                         elif img["type_image"]==3:img_=self.all_pics[2][img["img"]]
-                        if img_ :surface.blit(img_, (self.screen_width/2 + img["x"] - cam_x, self.screen_height/2 + img["y"] - cam_y))
+                        if not img_:img_=self.all_pics[img["type_image"]-1][0]
+                        surface.blit(img_, (self.screen_width/2 + img["x"] - cam_x, self.screen_height/2 + img["y"] - cam_y))
 
             # loading of the minimap
             for i, line in enumerate(self.graphe):

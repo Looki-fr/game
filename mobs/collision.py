@@ -259,20 +259,19 @@ class Collision:
         return False
 
     def check_head_collide_ground(self, mob, changing_y=False, body=False, x=None, get_pos=None):
+        lst=[]
         pos=None
         for dico in self._get_dico(mob.coord_map):
             for ground in dico["ground"]:
                 if mob.big_head.collidelist(ground) > -1 or (body and mob.body.collidelist(ground) > -1):
                     if changing_y==True:
-                        if (pos == None or ground[0].y < pos) and (x==None or ground[0].x==x) : pos = ground[0].y
+                        if (pos == None or ground[0].y < pos) and (x==None or ground[0].x+ground[0].w==x or ground[0].x==x) : pos = ground[0].y
                     if get_pos=="left":
-                        if pos==None:pos=ground[0].x+ground[0].w
-                        elif ground[0].x+ground[0].w>pos:pos=ground[0].x+ground[0].w
+                        lst.append(ground[0].x+ground[0].w)
                     elif get_pos=="right":
-                        if pos==None:pos=ground[0].x
-                        elif ground[0].x<pos:pos=ground[0].x
+                        lst.append(ground[0].x)
                     if not changing_y and get_pos==None: return True
-        if get_pos!=None: return pos!=None, pos
+        if get_pos!=None: return len(lst)>0, lst
         if changing_y and pos != None :
             mob.position[1]=pos
             return True

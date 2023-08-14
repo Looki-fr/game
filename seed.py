@@ -28,17 +28,17 @@
 # BUG generation carre, pilier inconnu
 # 1691948406.90053
 
-# map stylé
-# seed=1691948484.45544
+#map stylé
+#seed=1691948484.45544
 
 # map avec gros pilier qui vole
-#seed=1691955286.989919
+seed=1691955286.989919
 
 # BUG generation salle pilier
-seed=1692010423.8739157
+#seed=1692010423.8739157
 
-# BUG carre tt seul
-# seed=1692015864.3185315
+# salle piler + carre + ile
+#seed=1692015864.3185315
 
 # import time
 # seed=time.time()

@@ -11,15 +11,7 @@ if __name__ == "__main__":
 
 # clean code, trp de boolean dans collision, var rect par exemple dans collide wall
 
-# BUG carre tt seul qd hill == 7 => manque d'image
-
 # BUG saut sur place bizarre qd saut edge into rester appuyer saut sur un trou de pilier
-
-# BUG manque dimage en 2
-
-# bug grab edge qd hills == 8
-
-# BUG edge grab les murs qd on dash => mm solution que cogne avec les co
 
 # TODO petite construction en bois aux extremités des piliers
 

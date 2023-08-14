@@ -165,8 +165,6 @@ class Graph:
                 path.append(node)
                 path.append(n)
 
-        self.printTab(mat)
-
         tmp=0
         while tmp<self.remove_wall:
             i=random.randint(0,self.height-1)
@@ -187,7 +185,6 @@ class Graph:
             if choice==1:mat[i][z+1][0]=True
             if choice==2:mat[i-1][z][3]=True
             if choice==3:mat[i+1][z][2]=True
-            print(mat[i][z],i,z,choice)
             tmp+=1
     
         return mat
