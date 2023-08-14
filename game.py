@@ -18,7 +18,7 @@ class Game:
         self.directory = os.path.dirname(os.path.realpath(__file__))
         
         info_screen = pygame.display.Info()
-        self.screen = pygame.display.set_mode((round(info_screen.current_w*1),round(info_screen.current_h*1)))
+        self.screen = pygame.display.set_mode((round(info_screen.current_w*0.7),round(info_screen.current_h*0.7)))
         self.screen.fill((0,0,0))       
         self.bg = pygame.Surface((self.screen.get_width(), self.screen.get_height()), flags=SRCALPHA)
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
@@ -376,7 +376,6 @@ class Game:
         self.blit.blit_health_bar(self.bg, [tuple[0] for tuple in self.get_all_mob()])
         if not self.render.current_map_is_wave:
             self.bg.blit(self.minimap, (self.screen.get_width()-self.minimap.get_width(), 0))
-
         self.blit.add_lightning(self.bg, all_coords_mobs_screen, all_coords_particule)
         self.screen.blit(self.bg, (0,0))
 
@@ -393,7 +392,8 @@ class Game:
             self.handle_input()
             self.update()
             self.update_ecran()
-            #self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling")
+            
+            #self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ground")
             pygame.display.update()      
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:

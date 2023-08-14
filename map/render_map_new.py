@@ -734,9 +734,6 @@ class RenderMap:
                 for z in [ h for h in range(0,hole)]+[ h for h in range(hole+self.gen_reboucher_mur_max_height,len(mat))]: 
                     if mat[z][y*(self.gen_reboucher_mur_max_height+2)]==0: mat[z][y*(self.gen_reboucher_mur_max_height+2)]=2
                     if mat[z][y*(self.gen_reboucher_mur_max_height+2)+1]==0: mat[z][y*(self.gen_reboucher_mur_max_height+2)+1]=2
-            
-
-
 
     def generate_relief(self, i, z, node):
         # matrix used after for objects and images

@@ -40,6 +40,39 @@ def pressed_right(liste_mob, collision):
                 #     if "ground_slide" in mob.actions and mob.is_sliding_ground: mob.fin_slide_ground()
                 #     if "roll" in mob.actions and mob.is_rolling: mob.fin_roll()
                 
+def jump_edge(mob, pressed_up_bool, left, right,down, collision, pieds, zoom):
+    if "jump_edge" in mob.actions:
+        if not pressed_up_bool[0]:
+            dir_x = ""
+            if left:
+                dir_x = "left"
+            elif right:
+                dir_x = "right"
+            #  and (( cogne and not pieds) or not cogne)
+            if time.time()-mob.timer_jump_edge_cogne > mob.cooldown_jump_edge_cogne and mob.is_grabing_edge and time.time() - mob.timer_cooldown_next_jump > mob.cooldown_next_jump:
+                mob.fin_grab_edge()
+                # si les pieds sont sur le mur des particles apparaissent
+                if collision.check_pieds_collide_wall(mob):
+                    if mob.is_parying:
+                        mob.is_parying=False
+                    mob.debut_saut_edge(direction_x=dir_x, pieds=pieds)
+                    mob.particule.pieds_collide_jump_edge = True
+                else:
+                    mob.debut_saut_edge(direction_x=dir_x, pieds=pieds)
+                    mob.particule.pieds_collide_jump_edge = False
+            # pressed_up sert à savoir si le joueur viens d'appyuer sur la touche
+            # il pourrait juste rester appuyer       
+            pressed_up_bool[0] = True
+        else:
+            pressed_up_bool[0] = False
+    if not down and (collision.joueur_sur_sol(mob) or time.time() - mob.timer_cooldown_able_to_jump < mob.cooldown_able_to_jump) and not mob.a_sauter and time.time() - mob.timer_cooldown_next_jump > mob.cooldown_next_jump*2:
+        if mob.is_sliding_ground:
+            mob.fin_slide_ground()
+        mob.debut_saut()
+        if collision.stop_if_collide(mob.direction, mob):
+            if mob.direction=="right":mob.position[0]-=5*zoom
+            else:mob.position[0]+=5*zoom
+
 def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
     for mob in liste_mob:
         if not collision.joueur_se_cogne(mob) and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_dashing_attacking and not "hurt" in mob.action_image and not mob.is_parying and not mob.is_jumping:
@@ -47,42 +80,17 @@ def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
             # cogne = collision.joueur_se_cogne(mob)
             #  and not cogne
             if "Edge_climb" in mob.actions and ((mob.direction=="right" and right) or (mob.direction=="left" and left) or (mob.direction=="right" and not left) or (mob.direction=="left" and not right)) and not pressed_up_bool[0] and collision.check_head_collide_ground(mob) and mob.is_grabing_edge:
-                mob.position[1]-=20
-                collision.check_head_collide_ground(mob, True)
-                mob.fin_grab_edge()
-                mob.debut_edge_climb()
+                wall, w = collision.stop_if_collide(mob.direction, mob, dontmove=True, get_pos=True, dash=True, big_head=True)  
+                sol, s=collision.check_head_collide_ground(mob, changing_y=False, get_pos=mob.direction)
+                if wall and sol and s==w:
+                    mob.position[1]-=20
+                    collision.check_head_collide_ground(mob, True)
+                    mob.fin_grab_edge()
+                    mob.debut_edge_climb()
+                else:
+                    jump_edge(mob, pressed_up_bool, left, right,down, collision, pieds, zoom)
             else:
-                if "jump_edge" in mob.actions:
-                    if not pressed_up_bool[0]:
-                        dir_x = ""
-                        if left:
-                            dir_x = "left"
-                        elif right:
-                            dir_x = "right"
-                        #  and (( cogne and not pieds) or not cogne)
-                        if time.time()-mob.timer_jump_edge_cogne > mob.cooldown_jump_edge_cogne and mob.is_grabing_edge and time.time() - mob.timer_cooldown_next_jump > mob.cooldown_next_jump:
-                            mob.fin_grab_edge()
-                            # si les pieds sont sur le mur des particles apparaissent
-                            if collision.check_pieds_collide_wall(mob):
-                                if mob.is_parying:
-                                    mob.is_parying=False
-                                mob.debut_saut_edge(direction_x=dir_x, pieds=pieds)
-                                mob.particule.pieds_collide_jump_edge = True
-                            else:
-                                mob.debut_saut_edge(direction_x=dir_x, pieds=pieds)
-                                mob.particule.pieds_collide_jump_edge = False
-                        # pressed_up sert à savoir si le joueur viens d'appyuer sur la touche
-                        # il pourrait juste rester appuyer       
-                        pressed_up_bool[0] = True
-                    else:
-                        pressed_up_bool[0] = False
-                if not down and (collision.joueur_sur_sol(mob) or time.time() - mob.timer_cooldown_able_to_jump < mob.cooldown_able_to_jump) and not mob.a_sauter and time.time() - mob.timer_cooldown_next_jump > mob.cooldown_next_jump*2:
-                    if mob.is_sliding_ground:
-                        mob.fin_slide_ground()
-                    mob.debut_saut()
-                    if collision.stop_if_collide(mob.direction, mob):
-                        if mob.direction=="right":mob.position[0]-=5*zoom
-                        else:mob.position[0]+=5*zoom
+                jump_edge(mob, pressed_up_bool, left, right,down, collision, pieds, zoom)
 
 def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, collision, pressed_dash_bool):
     for mob in liste_mob:

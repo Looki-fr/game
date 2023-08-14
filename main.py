@@ -9,6 +9,12 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+# clean code, trp de boolean dans collision, var rect par exemple dans collide wall
+
+# BUG carre tt seul qd hill == 7 => manque d'image
+
+# BUG saut sur place bizarre qd saut edge into rester appuyer saut sur un trou de pilier
+
 # BUG manque dimage en 2
 
 # bug grab edge qd hills == 8
@@ -22,20 +28,8 @@ if __name__ == "__main__":
 # EN BOIS
 # faire plateforme en bois lorsqu'il y a des longs pics verticaux de tailles random (et de nbr)
 #
-# __  _____
-# ____ __|
-# ___  ____
-#
 
-# => faire la mm pour les salles vides nn vertical
-
-#
-#  |      _|
-#  |  |  |
-#     |  | 
-#  |  |   
-
-# TODO couper vision => parametre visible => si invisible alors image noire
+# TODO couper vision => dessiner polygone où on voit pas : rajouter des autres points de vision dans les salles
 
 
 # TODO faire salle enfermé par plateforme à sauter
