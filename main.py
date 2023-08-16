@@ -9,24 +9,41 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+
+# https://ncase.me/sight-and-light/
+# https://stackoverflow.com/questions/38239309/optimize-field-of-vision-algorithm-in-a-grid-tiled-map
+
+# faire une ligne qui pars des yeux du joueur et qui va en bas
+# check les intersection avec tt les segments de tt les figures de la map
+# faire partir des rayons vers chaque sommet de segment et check leurs intersections avec les segments
+# si trop lent => diviser la map en pls parti ( en fonction tete joueur) et check les segments que avec 
+# les figures de la partir où il va, si figure ds pls parti alors le mettre dans les pls parti
+# => si un point ds parti alors mettre la figure dedans
+# check si point qui est intercepter existe dans la map d'a cote => si oui alors c pas une intersection (ex sol)
+# afficher tt les lignes de la tete du joueur jusqu'aux segments
+# https://ncase.me/sight-and-light/
+
+
+# TODO re organiser render map => too big and messy
+
+# TODO opti les + mat dans collision en faisanrt avec des brackets
+
+# TODO vision : savoir si un wall collide un ground ou un ceilling et si on est en bas
+# on pernds en compte que ceux qui collide un ceilling
+
+# TODO vision : faire avec ceillings et ground et murs
+
 # clean code, trp de boolean dans collision, var rect par exemple dans collide wall
 
 # BUG saut sur place bizarre qd saut edge into rester appuyer saut sur un trou de pilier
 
 # TODO petite construction en bois aux extremités des piliers
 
-# BUG better bottom marche pas qd hill == 5 (a gauche) et que ile : 1691949104.8551548
-
-# EN BOIS
-# faire plateforme en bois lorsqu'il y a des longs pics verticaux de tailles random (et de nbr)
-#
-
 # TODO couper vision => dessiner polygone où on voit pas : rajouter des autres points de vision dans les salles
-
 
 # TODO faire salle enfermé par plateforme à sauter
 
-# TODO cacher salles que l'on voit pas à travers les musrs => polygone pour si on est sur une crete ?
+# TODO cacher salles que l'on voit pas à travers les musrs + polygone pour les salles en cours
 
 # TODO add plateforme / arbre / rocher / bateau ....
 

@@ -46,7 +46,7 @@ class Graph:
                         if node not in vu:
                             vu.append(node)
                             pile.append(current_path+[node])
-            return None
+            return []
 
     def get_all_neighboors(self,i, y, mat, vu):
         tab=[]
@@ -98,7 +98,7 @@ class Graph:
                     self.remove_path((i,y), node, mat)
                     for other_node in tmp:
                         if node != other_node:
-                            if self.get_shortest_path(other_node, node, mat) == None : bool=False
+                            if self.get_shortest_path(other_node, node, mat) == [] : bool=False
 
                 if bool or len(tmp)==0:
                     c+=1
@@ -155,7 +155,7 @@ class Graph:
                 for other_node in tab:
                     if other_node != n:
                         self.remove_path(node, other_node, mat)
-                        if self.get_shortest_path(other_node, node, mat) == None : bool=False
+                        if self.get_shortest_path(other_node, node, mat) == [] : bool=False
 
                 if not bool:
                     for other_node in tab:

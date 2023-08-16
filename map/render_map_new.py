@@ -1,7 +1,8 @@
-from math import ceil
+from math import ceil, sqrt
 import random
 import pygame
 from map.graph_generator import Graph
+from map.shadow import Shadow
 from seed import seed
 random.seed(seed)
 class RenderMap:
@@ -9,9 +10,9 @@ class RenderMap:
         self.directory=directory
         self.screen_width = screen_width
         self.screen_height = screen_height
-        g = Graph(5,5,3,1)
+        self.g = Graph(5,5,3,1)
 
-        self.graphe=g.get_matrix()
+        self.graphe=self.g.get_matrix()
         new_graph=[]
         new_graph.insert(0, [[] for _ in range(len(self.graphe[0])+2)])
         
@@ -20,7 +21,7 @@ class RenderMap:
         
         new_graph.append([[] for _ in range(len(self.graphe[0])+2)])
         self.graphe=new_graph
-        g.printTab(self.graphe)
+        self.g.printTab(self.graphe)
 
         self.minimap_tile_width=50            
         self.zoom=2
@@ -177,6 +178,8 @@ class RenderMap:
         self.current_map_is_wave=False
         
         self.get_first_map()["info"]["beated"]=True
+
+        self.shadow = Shadow(self.tile_width, self.room_width, self.room_height, self.all_mat, self.graphe)
 
     def _get_lists_carre(self,print=False):
         g=Graph(4,4,0,0)
@@ -601,11 +604,13 @@ class RenderMap:
             for line in mat:
                 print(line)
                 
-    def complete_picture_matrix(self, i, z, node):
-        mat=self.all_mat[i][z]
+    def complete_picture_matrix(self, i, z, node, mat=None):
+        if not mat : mat=self.all_mat[i][z]
         g=0
         d=len(mat[0])
-        h=0
+        if node == [False, False, False, False]:
+            h=len(mat)-2
+        else:h=0
         b=len(mat)
 
         for i_ in range(h, b):
@@ -614,35 +619,78 @@ class RenderMap:
             for y_ in range(g, d):
                 if mat[i_][y_]:
                     self.matrix_picture[i][z].append({"x":z*self.room_width+y_*self.tile_width,"y":i*self.room_height+i_*self.tile_width,"img":0,"type_image":mat[i_][y_]})
+
+                    if node != [False, False, False, False]:
                     
-                    #adding little ground if there is a change of 
-                    # left
-                    if (y_>g and not mat[i_][y_-1] and i_<len(mat)-1 and mat[i_+1][y_-1] and i_>0 and not mat[i_-1][y_]) or (y_==g and z>0 and self.all_mat[i][z-1] and not self.all_mat[i][z-1][i_][-1] and i_<len(mat)-1 and self.all_mat[i][z-1][i_+1][-1] and i_>0 and not mat[i_-1][y_]):
-                        self.matrix_picture[i][z].append({"x":z*self.room_width+(y_-0.5)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":len(self.all_pic)-1,"type_image":1})
-                        self.matrix_map[i][z]["little_ground"].append([pygame.Rect(z*self.room_width+(y_-0.6)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
-                    #  or (y==d-1 and self.last_mat and not self.last_mat[i_][0])
-                    # right
-                    if ((y_<d-1 and not mat[i_][y_+1] and i_<len(mat)-1 and mat[i_+1][y_+1] and i_>0 and not mat[i_-1][y_]) or (y_==d-1 and node[1] and (self.gen_current_width==0 or (z<len(self.all_mat[i])-1 and self.all_mat[i][z+1] and not self.all_mat[i][z+1][i_][0] and self.all_mat[i][z+1][i_+1][0])))):
-                        self.matrix_picture[i][z].append({"x":z*self.room_width+(y_+1)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":len(self.all_pic)-1,"type_image":1})
-                        self.matrix_map[i][z]["little_ground"].append([pygame.Rect(z*self.room_width+(y_+1.1)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
+                        
+                        #adding little ground if there is a change of 
+                        # left
+                        if (y_>g and not mat[i_][y_-1] and i_<len(mat)-1 and mat[i_+1][y_-1] and i_>0 and not mat[i_-1][y_]) or (y_==g and z>0 and self.all_mat[i][z-1] and not self.all_mat[i][z-1][i_][-1] and i_<len(mat)-1 and self.all_mat[i][z-1][i_+1][-1] and i_>0 and not mat[i_-1][y_]):
+                            self.matrix_picture[i][z].append({"x":z*self.room_width+(y_-0.5)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":len(self.all_pic)-1,"type_image":1})
+                            self.matrix_map[i][z]["little_ground"].append([pygame.Rect(z*self.room_width+(y_-0.6)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
+                        #  or (y==d-1 and self.last_mat and not self.last_mat[i_][0])
+                        # right
+                        if ((y_<d-1 and not mat[i_][y_+1] and i_<len(mat)-1 and mat[i_+1][y_+1] and i_>0 and not mat[i_-1][y_]) or (y_==d-1 and node[1] and (self.gen_current_width==0 or (z<len(self.all_mat[i])-1 and self.all_mat[i][z+1] and not self.all_mat[i][z+1][i_][0] and self.all_mat[i][z+1][i_+1][0])))):
+                            self.matrix_picture[i][z].append({"x":z*self.room_width+(y_+1)*self.tile_width,"y":i*self.room_height+(i_+0.5)*self.tile_width,"img":len(self.all_pic)-1,"type_image":1})
+                            self.matrix_map[i][z]["little_ground"].append([pygame.Rect(z*self.room_width+(y_+1.1)*self.tile_width, i*self.room_height+(i_+0.5)*self.tile_width, self.tile_width/4, self.tile_width/2)])
 
-                    # ground
-                    if tmp == -1 and ((i_>0 and not mat[i_-1][y_]) or (i_==0 and i>0 and self.all_mat[i-1][z] and not self.all_mat[i-1][z][-1][y_])) :
-                        tmp=y_
-                    # not elif because if lenght is 1
-                    if tmp != -1 and (y_ == d-1 or not mat[i_][y_+1] or ((i_>0 and mat[i_-1][y_+1]) or (i_==0 and i>0 and self.all_mat[i-1][z] and self.all_mat[i-1][z][-1][y_+1]))):
+                        # ground
+                        if tmp == -1 and ((i_>0 and not mat[i_-1][y_]) or (i_==0 and i>0 and self.all_mat[i-1][z] and not self.all_mat[i-1][z][-1][y_])) :
+                            tmp=y_
+                        # not elif because if lenght is 1
+                        if tmp != -1 and (y_ == d-1 or not mat[i_][y_+1] or ((i_>0 and mat[i_-1][y_+1]) or (i_==0 and i>0 and self.all_mat[i-1][z] and self.all_mat[i-1][z][-1][y_+1]))):
+                            # or self.graphe[i][z][0] or
 
-                        if tmp==y_ or tmp>1 or z==0 or len(self.graphe[i][z-1])==0 or not self.graphe[i][z-1][3] or self.graphe[i][z][0] or len(mat)-1-i_ > self.gen_max_height or (tmp*self.tile_width)%self.room_width>2*self.tile_width:inc=0
-                        else: inc=0.5
 
-                        if tmp==y_ or y_<len(mat)-2 or z==len(self.graphe[0])-1 or len(self.graphe[i][z+1])==0 or not self.graphe[i][z+1][3] or self.graphe[i][z][1] or len(mat)-1-i_ > self.gen_max_height or (y_*self.tile_width)%self.room_width<self.room_width-2*self.tile_width:inc2=0
-                        else: inc2=0.5
-                        self._spawn_big_ground(i, z, i_, y_+1-inc2, tmp+inc)
-                        tmp=-1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                # jai virer les inc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            if tmp==y_ or tmp>1 or z==0 or len(self.graphe[i][z-1])==0 or not self.graphe[i][z-1][3] or node[0] or len(mat)-1-i_ > self.gen_max_height or (tmp*self.tile_width)%self.room_width>2*self.tile_width:inc=0
+                            else: inc=0.5
+                            #or self.graphe[i][z][1] or
+                            if tmp==y_ or y_<len(mat)-2 or z==len(self.graphe[0])-1 or len(self.graphe[i][z+1])==0 or not self.graphe[i][z+1][3] or node[1] or len(mat)-1-i_ > self.gen_max_height or (y_*self.tile_width)%self.room_width<self.room_width-2*self.tile_width:inc2=0
+                            else: inc2=0.5
+                            self._spawn_big_ground(i, z, i_, y_+1-0, tmp+0)
+                            tmp=-1
 
                     # ceillings
-                    if i_<len(mat)-1:
-                        if tmp2 == -1 and (not mat[i_+1][y_]) :tmp2=y_
+                    if i_<len(mat)-1 or (i_==len(mat)-1 and not node[3]):
+                        if tmp2 == -1 and ( i_==len(mat)-1 or not mat[i_+1][y_]) :tmp2=y_
                         # not elif because if lenght is 1
                         if tmp2 != -1 and (y_ == d-1 or not mat[i_][y_+1] or (i_<len(mat)-1 and ( mat[i_+1][y_+1] or mat[i_+1][y_]))):
                             plus1=plus2=0
@@ -657,27 +705,29 @@ class RenderMap:
                 if tmp != -1 and (y_==d-1 or mat[1][y_+1] or mat[0][y_+1] or not self.all_mat[i-1][z][-1][y_+1]):
                     self._spawn_big_ceilling(i-1, z, len(mat)-1, y_+1, tmp)
                     tmp=-1
+        if node != [False, False, False, False]:
 
-        for y_ in range(g, d):
-            tmp=-1
-            type_=0
-            for i_ in range(h, b):
-                if mat[i_][y_]:
-                    if tmp == -1 and  ((y_==0 or y_==len(mat[0])-1) or ((y_>0 and y_<len(mat[0])-1) and (not mat[i_][y_-1] or not mat[i_][y_+1]))):
-                        if ((y_!=len(mat[0])-1 or not mat[i_][y_-1])or (y_==len(mat[0])-1 and z<len(self.all_mat[0])-1 and (not self.all_mat[i][z+1] or not self.all_mat[i][z+1][i_][0]))) and ((y_>0 or not mat[i_][y_+1]) or (y_==0 and z>0 and (not self.all_mat[i][z-1] or not self.all_mat[i][z-1][i_][-1]))):
-                            if (y_==0 and mat[i_][y_+1]) or not mat[i_][y_-1]: type_=1
-                            tmp=i_
-                        
-                        # not elif because if lenght is 1
-                    if tmp != -1 and type_ == 1 and (i_ == b-1 or not mat[i_+1][y_] or ((y_>0 and mat[i_][y_-1]) or (y_==0 and z>0 and (not self.all_mat[i][z-1] or self.all_mat[i][z-1][i_][-1])))):
-                        if i_-tmp>=1 : self._spawn_big_walls(i, z, i_+1, y_, tmp)
-                        elif (i_>0 and mat[i_-1][y_]) or (i_==0 and i>0 and self.all_mat[i-1][z] and self.all_mat[i-1][z][-1][y_]) :  self._spawn_big_walls(i, z, i_+1, y_, tmp-1)
-                        tmp=-1
-                        
-                    elif tmp != -1 and type_ == 0 and (i_ == b-1 or not mat[i_+1][y_] or ((not y_==len(mat[0])-1 and mat[i_][y_+1]) or (y_==len(mat[0])-1 and z<len(self.all_mat[0])-1 and (not self.all_mat[i][z+1] or self.all_mat[i][z+1][i_][0])))):
-                        if i_-tmp>=1 : self._spawn_big_walls(i, z, i_+1, y_, tmp)
-                        elif (i_>0 and mat[i_-1][y_]) or (i_==0 and i>0 and self.all_mat[i-1][z] and self.all_mat[i-1][z][-1][y_]) :  self._spawn_big_walls(i, z, i_+1, y_, tmp-1)
-                        tmp=-1
+            for y_ in range(g, d):
+                tmp=-1
+                type_=0
+                for i_ in range(h, b):
+                    if mat[i_][y_]:
+                        #if tmp == -1 and  (((y_==0 and (not mat[i_][1] or (z>0 and self.all_mat[i][z-1] and not self.all_mat[i][z-1][i_][-1]))) or (y_==len(mat[0])-1 and (not mat[i_][-2] or (z<len(self.all_mat[i])-1 and not self.all_mat[i][z+1] and self.all_mat[i][z+1][i_][0])))) or ((y_>0 and y_<len(mat[0])-1) and (not mat[i_][y_-1] or not mat[i_][y_+1]))):
+                        if tmp == -1 and not(y_==0 and mat[i_][1] and z>0 and self.all_mat[i][z-1] and self.all_mat[i][z-1][i_][-1]) and not(y_==len(mat[0])-1 and mat[i_][-2] and z<len(self.all_mat[i])-1 and self.all_mat[i][z+1] and self.all_mat[i][z+1][i_][0]) and ((y_==0 or y_==len(mat[0])-1) or ((y_>0 and y_<len(mat[0])-1) and (not mat[i_][y_-1] or not mat[i_][y_+1]))):
+                            if ((y_!=len(mat[0])-1 or not mat[i_][y_-1]) or (y_==len(mat[0])-1 and z<len(self.all_mat[0])-1 and (not self.all_mat[i][z+1] or not self.all_mat[i][z+1][i_][0]))) and ((y_>0 or not mat[i_][y_+1]) or (y_==0 and z>0 and (not self.all_mat[i][z-1] or not self.all_mat[i][z-1][i_][-1]))):
+                                if (y_==0 and mat[i_][y_+1]) or (y_>0 and not mat[i_][y_-1]): type_=1
+                                tmp=i_
+                            
+                            # not elif because if lenght is 1
+                        if tmp != -1 and type_ == 1 and (i_ == b-1 or not mat[i_+1][y_] or ((y_>0 and mat[i_][y_-1]) or (y_==0 and z>0 and (self.all_mat[i][z-1] and self.all_mat[i][z-1][i_][-1])))):
+                            if i_-tmp>=0 : self._spawn_big_walls(i, z, i_+1, y_, tmp)
+                            elif (i_>0 and mat[i_-1][y_]) or (i_==0 and i>0 and self.all_mat[i-1][z] and self.all_mat[i-1][z][-1][y_]) :  self._spawn_big_walls(i, z, i_+1, y_, tmp-1)
+                            tmp=-1
+                            
+                        elif tmp != -1 and type_ == 0 and (i_ == b-1 or not mat[i_+1][y_] or ((not y_==len(mat[0])-1 and mat[i_][y_+1]) or (y_==len(mat[0])-1 and z<len(self.all_mat[0])-1 and (self.all_mat[i][z+1] and self.all_mat[i][z+1][i_][0])))):
+                            if i_-tmp>=0 : self._spawn_big_walls(i, z, i_+1, y_, tmp)
+                            elif (i_>0 and mat[i_-1][y_]) or (i_==0 and i>0 and self.all_mat[i-1][z] and self.all_mat[i-1][z][-1][y_]) :  self._spawn_big_walls(i, z, i_+1, y_, tmp-1)
+                            tmp=-1
 
     def _get_hills(self,i,z,node, after_island=False):
         """
@@ -899,18 +949,22 @@ class RenderMap:
             if node[3] and not node[0] and not node[1]:self.re_initialize_gen_var()
         else:
             #self._spawn_big_walls(i,z,dico,0,0,len(self.all_mat[i][z]))
-            self._spawn_big_ceilling(i,z,self.room_height//self.tile_width-1,0,self.room_width//self.tile_width)
+            mat = [[0 for _ in range(self.room_width//self.tile_width)] for _ in range(self.room_height//self.tile_width)]
+            #self._spawn_big_ceilling(i,z,self.room_height//self.tile_width-1,0,self.room_width//self.tile_width)
             self.matrix_picture[i][z].append({"x":z*self.room_width+self.tile_width,"y":i*self.room_height+self.tile_width,"img":len(self.all_pic)-2,"type_image":1})
 
             for i_ in range(self.room_height//self.tile_width):
                 self.matrix_picture[i][z].append({"x":z*self.room_width,"y":i*self.room_height+i_*self.tile_width,"img":0,"type_image":1})
+                mat[i_][0]=1
                 if i_ == 0 or i_ == self.room_height//self.tile_width-1:
                     for y in range(1,self.room_width//self.tile_width-1):
+                        mat[i_][y]=1
                         self.matrix_picture[i][z].append({"x":z*self.room_width+y*self.tile_width,"y":i*self.room_height+i_*self.tile_width,"img":0,"type_image":1})
 
+                mat[i_][-1]=1
                 self.matrix_picture[i][z].append({"x":z*self.room_width+(self.room_width//self.tile_width-1)*self.tile_width,"y":i*self.room_height+i_*self.tile_width,"img":0,"type_image":1})
-
-
+                self.complete_picture_matrix(i, z, [False,False,False,False], mat=mat)
+            self.all_mat[i][z]=mat[::]
             self.re_initialize_gen_var()
 
 
@@ -934,7 +988,80 @@ class RenderMap:
         if d<0: d=0
         elif d>=len(self.graphe): d=len(self.graphe)-1
         return y_min, y_max, x_min, x_max, a, b, c ,d
+    
+    def _not_visible(self,i, z):
+        dico={}
+        dico[f"({i},{z})"]=True
+        for i_ in range(-1,2):
+            for z_ in range(-1,2):
+                if not (i_ == 0 and z_ == 0) and i+i_>=0 and z+z_ >= 0 and i+i_ < len(self.graphe) and z+z_ < len(self.graphe[i]):
+                    if len(self.g.get_shortest_path((i,z), (i+i_,z+z_), self.graphe))<=3 and (not self.graphe[i][z] or ((i_==0 and z_==-1 and self.graphe[i][z][0] ) or (i_==0 and z_==1 and self.graphe[i][z][1] ) or (i_==1 and z_==0 and self.graphe[i][z][3] ) or (i_==-1 and z_==0 and self.graphe[i][z][2]))): dico[f"({i+i_},{z+z_})"]=True
+                    else:dico[f"({i+i_},{z+z_})"]=False
         
+        # for i_ in range(-1,2):
+        #     for z_ in range(-1,2):
+        #         if not (i_ == 0 and z_ == 0) and i+i_>=0 and z+z_ >= 0 and i+i_ < len(self.graphe) and z+z_ < len(self.graphe[i]) and dico[f"({i+i_},{z+z_})"]==False and not self.graphe[i+i_][z+z_]:
+        #             if dico.get(f"({i+i_+1},{z+z_})", False) or dico.get(f"({i+i_},{z+z_+1})", False) or (i>0 and self.graphe[i-1][z] and dico.get(f"({i+i_-1},{z+z_})", False)) or (z>0 and self.graphe[i][z-1] and dico.get(f"({i+i_},{z+z_-1})", False)):
+        #                 dico[f"({i+i_},{z+z_})"]=True
+        
+        return dico
+        
+    def _get_distance(self, x, y):
+        return sqrt((x[0]-y[0])**2 + (x[1]-y[1])**2)
+
+    def render_shadow(self,surface, collision, coord_map, head_player, scroll_rect):
+        pass
+        # for dico in collision.get_dico(coord_map):
+        #     # for wall in dico["wall"]:
+        #     #     if wall[0].x+wall[0].w < head_player.midbottom[0] or (head_player.collidelist(wall) > -1 and wall[0].x+wall[0].w < head_player.right):
+        #     #         new_x=surface.get_width()/2 + wall[0].x - scroll_rect.x 
+        #     #         new_y=surface.get_height()/2 + wall[0].y - scroll_rect.y
+        #     #         pygame.draw.rect(surface, (0,0,0), pygame.Rect(0,new_y,new_x, wall[0].h))
+        #     for rect in dico["ground"]+dico["ceilling"]+dico["wall"]:
+        #         new_x=surface.get_width()/2 + rect[0].x - scroll_rect.x 
+        #         new_y=surface.get_height()/2 + rect[0].y - scroll_rect.y
+        #         pygame.draw.rect(surface,(200,50,50), pygame.Rect(new_x, new_y, rect[0].w, rect[0].h))
+
+
+                # if ground[0].y+ground[0].h > head_player.midbottom[1]:
+                    # J=head_player.midbottom
+                    # # finding the points of the ground
+                    # p1, p2 = (ground[0].x, ground[0].y), (ground[0].x+ground[0].w, ground[0].y)
+                    # p3, p4 = (ground[0].x, ground[0].y +ground[0].h), (ground[0].x+ground[0].w, ground[0].y+ground[0].h)
+                    # if p1[0] > J[0]: 
+                    #     p1 = p3
+                    #     p3 = None
+                    # elif p2[0] < J[0]: 
+                    #     p2 = p4
+                    #     p4 = None
+                    # liste_points=[p1]
+                    # # finding where the lines should end if its not on the bottom
+                    # if J[0] > ground[0].x+ground[0].w/2 : end=0
+                    # else: end=scroll_rect.x+surface.get_width()/2
+
+                    # # by the bottom
+                    # for p in [p1, p2]:
+                    #     d=self._get_distance(J,p)
+                    #     if d>0 and abs(J[1]-p[1])>0: 
+                    #         x1=(scroll_rect.y+surface.get_height()/2)/((p[1]-J[1])/d)
+                    #     else:
+                    #         x1=1
+                    #     diff=((p[0]-J[0])/d)
+                    #     X1=(p[0]+x1*diff, scroll_rect.y+surface.get_height()/2)
+                    #     liste_points.append(X1)
+                    
+                    # liste_points.append(p2)
+                    # if p4 != None : liste_points.append(p4)
+                    # if p3 != None : liste_points.append(p3)
+                    
+                    # new_points=[]
+                    # for p in liste_points:
+                    #     new_x=surface.get_width()/2 + p[0] - scroll_rect.x 
+                    #     new_y=surface.get_height()/2 + p[1] - scroll_rect.y
+                    #     new_points.append((new_x, new_y))
+                    
+                    # pygame.draw.polygon(surface, (51,50,61), new_points)
+                    
     def render(self, surface, minimap, cam_x, cam_y):
         """called all tick => blit only the visible tiles (compare to the position of the camera) to 'surface'"""
 
@@ -944,9 +1071,11 @@ class RenderMap:
         # try:
         if not self.current_map_is_wave:
             # c = x
-            for ligne in self.matrix_picture[(d-1 if d>0 else d):(d+2 if d<len(self.matrix_picture)-1 else d+3)]:
-                for tab in ligne[(c-1 if c>0 else c):(c+2 if c<len(self.matrix_picture[0])-1 else c+3)]:
-                    for img in tab:
+            #visible=self._not_visible(d,c)
+            for ligne in [d_ for d_ in range((d-1 if d>0 else d),(d+2 if d<len(self.matrix_picture)-1 else d+3))]:
+                for tab in [c_ for c_ in range((c-1 if c>0 else c),(c+2 if c<len(self.matrix_picture[0])-1 else c+3))]:
+                    for img in self.matrix_picture[ligne][tab]:
+                        # if img["img"] == len(self.all_pic)-2 or visible[f"({ligne},{tab})"]:
                         if img["type_image"]==1:img_=self.all_pic[img["img"]]
                         elif img["type_image"]==2:img_=self.all_pics[1][img["img"]]
                         elif img["type_image"]==3:img_=self.all_pics[2][img["img"]]

@@ -373,6 +373,9 @@ class Game:
         self.minimap.fill((200, 155,155))
         self.render.render(self.bg,self.minimap, self.blit.scroll_rect.x, self.blit.scroll_rect.y)
         all_coords_mobs_screen, all_coords_particule = self.blit.blit_group(self.bg, self.all_groups)
+        self.render.render_shadow(self.bg, self.collision, self.player.coord_map, self.player.head,self.blit.scroll_rect)
+        self.render.shadow.draw_matrix(self.bg, self.blit.scroll_rect, self.player.coord_map)
+        self.render.shadow.draw_shadow(self.bg, self.blit.scroll_rect, self.player.coord_map, self.player.head)
         self.blit.blit_health_bar(self.bg, [tuple[0] for tuple in self.get_all_mob()])
         if not self.render.current_map_is_wave:
             self.bg.blit(self.minimap, (self.screen.get_width()-self.minimap.get_width(), 0))
@@ -393,7 +396,7 @@ class Game:
             self.update()
             self.update_ecran()
             
-            #self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ground")
+            #self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling")
             pygame.display.update()      
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:

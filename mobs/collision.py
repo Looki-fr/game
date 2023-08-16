@@ -8,9 +8,10 @@ class Collision:
         self.dico_map_wave={}
         self.current_map_is_wave=False
 
-    def _get_coords_maps(self, c, d):
+    def _get_coords_maps(self, c, d,only):
         liste=[]    
         if self.matrix_map[d][c]!=None: liste.append((d,c))
+        if only: return liste
         if c < len(self.matrix_map[0])-1 and self.matrix_map[d][c+1]!=None: 
             if d < len(self.matrix_map)-1 and self.matrix_map[d+1][c+1]!=None:
                 liste.append((d+1,c+1))
@@ -29,17 +30,17 @@ class Collision:
             liste.append((d-1,c))
         return liste
 
-    def _get_dico(self, coord_map):
+    def get_dico(self, coord_map, only=False):
         liste=[]
         if not self.current_map_is_wave:
-            for tu in self._get_coords_maps(coord_map[0], coord_map[1]):
+            for tu in self._get_coords_maps(coord_map[0], coord_map[1], only=only):
                 liste.append(self.matrix_map[tu[0]][tu[1]])
         else:
             liste.append(self.dico_map_wave)
         return liste
 
     def collide_platform_bot(self,mob, direction, add=""):
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             if direction=="right" and dico["bot"][f"platform_{add}right"] != []:
                 for rect in dico["bot"][f"platform_{add}right"]:
                     if mob.body.collidelist(rect) > -1:    
@@ -51,14 +52,14 @@ class Collision:
         return False 
 
     def draw(self, mob, screen, scroll_rect, type):
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             for obj in dico[type]:
                 new_x = screen.get_width()/2 + obj[0].left - scroll_rect.x
                 new_y = screen.get_height()/2 + obj[0].top - scroll_rect.y
                 pygame.draw.rect(screen, (255, 0, 0), (new_x, new_y, obj[0].w, obj[0].h))
 
     def foot_on_little_ground(self, mob):
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             for little_ground in dico["little_ground"]:
                 if mob.feet.collidelist(little_ground) > -1:
                     return True
@@ -73,7 +74,7 @@ class Collision:
         if dash : rect=mob.body
         elif chest : rect=mob.chest
         else: rect=mob.feet
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             if not platform_only:
                 if not mob.is_falling:
                     for little_ground in dico["little_ground"]:
@@ -140,7 +141,7 @@ class Collision:
         elif chest: rect=mob.chest
         else: rect=mob.head
         if get_pos!=None: pos=None
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             for ceilling in dico["ceilling"]:
                 if rect.collidelist(ceilling) > -1:
                     if get_pos==None:return True
@@ -168,7 +169,7 @@ class Collision:
         elif big_head: rect=mob.big_head
         else:rect = mob.body
         if dash or stick: temp=None
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             for wall in dico["wall"]:
                 if rect.collidelist(wall) > -1:
                     
@@ -225,7 +226,7 @@ class Collision:
         elif mob.direction == "left":
                 mob.position[0] -= 2*self.zoom
         temp=None
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             for wall in dico["wall"]:
                 if mob.body.collidelist(wall) > -1:
                     if temp==None: temp=wall[0]
@@ -238,7 +239,7 @@ class Collision:
                         
     def check_grab(self, mob, direction, chest=False, dash=False):
         """Grab SSI head collide"""
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             for wall in dico["wall"]:
                 # check method collide wall pour la collision
                 #  and ((mob.direction == 'right' and wall[0].x < mob.body.x + mob.body.w  and mob.body.x + mob.body.w-wall[0].x < mob.max_distance_collide) or (mob.direction == 'left' and wall[0].x + wall[0].w > mob.body.x and wall[0].x + wall[0].w-mob.body.x < mob.max_distance_collide))
@@ -252,7 +253,7 @@ class Collision:
                         return True
                           
     def check_pieds_collide_wall(self, mob):
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             for wall in dico["wall"]:
                 if mob.feet.collidelist(wall) > -1:
                     return True
@@ -261,7 +262,7 @@ class Collision:
     def check_head_collide_ground(self, mob, changing_y=False, body=False, x=None, get_pos=None):
         lst=[]
         pos=None
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             for ground in dico["ground"]:
                 if mob.big_head.collidelist(ground) > -1 or (body and mob.body.collidelist(ground) > -1):
                     if changing_y==True:
@@ -279,7 +280,7 @@ class Collision:
     
     def check_tombe_ou_grab(self, mob):
         """stop le grab edge si on est plus en collision avce un mur"""
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             for wall in dico["wall"]:
                 if (mob.body.collidelist(wall) > -1 or mob.head.collidelist(wall) > -1 or mob.body_wallslide.collidelist(wall) > -1) and mob.is_sliding:
                     return
@@ -287,7 +288,7 @@ class Collision:
 
     def ground_above_wall(self,mob,direction):
         gd=None
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             for ground in dico["ground"]:
                     if mob.body.collidelist(ground) > -1:
                         if not mob.is_jumping_edge and not mob.is_jumping:
@@ -299,7 +300,7 @@ class Collision:
                             mob.a_sauter = False
                             mob.a_dash = False
         temp=None
-        for dico in self._get_dico(mob.coord_map):
+        for dico in self.get_dico(mob.coord_map):
             for wall in dico["wall"]:
                 if mob.body.collidelist(wall) > -1:
                     
