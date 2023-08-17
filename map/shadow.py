@@ -23,13 +23,14 @@ class Shadow:
         self.graphe = graphe
         # id = index
         self.all_vertex=[]
-        self.all_points=[[[] for _ in range(room_width//tile_width)] for _ in range(room_height//tile_width)]
+        self.all_points=[]
+        self.all_points_matrices=[[[] for _ in range(room_width//tile_width)] for _ in range(room_height//tile_width)]
         self.vertex_in_matrices = [[[] for _ in range(room_width//tile_width)] for _ in range(room_height//tile_width)]
         self._fill_all_figures()
         for i in range(len(self.vertex_in_matrices)):
             for y in range(len(self.vertex_in_matrices[i])):
                 self.vertex_in_matrices[i][y]=list(set(self.vertex_in_matrices[i][y]))
-                self.all_points[i][y]=list(set(self.all_points[i][y]))
+                self.all_points_matrices[i][y]=list(set(self.all_points_matrices[i][y]))
 
 
     def has_neighboor(self,i,z,i_,z_,co):
@@ -114,13 +115,14 @@ class Shadow:
         same_x={}
         same_y={}
         for sommet in all_sommets:
-            same_x[sommet[0][1]]=same_x.get(sommet[0][1],[])+[sommet]
-            same_y[sommet[0][0]]=same_y.get(sommet[0][0],[])+[sommet]
-            self.all_points[sommet[1][0]][sommet[1][1]].append(sommet)
-            if sommet[0][0]%self.room_height == 0 and sommet[1][0]>0: self.all_points[sommet[1][0]-1][sommet[1][1]].append(sommet)
-            if sommet[0][1]%self.room_width == 0 and sommet[1][1]>0: self.all_points[sommet[1][0]][sommet[1][1]-1].append(sommet)
-            if sommet[0][0]%self.room_height == self.room_height-self.tile_width and sommet[1][0]<len(self.all_mat)-1: self.all_points[sommet[1][0]][sommet[1][1]-1].append(sommet)
-            if sommet[0][1]%self.room_width == self.room_width-self.tile_width and sommet[1][1]<len(self.all_mat[sommet[1][0]])-1: self.all_points[sommet[1][0]][sommet[1][1]+1].append(sommet)
+            same_x[sommet[0][1]]=same_x.get(sommet[0][1],[])+[len(self.all_points)]
+            same_y[sommet[0][0]]=same_y.get(sommet[0][0],[])+[len(self.all_points)]
+            self.all_points.append(sommet)
+            self.all_points_matrices[sommet[1][0]][sommet[1][1]].append(len(self.all_points)-1)
+            if sommet[0][0]%self.room_height == 0 and sommet[1][0]>0: self.all_points_matrices[sommet[1][0]-1][sommet[1][1]].append(len(self.all_points)-1)
+            if sommet[0][1]%self.room_width == 0 and sommet[1][1]>0: self.all_points_matrices[sommet[1][0]][sommet[1][1]-1].append(len(self.all_points)-1)
+            if sommet[0][0]%self.room_height == self.room_height-self.tile_width and sommet[1][0]<len(self.all_mat)-1: self.all_points_matrices[sommet[1][0]][sommet[1][1]-1].append(len(self.all_points)-1)
+            if sommet[0][1]%self.room_width == self.room_width-self.tile_width and sommet[1][1]<len(self.all_mat[sommet[1][0]])-1: self.all_points_matrices[sommet[1][0]][sommet[1][1]+1].append(len(self.all_points)-1)
 
         self._fill_vertex(same_x, same_y)
         
@@ -173,7 +175,9 @@ class Shadow:
     def _fill_vertex(self,same_x, same_y):
         for liste in same_x.values():
             for s1 in liste:
-                s2, mat=self._reach(s1, "top",  [s[1] for s in liste])
+                s1Index=s1
+                s1=self.all_points[s1]
+                s2, mat=self._reach(s1, "top",  [self.all_points[s][1] for s in liste])
                 if s2 != None:
                     for i,z in mat:
                         self.vertex_in_matrices[i][z].append(len(self.all_vertex))
@@ -181,16 +185,19 @@ class Shadow:
                     if s1[0][1]%self.room_width == 0 and s1[1][1]>0: self.vertex_in_matrices[s1[1][0]][s1[1][1]-1].append(len(self.all_vertex))
                     if s1[0][1]%self.room_width == self.room_width-self.tile_width and s1[1][1]<len(self.all_mat[s1[1][0]])-1: self.vertex_in_matrices[s1[1][0]][s1[1][1]+1].append(len(self.all_vertex))
 
-
-                    for s in (s1,liste[s2]):
+                    s2index=liste[s2]
+                    s2=self.all_points[liste[s2]]
+                    for s in (s1,s2):
                         if s[0][0]%self.room_height == 0 and s[1][0]>0: self.vertex_in_matrices[s[1][0]-1][s[1][1]].append(len(self.all_vertex))
                         if s[0][0]%self.room_height == self.room_height-self.tile_width and s[1][0]<len(self.all_mat)-1: self.vertex_in_matrices[s[1][0]+1][s[1][1]].append(len(self.all_vertex))
 
-                    self.all_vertex.append((liste[s2], s1))
+                    self.all_vertex.append((s2index, s1Index))
         
         for liste in same_y.values():
             for s1 in liste:
-                s2, mat=self._reach(s1, "left",  [s[1] for s in liste])
+                s1Index=s1
+                s1=self.all_points[s1]
+                s2, mat=self._reach(s1, "left",  [self.all_points[s][1] for s in liste])
                 if s2 != None:
                     for i,z in mat:
                         self.vertex_in_matrices[i][z].append(len(self.all_vertex))
@@ -198,12 +205,14 @@ class Shadow:
                     if s1[0][0]%self.room_height == 0 and s1[1][0]>0: self.vertex_in_matrices[s1[1][0]-1][s1[1][1]].append(len(self.all_vertex))
                     if s1[0][0]%self.room_height == self.room_height-self.tile_width and s1[1][0]<len(self.all_mat)-1: self.vertex_in_matrices[s1[1][0]+1][s1[1][1]].append(len(self.all_vertex))
 
-                    for s in (s1,liste[s2]):
+                    s2index=liste[s2]
+                    s2=self.all_points[liste[s2]]
+                    for s in (s1,s2):
                         if s[0][1]%self.room_width == 0 and s[1][1]>0: self.vertex_in_matrices[s[1][0]][s[1][1]-1].append(len(self.all_vertex))
                         if s[0][1]%self.room_width == self.room_width-self.tile_width and s[1][1]<len(self.all_mat[s[1][0]])-1: self.vertex_in_matrices[s[1][0]][s[1][1]+1].append(len(self.all_vertex))
                     
 
-                    self.all_vertex.append((liste[s2], s1))
+                    self.all_vertex.append((s2index, s1Index))
 
     def _get_matrix(self, co_map):
         co_map=co_map[::-1]
@@ -238,13 +247,14 @@ class Shadow:
                 for vertex_id in line:
                     vertex=self.all_vertex[vertex_id]
                     for sommet in vertex:
+                        sommet=self.all_points[sommet]
                         new_x=surface.get_width()/2 + sommet[0][1] - scroll_rect.x 
                         new_y=surface.get_height()/2 + sommet[0][0] - scroll_rect.y
                         pygame.draw.circle(surface, (255,0,0), (new_x, new_y), 5)
-                    new_x=surface.get_width()/2 + vertex[0][0][1] - scroll_rect.x 
-                    new_y=surface.get_height()/2 + vertex[0][0][0] - scroll_rect.y
-                    width=vertex[1][0][1]-vertex[0][0][1]
-                    height=vertex[1][0][0]-vertex[0][0][0]
+                    new_x=surface.get_width()/2 + self.all_points[vertex[0]][0][1] - scroll_rect.x 
+                    new_y=surface.get_height()/2 + self.all_points[vertex[0]][0][0] - scroll_rect.y
+                    width=self.all_points[vertex[1]][0][1]-self.all_points[vertex[0]][0][1]
+                    height=self.all_points[vertex[1]][0][0]-self.all_points[vertex[0]][0][0]
                     pygame.draw.line(surface, (255,0,0), (new_x, new_y), (new_x+width, new_y+height), 5)
 
     def _fill_lst(self, h, b, g, d, lst, x1, y1, x2, y2):
@@ -252,8 +262,8 @@ class Shadow:
             for line in mat[g:d]:
                 for vertex_id in line:
                     vertex=self.all_vertex[vertex_id]
-                    y3, x3= vertex[0][0]
-                    y4, x4= vertex[1][0]
+                    y3, x3= self.all_points[vertex[0]][0]
+                    y4, x4= self.all_points[vertex[1]][0]
                     P=lineLineIntersect((x1,y1), (x2,y2), (x3,y3), (x4,y4))
                     if P!=None and vertex_id not in lst:
                         lst.append(vertex_id)
@@ -268,21 +278,21 @@ class Shadow:
         
         
         /!\
-                faire un attribut coin pour qd ya pas tile et dc faire len<=3 pour ceux là
 
-                => caca peut generer des bugs
-
-
-
-                DUCOUP
-
-                se balader dans tt les points au debut et check cb de collision ils ont avec les segments de la mm map
+                - se balader dans tt les points au debut et check cb de collision ils ont avec les segments de la mm map
                 et ensuite check len(lst)<= ce chiffre
 
                                                     /!\
+                                                    
+                - generation lumiere : si pt est en extremite, chercher un autre point en extremite 
+                generer un polygone de 1 vers loppose du joueur de tt les segments entre les 2
+                et des 2 points hors map avec le +-0.0001 radian
+
+                - sinon faire la mm avec le segment proche        
         
-        
-        
+                - si bug creer point et segment ds la map qd certains depacent
+
+
         
         
         
@@ -314,16 +324,17 @@ class Shadow:
         h,b,g,d = self._get_matrix(co_map)
         x2, y2= head.center
 
-        for m in self.all_points[h:b]:
+        for m in self.all_points_matrices[h:b]:
             for l in m[g:d]:
                 for p in l:
+                    p=self.all_points[p]
                     new_x=surface.get_width()/2 + p[0][1] - scroll_rect.x
                     new_y=surface.get_height()/2 + p[0][0] - scroll_rect.y
                     pygame.draw.circle(surface, (0,0,255), (new_x, new_y), 5)
                     lst=[]
                     y1, x1= p[0]
                     self._fill_lst(h, b, g, d, lst, x1, y1, x2, y2)
-                    if len(lst)<=2:
+                    if len(lst)==2:
                         new_x=surface.get_width()/2 + x1 - scroll_rect.x 
                         new_y=surface.get_height()/2 + y1 - scroll_rect.y
                         pygame.draw.line(surface, (0,255,0), (new_x, new_y), (new_x+x2-x1, new_y+y2-y1), 5)
