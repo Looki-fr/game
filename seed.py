@@ -26,7 +26,7 @@
 #-----------------------------------------------------------------
 
 # BUG generation carre, pilier inconnu
-# 1691948406.90053
+#1691948406.90053
 
 #map stylé
 #seed=1691948484.45544
@@ -49,10 +49,15 @@
 # bug island too close on the right
 #seed=1692100607.7870162
 
+# map used for shadow
+# seed=1692181610.1185951
+
+# bug generation ile trop proche + une tile tt seul à son plafond
+#seed=1694958033.799719
+
 import time
 seed=time.time()
 
 with open("seed.txt", "w") as file:
     file.write(str(seed))
     
-seed=1692181610.1185951

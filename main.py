@@ -10,6 +10,14 @@ if __name__ == "__main__":
     game.run()
 
 
+# à faire mtn : optimisation
+# afficher que les tiles des salles visibles, calcul de coordonnee en fonction de lecran et utilisation de [x:x]
+
+
+
+
+
+
 # https://ncase.me/sight-and-light/
 # https://stackoverflow.com/questions/38239309/optimize-field-of-vision-algorithm-in-a-grid-tiled-map
 

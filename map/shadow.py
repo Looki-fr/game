@@ -1,6 +1,7 @@
 import random
 import pygame
 from seed import seed
+import math
 random.seed(seed)
 
 def lineLineIntersect(P0, P1, Q0, Q1):  
@@ -10,7 +11,7 @@ def lineLineIntersect(P0, P1, Q0, Q1):
     t = ((Q0[0]-P0[0]) * (Q1[1]-Q0[1]) + (Q0[1]-P0[1]) * (Q0[0]-Q1[0])) / d
     u = ((Q0[0]-P0[0]) * (P1[1]-P0[1]) + (Q0[1]-P0[1]) * (P0[0]-P1[0])) / d
     if 0 <= t <= 1 and 0 <= u <= 1:
-        return round(P1[0] * t + P0[0] * (1-t)), round(P1[1] * t + P0[1] * (1-t))
+        return (round(P1[0] * t + P0[0] * (1-t)), round(P1[1] * t + P0[1] * (1-t)))
     return None
 
 class Shadow:
@@ -26,12 +27,18 @@ class Shadow:
         self.all_points=[]
         self.all_points_matrices=[[[] for _ in range(room_width//tile_width)] for _ in range(room_height//tile_width)]
         self.vertex_in_matrices = [[[] for _ in range(room_width//tile_width)] for _ in range(room_height//tile_width)]
+        self.color_shadow=(51,50,61)
         self._fill_all_figures()
         for i in range(len(self.vertex_in_matrices)):
             for y in range(len(self.vertex_in_matrices[i])):
                 self.vertex_in_matrices[i][y]=list(set(self.vertex_in_matrices[i][y]))
                 self.all_points_matrices[i][y]=list(set(self.all_points_matrices[i][y]))
-
+                for i_,pt in enumerate(self.all_points_matrices[i][y]):
+                    cpt=0  
+                    for v in self.vertex_in_matrices[i][y]:
+                        v=self.all_vertex[v]
+                        if pt[0] in v: cpt+=1
+                    self.all_points_matrices[i][y][i_]=(pt[0], cpt)
 
     def has_neighboor(self,i,z,i_,z_,co):
         if i_+co[0]<0 and z_+co[1]<0:
@@ -61,12 +68,6 @@ class Shadow:
                 return (co, coos[c-1])
             elif not tile and c1 and c2 and c3 and not c4:
                 return (co, coos[c-1], coos[c-2])
-
-            # if c1 and c2 and c3 and c4:
-            #     if not self.has_neighboor(i,z,i_,z_,(1,-1)): return ((-1,0), (0,1))
-            #     if not self.has_neighboor(i,z,i_,z_,(-1,-1)): return ((0,1), (1,0))
-            #     if not self.has_neighboor(i,z,i_,z_,(-1,1)): return ((1,0), (0,-1))
-            #     if not self.has_neighboor(i,z,i_,z_,(1,1)): return ((-1,0), (0,-1))
         return ()
     
     def _create_sommet(self,s,i,z,i_,z_,tile, all_sommets):
@@ -118,11 +119,11 @@ class Shadow:
             same_x[sommet[0][1]]=same_x.get(sommet[0][1],[])+[len(self.all_points)]
             same_y[sommet[0][0]]=same_y.get(sommet[0][0],[])+[len(self.all_points)]
             self.all_points.append(sommet)
-            self.all_points_matrices[sommet[1][0]][sommet[1][1]].append(len(self.all_points)-1)
-            if sommet[0][0]%self.room_height == 0 and sommet[1][0]>0: self.all_points_matrices[sommet[1][0]-1][sommet[1][1]].append(len(self.all_points)-1)
-            if sommet[0][1]%self.room_width == 0 and sommet[1][1]>0: self.all_points_matrices[sommet[1][0]][sommet[1][1]-1].append(len(self.all_points)-1)
-            if sommet[0][0]%self.room_height == self.room_height-self.tile_width and sommet[1][0]<len(self.all_mat)-1: self.all_points_matrices[sommet[1][0]][sommet[1][1]-1].append(len(self.all_points)-1)
-            if sommet[0][1]%self.room_width == self.room_width-self.tile_width and sommet[1][1]<len(self.all_mat[sommet[1][0]])-1: self.all_points_matrices[sommet[1][0]][sommet[1][1]+1].append(len(self.all_points)-1)
+            self.all_points_matrices[sommet[1][0]][sommet[1][1]].append((len(self.all_points)-1, 2))
+            if sommet[0][0]%self.room_height == 0 and sommet[1][0]>0: self.all_points_matrices[sommet[1][0]-1][sommet[1][1]].append((len(self.all_points)-1, 2))
+            if sommet[0][1]%self.room_width == 0 and sommet[1][1]>0: self.all_points_matrices[sommet[1][0]][sommet[1][1]-1].append((len(self.all_points)-1, 2))
+            if sommet[0][0]%self.room_height == self.room_height-self.tile_width and sommet[1][0]<len(self.all_mat)-1: self.all_points_matrices[sommet[1][0]][sommet[1][1]-1].append((len(self.all_points)-1,2))
+            if sommet[0][1]%self.room_width == self.room_width-self.tile_width and sommet[1][1]<len(self.all_mat[sommet[1][0]])-1: self.all_points_matrices[sommet[1][0]][sommet[1][1]+1].append((len(self.all_points)-1,2))
 
         self._fill_vertex(same_x, same_y)
         
@@ -257,18 +258,19 @@ class Shadow:
                     height=self.all_points[vertex[1]][0][0]-self.all_points[vertex[0]][0][0]
                     pygame.draw.line(surface, (255,0,0), (new_x, new_y), (new_x+width, new_y+height), 5)
 
-    def _fill_lst(self, h, b, g, d, lst, x1, y1, x2, y2):
+    def _fill_lst(self, h, b, g, d, lst, x1, y1, x2, y2, max):
         for mat in self.vertex_in_matrices[h:b]:
             for line in mat[g:d]:
                 for vertex_id in line:
                     vertex=self.all_vertex[vertex_id]
                     y3, x3= self.all_points[vertex[0]][0]
                     y4, x4= self.all_points[vertex[1]][0]
-                    P=lineLineIntersect((x1,y1), (x2,y2), (x3,y3), (x4,y4))
+                    P =lineLineIntersect((x1,y1), (x2,y2), (x3,y3), (x4,y4))
                     if P!=None and vertex_id not in lst:
-                        lst.append(vertex_id)
-                        if len(lst)>3:
-                            return
+                        lst.append((vertex_id))
+                        if max and len(lst)>max:
+                            return 
+                    
 
     def draw_shadow(self, surface, scroll_rect, co_map, head):
         """
@@ -278,12 +280,13 @@ class Shadow:
         
         
         /!\
+        
+            
+                - TODO mettre tt les segments qui possedent 2 points visible par le joueur ds un tablea
+                et remplacer les test dangles pour le 2eme segment par chooper
 
-                - se balader dans tt les points au debut et check cb de collision ils ont avec les segments de la mm map
-                et ensuite check len(lst)<= ce chiffre
+                - OPTIMISATION pas test pour les segments qui otn leurs 2 points ds les autres segments avec len()==x
 
-                                                    /!\
-                                                    
                 - generation lumiere : si pt est en extremite, chercher un autre point en extremite 
                 generer un polygone de 1 vers loppose du joueur de tt les segments entre les 2
                 et des 2 points hors map avec le +-0.0001 radian
@@ -326,19 +329,55 @@ class Shadow:
 
         for m in self.all_points_matrices[h:b]:
             for l in m[g:d]:
-                for p in l:
-                    p=self.all_points[p]
+                for point in l:
+                    p=self.all_points[point[0]]
                     new_x=surface.get_width()/2 + p[0][1] - scroll_rect.x
                     new_y=surface.get_height()/2 + p[0][0] - scroll_rect.y
                     pygame.draw.circle(surface, (0,0,255), (new_x, new_y), 5)
                     lst=[]
                     y1, x1= p[0]
-                    self._fill_lst(h, b, g, d, lst, x1, y1, x2, y2)
-                    if len(lst)==2:
-                        new_x=surface.get_width()/2 + x1 - scroll_rect.x 
-                        new_y=surface.get_height()/2 + y1 - scroll_rect.y
-                        pygame.draw.line(surface, (0,255,0), (new_x, new_y), (new_x+x2-x1, new_y+y2-y1), 5)
-        
+                    self._fill_lst(h, b, g, d, lst, x1, y1, x2, y2, max=point[1])
+                    if len(lst)==point[1]:
+                        angle = math.atan2(y2-y1, x2-x1)
+                        bool_=[True, True]
+                        other_v=[]
+                        co_shadow_outside_map=()
+                        for i____,new_angle in enumerate([0.001, -0.001]):
+                            x5=round(x2-math.cos(angle+new_angle)*self.room_width)
+                            y5=round(y2-math.sin(angle+new_angle)*self.room_width)
+                            for v in lst:
+                                vv=self.all_vertex[v]
+                                p1=self.all_points[vv[0]][0][::-1]
+                                p2=self.all_points[vv[1]][0][::-1]
+                                P=lineLineIntersect((x2,y2), (x5,y5), p1, p2)
+                                if P!=None:
+                                    bool_[i____]=False
+                                    other_v.append((v, math.sqrt((P[0]-x2)**2+(P[1]-y2)**2)))
+                            if bool_[i____]:
+                                # x5=round(x2-math.cos(angle+new_angle/5)*self.room_width)
+                                # y5=round(y2-math.sin(angle+new_angle/5)*self.room_width)
+                                co_shadow_outside_map=((y5,x5))
+                                # new_x=surface.get_width()/2 + x2 - scroll_rect.x 
+                                # new_y=surface.get_height()/2 + y2 - scroll_rect.y
+                                # new_x2=surface.get_width()/2 + x5 - scroll_rect.x 
+                                # new_y2=surface.get_height()/2 + y5 - scroll_rect.y
+                                # pygame.draw.line(surface, (0,150,150), (new_x, new_y), (new_x2, new_y2), 5)
 
+                        if True in bool_:
+                            if other_v:
+                                other_v.sort(key=lambda x: x[1])
+                                vv=self.all_vertex[other_v[-1][0]]
+                                p1=self.all_points[vv[0]][0]
+                                p2=self.all_points[vv[1]][0]
+                                new_x=surface.get_width()/2 + p1[1] - scroll_rect.x 
+                                new_y=surface.get_height()/2 + p1[0] - scroll_rect.y
+                                new_x2=surface.get_width()/2 + p2[1] - scroll_rect.x 
+                                new_y2=surface.get_height()/2 + p2[0] - scroll_rect.y
+                                new_x3=surface.get_width()/2 + co_shadow_outside_map[1] - scroll_rect.x
+                                new_y3=surface.get_height()/2 + co_shadow_outside_map[0] - scroll_rect.y
 
+                                pygame.draw.polygon(surface, self.color_shadow,[(new_x, new_y), (new_x2, new_y2), (new_x3, new_y3), (new_x3, new_y3)])
+                            # new_x=surface.get_width()/2 + x1 - scroll_rect.x 
+                            # new_y=surface.get_height()/2 + y1 - scroll_rect.y
+                            # pygame.draw.line(surface, (0,255,0), (new_x, new_y), (new_x+x2-x1, new_y+y2-y1), 5)
         

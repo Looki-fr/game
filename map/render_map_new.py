@@ -753,7 +753,7 @@ class RenderMap:
             elif i<len(self.graphe) and z>0 and self.all_hills[i][z-1]==3 and not node[2] and node[3] and not node[0] and self.graphe[i+1][z][0] and self.graphe[i+1][z-1][2] and not self.graphe[i][z-1][2]:
                 self.all_hills[i][z]=4
             if after_island:
-                if self.all_island[i][z]!=None and not self.all_island[i][z] and node[3] and node[2] and not node[1] and not node[0] and not self.all_hills[i-1][z] == 7 and not self.all_hills[i+1][z] == 7:
+                if self.all_island[i][z]!=None and not self.all_island[i][z] and node[3] and node[2] and not node[1] and not node[0] and not self.all_hills[i-1][z] == 7 and not self.all_hills[i+1][z] == 7 and random.randint(1,2)==1:
                     self.all_hills[i][z]=7
                     self.all_island[i][z]=None
                 elif self.all_island[i][z]!=None and not self.all_island[i][z] and node[0] and node[1] and not node[3] and not node[2] and not self.all_hills[i][z-1] == 8 and not self.all_hills[i][z+1] == 8:

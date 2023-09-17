@@ -374,8 +374,8 @@ class Game:
         self.render.render(self.bg,self.minimap, self.blit.scroll_rect.x, self.blit.scroll_rect.y)
         all_coords_mobs_screen, all_coords_particule = self.blit.blit_group(self.bg, self.all_groups)
         self.render.render_shadow(self.bg, self.collision, self.player.coord_map, self.player.head,self.blit.scroll_rect)
-        self.render.shadow.draw_matrix(self.bg, self.blit.scroll_rect, self.player.coord_map)
-        self.render.shadow.draw_shadow(self.bg, self.blit.scroll_rect, self.player.coord_map, self.player.head)
+        #self.render.shadow.draw_matrix(self.bg, self.blit.scroll_rect, self.player.coord_map)
+        #self.render.shadow.draw_shadow(self.bg, self.blit.scroll_rect, self.player.coord_map, self.player.head)
         self.blit.blit_health_bar(self.bg, [tuple[0] for tuple in self.get_all_mob()])
         if not self.render.current_map_is_wave:
             self.bg.blit(self.minimap, (self.screen.get_width()-self.minimap.get_width(), 0))
