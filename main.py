@@ -10,28 +10,6 @@ if __name__ == "__main__":
     game.run()
 
 
-# à faire mtn : optimisation
-# afficher que les tiles des salles visibles, calcul de coordonnee en fonction de lecran et utilisation de [x:x]
-
-
-
-
-
-
-# https://ncase.me/sight-and-light/
-# https://stackoverflow.com/questions/38239309/optimize-field-of-vision-algorithm-in-a-grid-tiled-map
-
-# faire une ligne qui pars des yeux du joueur et qui va en bas
-# check les intersection avec tt les segments de tt les figures de la map
-# faire partir des rayons vers chaque sommet de segment et check leurs intersections avec les segments
-# si trop lent => diviser la map en pls parti ( en fonction tete joueur) et check les segments que avec 
-# les figures de la partir où il va, si figure ds pls parti alors le mettre dans les pls parti
-# => si un point ds parti alors mettre la figure dedans
-# check si point qui est intercepter existe dans la map d'a cote => si oui alors c pas une intersection (ex sol)
-# afficher tt les lignes de la tete du joueur jusqu'aux segments
-# https://ncase.me/sight-and-light/
-
-
 # TODO re organiser render map => too big and messy
 
 # TODO opti les + mat dans collision en faisanrt avec des brackets

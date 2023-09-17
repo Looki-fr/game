@@ -52,8 +52,11 @@
 # map used for shadow
 # seed=1692181610.1185951
 
-# bug generation ile trop proche + une tile tt seul à son plafond
+# BUG generation ile trop proche + une tile tt seul à son plafond
 #seed=1694958033.799719
+
+# BUG carre tt seul
+seed=1694958765.0083292
 
 import time
 seed=time.time()

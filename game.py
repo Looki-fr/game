@@ -56,12 +56,12 @@ class Game:
         self.add_mob_to_game(self.player, "solo_clavier")
         self.add_mob_to_game(self.player, "solo_clavier", group="wave")
         
-        self.collision=Collision(self.render.zoom, self.render.matrix_map) 
+        self.collision=Collision(self.render.zoom, self.render.map_generation.matrix_map) 
         self.blit = Blit(self.render.zoom, self.screen, self.bg, self.minimap, self.player.position[0], self.player.position[1])
         
 
         # i=1  
-        # for line in self.render.matrix_map:
+        # for line in self.render.map_generation.matrix_map:
         #     for map in line:
         #         if map != None:      
         #             self.add_mob_to_game(Crab(map["spawn_player"][0], map["spawn_player"][1]+1, self.directory, self.render.zoom, i, self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, handle_input_ralentissement), "bot")
@@ -70,14 +70,14 @@ class Game:
         self.all_controls={}
         self.all_controls["solo_clavier"]={"perso":[],"touches":[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP,pygame.K_DOWN, pygame.K_q, pygame.K_a, pygame.K_d, pygame.K_z, pygame.K_e]}  
     
-        for i,line in enumerate(self.render.matrix_map):
+        for i,line in enumerate(self.render.map_generation.matrix_map):
             for y, map in enumerate(line):
                 self.load_object_map(y, i)
     
     def load_object_map(self, c, d):
         pass
         #if self.render.type_objects_map[d][c]=="wave":
-            # coord=self.render.matrix_map[d][c]["object_map"]
+            # coord=self.render.map_generation.matrix_map[d][c]["object_map"]
             # self.group_object.add(Object_map(self.render.zoom, "wave", coord[0], coord[1], self.directory, 5, 8, "assets\\flag", "flag_", 2, 30, 5, c, d))
     
     def add_mob_to_game(self, mob, input, group="base"):
@@ -373,7 +373,6 @@ class Game:
         self.minimap.fill((200, 155,155))
         self.render.render(self.bg,self.minimap, self.blit.scroll_rect.x, self.blit.scroll_rect.y)
         all_coords_mobs_screen, all_coords_particule = self.blit.blit_group(self.bg, self.all_groups)
-        self.render.render_shadow(self.bg, self.collision, self.player.coord_map, self.player.head,self.blit.scroll_rect)
         #self.render.shadow.draw_matrix(self.bg, self.blit.scroll_rect, self.player.coord_map)
         #self.render.shadow.draw_shadow(self.bg, self.blit.scroll_rect, self.player.coord_map, self.player.head)
         self.blit.blit_health_bar(self.bg, [tuple[0] for tuple in self.get_all_mob()])
