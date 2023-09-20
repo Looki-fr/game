@@ -28,7 +28,7 @@ class RenderMap:
                 
         self._load_pictures_tiles()
                 
-        self.minimap_picture=pygame.image.load(f"{directory}\\assets\\tiled_maps\\minimap.png")
+        self.minimap_picture=pygame.image.load(f"{directory}\\assets\\minimap.png")
         self.minimap_picture=pygame.transform.scale(self.minimap_picture, (self.minimap_tile_width,self.minimap_tile_width))
 
         self.current_map_is_wave=False

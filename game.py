@@ -10,7 +10,7 @@ from mobs.collision import Collision
 from sprite.entities.dash_images import Dash_images
 from sprite.entities.particule import Particule
 from sprite.entities.dash_attack_effect import Dash_attack_image
-from map.render_map_new import RenderMap
+from map.render_map import RenderMap
 from blit import Blit
 
 class Game:
@@ -387,7 +387,6 @@ class Game:
         """boucle du jeu"""
 
         clock = pygame.time.Clock()
-        t1=time.time()
         self.running = True
         while self.running:
             self.player.is_mouving_x = False

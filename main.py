@@ -9,6 +9,7 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+# TODO : duplicated code in spawn island
 
 # BUG saut sur place bizarre qd saut edge into rester appuyer saut sur un trou de pilier
 
