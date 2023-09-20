@@ -76,7 +76,7 @@ class MapGeneration:
                     if not self.all_island[i][z]==None and (node[2] and (i==0 or not self.all_island[i-1][z]) and random.randint(1,5)==1) or (node[0] and node[1] and node[2] and node[3]) or (not node[0] and not node[1] and not node[2] and node[3] and random.randint(1,2)==1) or (node[2] and node[3] and random.randint(1,4)==1) or ((node[1] or node[0]) and node[2] and node[3] and random.randint(1,2)==1):
                         self.all_island[i][z]=True
 
-        seen_better_bottom=[]
+        seen_better_bottom=set()
         # spawn of object 
         for i,line in enumerate(self.graphe):
             for z,node in enumerate(line):
@@ -336,11 +336,11 @@ class MapGeneration:
 
     def manage_better_ceillings(self, i, z, node, seen_better_bottom):
         if node and (i,z) not in seen_better_bottom and not node[2]:
-            seen_better_bottom.append((i,z))
+            seen_better_bottom.add((i,z))
             temp=[(i,z)]
             z_=z
             while self.graphe[i][z_+1] and self.graphe[i][z_+1][0]:
-                seen_better_bottom.append((i,z_+1))
+                seen_better_bottom.add((i,z_+1))
                 temp.append((i,z_+1))
                 if self.graphe[i][z_+1][2]: break
                 z_+=1

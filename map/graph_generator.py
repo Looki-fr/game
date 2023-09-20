@@ -28,7 +28,7 @@ class Graph:
     def get_shortest_path(self,start, end, mat):
             """simple graphe shortest path function"""
             pile=[[start]]
-            vu=[start]
+            vu=set(start)
             while len(pile)>0:
 
                 current_path=pile.pop(0)
@@ -44,7 +44,7 @@ class Graph:
                         if node == end:
                             return current_path+[node]
                         if node not in vu:
-                            vu.append(node)
+                            vu.add(node)
                             pile.append(current_path+[node])
             return []
 
@@ -144,14 +144,14 @@ class Graph:
         # 2 remove all other path
         # 3 print pour voir
 
-        vu=[path[0]]
+        vu=set(path[0])
         while (len(path))>0:
             node = path.pop()
             bool=True
             tab=self.get_all_neighboors(node[0], node[1], mat, vu)
             if len(tab) > 0 :
                 n = random.choice(tab)
-                vu.append(n)
+                vu.add(n)
                 for other_node in tab:
                     if other_node != n:
                         self.remove_path(node, other_node, mat)

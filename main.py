@@ -10,29 +10,11 @@ if __name__ == "__main__":
     game.run()
 
 
-# TODO re organiser render map => too big and messy
-
-# TODO opti les + mat dans collision en faisanrt avec des brackets
-
-# TODO vision : savoir si un wall collide un ground ou un ceilling et si on est en bas
-# on pernds en compte que ceux qui collide un ceilling
-
-# TODO vision : faire avec ceillings et ground et murs
-
-# clean code, trp de boolean dans collision, var rect par exemple dans collide wall
-
 # BUG saut sur place bizarre qd saut edge into rester appuyer saut sur un trou de pilier
 
-# TODO petite construction en bois aux extremités des piliers
-
-# TODO couper vision => dessiner polygone où on voit pas : rajouter des autres points de vision dans les salles
-
-# TODO faire salle enfermé par plateforme à sauter
-
-# TODO cacher salles que l'on voit pas à travers les musrs + polygone pour les salles en cours
+# TODO add constructions en bois
 
 # TODO add plateforme / arbre / rocher / bateau ....
-
 
 # TODO spawn plateforme
 
