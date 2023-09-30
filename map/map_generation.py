@@ -387,7 +387,10 @@ class MapGeneration:
                     else:start_height= self.gen_island_start_height//2+random.randint(-self.gen_island_additionnal_height, self.gen_island_additionnal_height)
                     if self.all_hills[i][z]==4:start+=self.room_width//self.tile_width//10
                     elif self.all_hills[i][z+1]==3:end-=self.room_width//self.tile_width//10
-                    
+                    if not self.all_hills[i][z] in (50,60) and i>0 and self.all_hills[i-1][z]==7: start_height=max(self.gen_island_start_height, start_height-self.room_height//self.tile_width//5)
+                    if not self.all_hills[i][z] in (50,60) and i<len(self.all_hills)-1 and self.all_hills[i+1][z]==7: start_height=min(len(self.all_mat[i][z])-1-self.gen_max_height-6, start_height+self.room_height//self.tile_width//5)
+                    if not self.all_hills[i][z] in (50,60) and z>0 and self.all_hills[i][z-1]==8: start, end=start+self.room_width//self.tile_width//6, end+self.room_width//self.tile_width//6
+                    if not self.all_hills[i][z] in (50,60) and z<len(self.all_hills[i])-1 and self.all_hills[i][z+1]==8: start, end=start-self.room_width//self.tile_width//6, end-self.room_width//self.tile_width//6
                     self._generate_relief_ground(start if start >=0 else 0, len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True)
                     self._generate_relief_ground(0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z+1], self.all_mat[i][z+1], self.gen_island_additionnal_height, start_height=start_height, island=True)
                     self._better_bottom_ceilling(-start_height-1, start, [(i,z), (i,z+1)])
@@ -425,10 +428,17 @@ class MapGeneration:
                     elif self.all_hills[i][z]==3:
                         end-=self.room_width//self.tile_width//10
                         if end-start<self.gen_island_min_width: start -=self.room_width//self.tile_width//10
-                    if not self.all_hills[i][z] in (50,60) and i>0 and self.all_hills[i-1][z]==7: start_height=max(self.gen_island_start_height, start_height-4)
-                    if not self.all_hills[i][z] in (50,60) and i<len(self.all_hills)-1 and self.all_hills[i+1][z]==7: start_height=min(len(self.all_mat[i][z])-1-self.gen_max_height-6, start_height+4)
-                    if not self.all_hills[i][z] in (50,60) and z>0 and self.all_hills[i][z-1]==8: start, end=start+5, end+5
-                    if not self.all_hills[i][z] in (50,60) and z<len(self.all_hills[i])-1 and self.all_hills[i][z+1]==8: start, end=start-5, end-5
+                    if not self.all_hills[i][z] in (50,60) and i>0 and self.all_hills[i-1][z]==7: start_height=max(self.gen_island_start_height, start_height-self.room_height//self.tile_width//5)
+                    if not self.all_hills[i][z] in (50,60) and i<len(self.all_hills)-1 and self.all_hills[i+1][z]==7: start_height=min(len(self.all_mat[i][z])-1-self.gen_max_height-6, start_height+self.room_height//self.tile_width//5)
+                    if not self.all_hills[i][z] in (50,60) and z>0 and self.all_hills[i][z-1]==8: start, end=start+self.room_width//self.tile_width//6, end+self.room_width//self.tile_width//6
+                    if not self.all_hills[i][z] in (50,60) and z<len(self.all_hills[i])-1 and self.all_hills[i][z+1]==8: start, end=start-self.room_width//self.tile_width//6, end-self.room_width//self.tile_width//6
+                    if self.graphe[i][z][2] and start_height>=(2/3)*(self.room_height//self.tile_width):
+                        if self.graphe[i][z][1] and end>=len(self.all_mat[i][z][0])-4:
+                            end-=3
+                            start-=3
+                        if self.graphe[i][z][0] and start <= 3:
+                            start+=3
+                            end+=3
                     self._generate_relief_ground(start if start >=0 else 0, end if end <= len(self.all_mat[i][z][0])-1 else len(self.all_mat[i][z][0])-1, self.graphe[i][z], self.all_mat[i][z], self.gen_island_additionnal_height, start_height=start_height, island=True, complete=complete)
                     self._better_bottom_ceilling(-start_height-1, start, [(i,z)], island=island)
             

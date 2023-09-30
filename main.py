@@ -9,8 +9,6 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# TODO : duplicated code in spawn island
-
 # BUG saut sur place bizarre qd saut edge into rester appuyer saut sur un trou de pilier
 
 # TODO add constructions en bois
@@ -30,6 +28,8 @@ if __name__ == "__main__":
 
 
 # TODO : faire spawn crab à chaque milieu de map si ya pas bas
+
+# TODO rebuild AI mob + faire en sorte qu'il focus que qd ils sont dans notre salle ou les salles lies à cotes
 
 # BUG  crab coin qd on est en bas il arete davancer
 
