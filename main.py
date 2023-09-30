@@ -26,6 +26,7 @@ if __name__ == "__main__":
 # idee : diviser la map en x troncons et voir si conditions alors mettre la plateforme, entre 2 troncons aussi 
 
 
+# TODO semi island 1 ou 2 mais pas les 2 qd bas à cote
 
 # TODO : faire spawn crab à chaque milieu de map si ya pas bas
 

@@ -21,4 +21,5 @@
 #     file.write(str(seed))
     
 # BUG gauche pique tt seul 
+# BUG carre tt seul mais à droite de lile mm endroit
 seed=1696082049.355008

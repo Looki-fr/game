@@ -173,6 +173,7 @@ class MapGeneration:
                     if mat[z][y*(self.gen_reboucher_mur_max_height+2)+1]==0: mat[z][y*(self.gen_reboucher_mur_max_height+2)+1]=texture
 
     def generate_relief(self, i, z, node):
+            
         # matrix used after for objects and images
         mat = [[0 for _ in range(self.room_width//self.tile_width)] for _ in range(self.room_height//self.tile_width)]
 
@@ -250,8 +251,10 @@ class MapGeneration:
             self.gen_current_height, self.gen_current_width = old_height, old_width    
 
         # continuing relief when down and (right or left)
-        if node[3] and node[0] and not (node[2] and self.graphe[i+1][z] and self.graphe[i+1][z][0] and self.graphe[i][z-1] and self.graphe[i][z-1][3]) and not (i<len(self.graphe)-1 and z>0 and node[0] and node[3] and self.graphe[i][z-1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]  and not self.graphe[i+1][z-1][1]):
 
+        # CARFUL : jai enlever :  and not (i<len(self.graphe)-1 and z>0 and node[0] and node[3] and self.graphe[i][z-1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]  and not self.graphe[i+1][z-1][1])
+
+        if node[3] and node[0] and not (node[2] and self.graphe[i+1][z] and self.graphe[i+1][z][0] and self.graphe[i][z-1] and self.graphe[i][z-1][3]):
             if self.gen_current_width==0:
                 
                 self._change_height_ground()
@@ -294,7 +297,7 @@ class MapGeneration:
             self._generate_relief_ground(random.randint(self.gen_falaise_min_width, self.gen_falaise_max_width), len(mat[0])-1, node, mat)
 
         self.all_mat[i][z]=mat[::]
-    
+
     def spawn_square_map(self, i, z):
         self.all_mat[i+1][z][0][-1]=0
         self.all_mat[i+1][z+1][0][0]=0
