@@ -52,6 +52,7 @@ class MOB(pygame.sprite.Sprite):
         self.speed = self.origin_speed_run
         self.is_mouving_x = False
         self.max_distance_collide=15
+        self.increment_left_right=25
         
         # ralentissement
         self.cooldown_ralentissement = 0.2
@@ -224,7 +225,11 @@ class MOB(pygame.sprite.Sprite):
             if self.compteur_pary < self.compteur_pary_max:
                 self.compteur_pary+=self.increment_pary
                 self.position[0] += self.speed *0.8* (self.compteur_pary_max/self.compteur_pary)* self.zoom * self.speed_dt *abs(self.motion[0])    
+
         if pieds_sur_sol:
+            if self.action_image in ["crouch", "run", "idle"] and self.direction == "left":
+                self.position[0]+=self.increment_left_right*self.zoom
+
             if not self.is_rolling and self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
                 self.change_direction("run","right") 
 
@@ -258,6 +263,8 @@ class MOB(pygame.sprite.Sprite):
                 self.compteur_pary+=self.increment_pary
                 self.position[0] -= self.speed *0.8* (self.compteur_pary_max/self.compteur_pary)* self.zoom * self.speed_dt *abs(self.motion[0])    
         if pieds_sur_sol:
+            if self.action_image in ["crouch", "run", "idle"] and self.direction == "right":
+                self.position[0]-=self.increment_left_right*self.zoom
             if not self.is_rolling and self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
                 self.change_direction("run","left") 
 
