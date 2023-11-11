@@ -135,7 +135,7 @@ class MapGeneration:
                     self.all_hills[i][z]=8
                     self.all_island[i][z]=None
 
-    def _spawn_hills_7_8(self,mat, horizontal):
+    def _spawn_hills_7_8(self,mat, horizontal, debug=False):
         texture=3
         if horizontal:
             choice=random.randint(1,2)
@@ -162,7 +162,7 @@ class MapGeneration:
                 last=len(mat)-2-self.gen_reboucher_mur_max_height
                 cpt=0
                 for u in range(len(mat)-1, -1,-1):
-                    if mat[u][y*(self.gen_reboucher_mur_max_height+2)]==0 and mat[u][y*(self.gen_reboucher_mur_max_height+2)+1]==0: cpt+=1
+                    if mat[u][y*(self.gen_reboucher_mur_max_height+2)-2]==0 and mat[u][y*(self.gen_reboucher_mur_max_height+2)-1]==0 and mat[u][y*(self.gen_reboucher_mur_max_height+2)]==0 and mat[u][y*(self.gen_reboucher_mur_max_height+2)+1]==0 and mat[u][y*(self.gen_reboucher_mur_max_height+2)+2]==0 and mat[u][y*(self.gen_reboucher_mur_max_height+2)+3]==0: cpt+=1
                     if cpt==self.gen_reboucher_mur_max_height: 
                         last=u
                         break
@@ -187,7 +187,6 @@ class MapGeneration:
                 if not node[2]: mat[0][i_]=1
                 if not node[3]: mat[-1][i_]=1
 
-        
         if node[0] and node[2] : 
             mat[0][0]=1
         if node[0] and node[3] :
@@ -236,7 +235,7 @@ class MapGeneration:
             self.gen_current_height, self.gen_current_width = len(mat)-1, 0
             self._generate_relief_ground(0, tmp, node, mat, hill=5)
             self.gen_current_height, self.gen_current_width = 0, 0
-        
+
         # # generation of the bottom of the falaise
         if self.all_hills[i][z]==60:
             tmp=len(mat[i])
@@ -287,7 +286,6 @@ class MapGeneration:
             for tmp in range(len(mat)-1):
                 mat[tmp][1]=1
             self.gen_current_height, self.gen_current_width = old_height, old_width 
-        
 
         # generation of the ground
         if self.all_hills[i][z]==6:
