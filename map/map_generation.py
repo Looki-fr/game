@@ -301,10 +301,11 @@ class MapGeneration:
             self.all_mat[i][z][-i_][-1]=0
             self.all_mat[i][z+1][-i_][0]=0
 
-        self.all_island[i][z]=None
-        self.all_island[i][z+1]=None
-        self.all_island[i+1][z]=None
-        self.all_island[i+1][z+1]=None
+        if random.radint(1,2)==1:
+            self.all_island[i][z]=None
+            self.all_island[i][z+1]=None
+            self.all_island[i+1][z]=None
+            self.all_island[i+1][z+1]=None
 
         self.all_hills[i][z]=None
         self.all_hills[i][z+1]=None
