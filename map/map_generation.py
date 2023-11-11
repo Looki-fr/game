@@ -206,9 +206,21 @@ class MapGeneration:
             if z<len(self.graphe[i])-1:right_node=self.graphe[i][z+1]
             else:right_node=None
             self._generate_relief_ground(0, (self.room_width//self.tile_width)-1, node, mat, noderight=right_node)
-            
         
-        
+        # continuing relief when down and (right or left)
+
+        # CARFUL : jai enlever :  and not (i<len(self.graphe)-1 and z>0 and node[0] and node[3] and self.graphe[i][z-1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]  and not self.graphe[i+1][z-1][1])
+
+        if node[3] and node[0] and not (node[2] and self.graphe[i+1][z] and self.graphe[i+1][z][0] and self.graphe[i][z-1] and self.graphe[i][z-1][3]) :
+            if self.gen_current_width==0:
+                self._change_height_ground()
+                # was not here before but seems logical
+                self.gen_current_width=random.randint(self.gen_min_width, self.gen_max_width)-1
+            for y in range(self.room_height//self.tile_width-self.gen_current_height-1, self.room_height//self.tile_width):
+                mat[y][0]=1
+                if i<len(mat)-1 and z>0 and self.graphe[i][z-1][3] and not self.graphe[i+1][z][0] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]:
+                    mat[y][1]=1
+
         # generation of the ground
         if self.all_hills[i][z]==5:
             #self.re_initialize_gen_var()
@@ -235,7 +247,7 @@ class MapGeneration:
             self.gen_current_height, self.gen_current_width = 0, 0
             self._generate_relief_ground(tmp, len(mat[0])-1, node, mat, hill=6)
             self.re_initialize_gen_var()
-                        
+
         # hills generation from left to right
         if self.all_hills[i][z]==1:
             self.gen_current_width=0
@@ -249,21 +261,6 @@ class MapGeneration:
             for tmp in range(len(mat)-1):
                 mat[tmp][1]=1
             self.gen_current_height, self.gen_current_width = old_height, old_width    
-
-        # continuing relief when down and (right or left)
-
-        # CARFUL : jai enlever :  and not (i<len(self.graphe)-1 and z>0 and node[0] and node[3] and self.graphe[i][z-1][3] and self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]  and not self.graphe[i+1][z-1][1])
-
-        if node[3] and node[0] and not (node[2] and self.graphe[i+1][z] and self.graphe[i+1][z][0] and self.graphe[i][z-1] and self.graphe[i][z-1][3]):
-            if self.gen_current_width==0:
-                
-                self._change_height_ground()
-                # was not here before but seems logical
-                self.gen_current_width=random.randint(self.gen_min_width, self.gen_max_width)-1
-            for y in range(self.room_height//self.tile_width-self.gen_current_height-1, self.room_height//self.tile_width):
-                mat[y][0]=1
-                if i<len(mat)-1 and z>0 and self.graphe[i][z-1][3] and not self.graphe[i+1][z][0] and not self.graphe[i+1][z][3] and not self.graphe[i+1][z-1][3]:
-                    mat[y][1]=1
 
         if not self.all_hills[i][z] == 6 and node[3] and node[1] and not (node[2] and self.graphe[i+1][z] and self.graphe[i+1][z][1] and self.graphe[i][z+1] and self.graphe[i][z+1][3]):
             # not reset when falaise gauche
