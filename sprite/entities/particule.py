@@ -28,6 +28,9 @@ class LittleParticle(pygame.sprite.Sprite):
         self.speedx = math.cos(alpha)*self.zoom*self.speed_dt
         self.speedy = math.sin(alpha)*self.zoom*self.speed_dt
             
+    def update_timers(self, dt):
+        self.t1 += dt        
+
     def update(self):
         self.position[0] += self.speedx
         self.position[1] -= self.speedy

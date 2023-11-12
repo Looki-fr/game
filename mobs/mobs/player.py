@@ -79,7 +79,7 @@ class Player(MOB):
         self.direction_jump_edge = ''
         self.increment_jump_edge = 0.25
         self.jump_edge_pieds = False
-        self.timer_jump_edge_cogne=0
+        self.timers["timer_jump_edge_cogne"]=0
         self.cooldown_jump_edge_cogne=0.5
         
         # edge grab / idle
@@ -111,9 +111,9 @@ class Player(MOB):
         self.Dash_images = Dash_images
         self.dash_cooldown_image = 0.15
         self.coord_debut_dash = [-999,-999]
-        self.timer_debut_dash_grabedge=0
+        self.timers["timer_debut_dash_grabedge"]=0
         self.cooldown_not_collide_dash=0.01
-        self.timer_dash=0
+        self.timers["timer_dash"]=0
         self.cooldown_dash=2
     
         # ground slide
@@ -126,7 +126,7 @@ class Player(MOB):
         self.speed_slide_ground = 0
         self.slide_ground_direction_x = ""
         self.cooldown_slide_ground = 0.4
-        self.timer_cooldown_slide_ground = 0
+        self.timers["timer_cooldown_slide_ground"] = 0
 
         # roll
         self.is_rolling = False
@@ -138,7 +138,7 @@ class Player(MOB):
         self.speed_roll = 0
         self.roll_direction_x = ""
         self.cooldown_roll = 1
-        self.timer_roll = 0
+        self.timers["timer_roll"] = 0
         
         #attack
         self.attack_damage={}
@@ -150,13 +150,13 @@ class Player(MOB):
         self.has_air_attack = True
         self.is_attacking = False
         self.a_attaquer2=False
-        self.timer_attack=0
+        self.timers["timer_attack"]=0
         self.cooldown_attack=1
         self.compteur_attack=0
         self.increment_attack=1
         self.compteur_attack_max=5
         self.direction_attack=""
-        self.timer_attack_aerienne=0
+        self.timers["timer_attack_aerienne"]=0
         self.cooldown_attack_aerienne=0.5
     
         # pary
@@ -165,20 +165,20 @@ class Player(MOB):
         self.increment_pary=1
         self.compteur_pary_max=5
         self.direction_pary=""
-        self.timer_pary=0
+        self.timers["timer_pary"]=0
         self.cooldown_pary=0.5
     
 
         # dash attack
         self.is_dashing_attacking = False
-        self.timer_dash_attack=0
+        self.timers["timer_dash_attack"]=0
         self.cooldown_dash_attack=2
         self.compteur_dash_attack_min=-5
         self.compteur_dash_attack=self.compteur_dash_attack_min
         self.increment_dash_attack=0.082
         self.Dash_attack_image=Dash_attack_image
         self.dash_attack_image_added=False
-        self.timer_debut_dash_attack_grabedge=0
+        self.timers["timer_debut_dash_attack_grabedge"]=0
         self.cooldown_not_collide_dash_attack=0.1
         self.group_dash_attack_image_player = group_dash_attack_image_player
         
@@ -225,16 +225,16 @@ class Player(MOB):
         self.is_parying = True
         self.change_direction("pary", self.direction)
         self.direction_attack=self.direction
-        self.timer_pary=time.time()
+        self.timers["timer_pary"]=time.time()
         
     def debut_attack(self, air=False):
         self.is_attacking = True
         self.a_attaquer2=False
-        self.timer_attack=time.time()
+        self.timers["timer_attack"]=time.time()
         self.direction_attack=self.direction
         self.compteur_attack=0
         if air:
-            self.timer_attack_aerienne=time.time()
+            self.timers["timer_attack_aerienne"]=time.time()
             self.change_direction("air attack", self.direction)
         else :
             self.change_direction("attack1", self.direction)
@@ -291,7 +291,7 @@ class Player(MOB):
             self.change_direction("up_to_fall", self.direction)  
         else:
             self.change_direction("fall", self.direction)  
-        self.timer_dash_attack=time.time()
+        self.timers["timer_dash_attack"]=time.time()
         if self.current_image==self.images[self.weapon]["dash_attack"]["nbr_image"]:
             self.speed=self.max_speed_run
             self.is_mouving_x=True
@@ -340,7 +340,7 @@ class Player(MOB):
         self.compteur_roll = self.compteur_roll_min
         # the player was running before the slide so he should run after
         self.change_direction("run", self.direction)
-        self.timer_roll = time.time()
+        self.timers["timer_roll"] = time.time()
 
         if self.is_falling:
             if "up_to_fall" in self.actions :self.change_direction("up_to_fall", self.direction)
@@ -379,7 +379,7 @@ class Player(MOB):
         self.slide_ground_direction_x = ""
         self.compteur_slide_ground = self.compteur_slide_ground_min
             
-        self.timer_cooldown_slide_ground = time.time()
+        self.timers["timer_cooldown_slide_ground"] = time.time()
         self.update_action()
         
     def debut_grab_edge(self, head_only=False):
@@ -396,7 +396,7 @@ class Player(MOB):
         self.change_direction("Wall_slide", self.direction)
 
     def sliding(self):
-        if self.action_image != "Wall_slide" and time.time() - self.timer_jump_edge_cogne < self.cooldown_jump_edge_cogne:
+        if self.action_image != "Wall_slide" and time.time() - self.timers["timer_jump_edge_cogne"] < self.cooldown_jump_edge_cogne:
             self.debut_wallslide()
         if self.is_sliding:
             self.position[1] += self.speed_sliding * self.zoom * self.speed_dt
@@ -467,7 +467,7 @@ class Player(MOB):
     def fin_dash(self):
         """reinitialisation des variables du dash"""
         # sinon le joueur va sauter immediatement en arrivant sur une plateforme apres un dash
-        self.timer_cooldown_next_jump = time.time()
+        self.timers["timer_cooldown_next_jump"] = time.time()
         self.coord_debut_dash = [-999,-999]
         self.a_dash = True
         self.is_dashing = False
@@ -482,7 +482,7 @@ class Player(MOB):
         self.image2_dash = False
         self.image3_dash = False
         self.image4_dash = False
-        self.timer_dash=time.time()
+        self.timers["timer_dash"]=time.time()
         self.update_action()
 
     def distance_dash_y(self):
@@ -557,7 +557,7 @@ class Player(MOB):
     def fin_saut_edge(self, cogne=False):
         """reinitialisation des vvariables du saut"""
         # sinon le joueur va sauter immediatement en arrivant sur une plateforme ou sur le sol apres un saut
-        if cogne : self.timer_jump_edge_cogne = time.time()
+        if cogne : self.timers["timer_jump_edge_cogne"] = time.time()
         self.jump_edge_pieds = False
         self.a_sauter = True
         self.is_jumping_edge = False
@@ -565,7 +565,7 @@ class Player(MOB):
         self.coord_debut_jump = [-999,-999]
         self.direction_jump_edge = ''
         self.compteur_jump_edge_max = self.original_compteur_jump_edge_max
-        self.timer_cooldown_next_jump=time.time()
+        self.timers["timer_cooldown_next_jump"]=time.time()
         self.update_action()
     
     def update_speed_jump_edge(self):

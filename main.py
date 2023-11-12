@@ -9,6 +9,21 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+# EN COURS : 
+# menu : cf discord pour orga
+# BUG problématique du temps : faire une foncdaqtion qui donne le temps et garder en mémoire tt les temps perdus dans le menu
+# ATTENTION : bug cooldown qd yaura des botzs
+
+
+
+
+
+
+
+
+
+
+
 # BUG saut sur place bizarre qd saut edge into rester appuyer saut sur un trou de pilier
 
 # TODO add constructions en bois

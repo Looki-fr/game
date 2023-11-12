@@ -26,12 +26,9 @@
 # BUG en bas à droite saut diagonal dans l'ile on passe a travers qd don re saute => car tete est trop enfonce elle collide pas plafond ???
 # seed=1692090527.498834
 
-# BUG île ds hill 8
-seed = 1699725936.069592
+import time
+seed=time.time()
 
-# import time
-# seed=time.time()
-
-# with open("seed.txt", "w") as file:
-#     file.write(str(seed))
+with open("seed.txt", "w") as file:
+    file.write(str(seed))
     

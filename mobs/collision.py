@@ -67,7 +67,7 @@ class Collision:
     def joueur_sur_sol(self, mob, platform_only=False, dash=False, change_pos=True, chest=False, get_pos=None):
         """renvoie True si les pieds du joueur est sur une plateforme ou sur le sol.
         De plus, place la coordonee en y du joueur juste au dessus de la plateforme / du sol"""
-        passage_a_travers = time.time() - mob.t1_passage_a_travers_plateforme < mob.cooldown_passage_a_travers_plateforme
+        passage_a_travers = time.time() - mob.timers["t1_passage_a_travers_plateforme"] < mob.cooldown_passage_a_travers_plateforme
         bool=False
         gd=None
         if get_pos!=None: pos=None

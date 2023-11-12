@@ -12,18 +12,22 @@ from sprite.entities.particule import Particule
 from sprite.entities.dash_attack_effect import Dash_attack_image
 from map.render_map import RenderMap
 from blit import Blit
+from menu.menu import Menu
 
 class Game:
     def __init__(self):
         self.directory = os.path.dirname(os.path.realpath(__file__))
         
         info_screen = pygame.display.Info()
-        self.screen = pygame.display.set_mode((round(info_screen.current_w*1),round(info_screen.current_h*1)))
+        self.screen = pygame.display.set_mode((round(info_screen.current_w*1),round(info_screen.current_h*0.8)))
         self.screen.fill((0,0,0))       
         self.bg = pygame.Surface((self.screen.get_width(), self.screen.get_height()), flags=SRCALPHA)
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
         self.dt = 1/30
-        
+
+        self.menu = Menu(self.directory, self.screen, self.update_ecran, self.update_timers)
+        self.pressed_escape=False
+
         self.all_mobs=[]
         self.all_mobs_wave=[]
         self.group = pygame.sprite.Group()
@@ -117,50 +121,66 @@ class Game:
                 self.add_mob_to_game(Crab(coord[0], coord[1]+1, self.directory, self.render.zoom, str(i+1), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, handle_input_ralentissement), "bot", group="wave")  
             self.all_groups.remove(self.group)
             self.all_groups.insert(1, self.group_wave)
-        
+
     def handle_input(self):
         """agit en fonction des touches appuyes par le joueur"""
              
         pressed = pygame.key.get_pressed()
         self.all_controls["solo_clavier"]["perso"]=[]
         perso_manette=[]
+        
         if pressed:
-            for mob in self.get_all_mob():
-                if not "dying" in mob[0].action_image:
-                    #le joueur joue au clavier
-                    # elif player[1]=="manette":
-                    #     perso_manette.append(player[0])
-                    if mob[1] in self.all_controls.keys():
-                        self.all_controls[mob[1]]["perso"].append(mob[0])
-                    elif mob[1]=="manette":
-                        perso_manette.append(mob[0])
-                    elif mob[1]=="bot":
-                        if mob[0].bot.get_distance_target()<750*self.render.zoom:
-                            mob[0].bot.make_mouvement(self.collision)
-                        else:
-                            mob[0].reset_actions()
-            
-            for control in self.all_controls.values():
-                down=pressed[control["touches"][3]]
-                left=pressed[control["touches"][0]]
-                right=pressed[control["touches"][1]]
-                up=pressed[control["touches"][2]]
-                if left: pressed_left(control["perso"], self.collision)
-                elif right: pressed_right(control["perso"], self.collision)
-                if not left and not right:
-                    for mob in control["perso"]:
-                        handle_input_ralentissement(mob, self.collision)
-                if up:pressed_up(control["perso"], down, left, right, self.pressed_up_bool, self.collision, self.render.zoom)
-                if down:pressed_down(control["perso"])
-                if pressed[control["touches"][4]]:pressed_dash(control["perso"], left, right, pressed[control["touches"][3]], pressed[control["touches"][2]], self.collision.joueur_sur_sol, self.collision, self.pressed_dash_bool)
-                else: self.pressed_dash_bool[0]=False
-                if pressed[control["touches"][5]]:pressed_attack(control["perso"])
-                if pressed[control["touches"][6]]:pressed_heavy_attack(control["perso"], self.collision, left, right)     
-                if pressed[control["touches"][7]]:pressed_pary(control["perso"], left, right, self.collision)                                                    
-                if pressed[control["touches"][8]]: 
-                    id = pressed_interact(control["perso"], self.group_object)
-                    if id !=None:
-                        self.interact_object_map(id)
+            if pressed[pygame.K_ESCAPE]:
+                if not self.pressed_escape:
+                    if self.menu.is_running:
+                        self.menu.end()
+                    else:
+                        self.menu.start()
+
+                    self.pressed_escape=True
+            else:
+                self.pressed_escape=False
+
+            if self.menu.is_running:
+                self.menu._handle_input(pressed)
+
+            if not self.menu.is_running:
+                for mob in self.get_all_mob():
+                    if not "dying" in mob[0].action_image:
+                        #le joueur joue au clavier
+                        # elif player[1]=="manette":
+                        #     perso_manette.append(player[0])
+                        if mob[1] in self.all_controls.keys():
+                            self.all_controls[mob[1]]["perso"].append(mob[0])
+                        elif mob[1]=="manette":
+                            perso_manette.append(mob[0])
+                        elif mob[1]=="bot":
+                            if mob[0].bot.get_distance_target()<750*self.render.zoom:
+                                mob[0].bot.make_mouvement(self.collision)
+                            else:
+                                mob[0].reset_actions()
+                
+                for control in self.all_controls.values():
+                    down=pressed[control["touches"][3]]
+                    left=pressed[control["touches"][0]]
+                    right=pressed[control["touches"][1]]
+                    up=pressed[control["touches"][2]]
+                    if left: pressed_left(control["perso"], self.collision)
+                    elif right: pressed_right(control["perso"], self.collision)
+                    if not left and not right:
+                        for mob in control["perso"]:
+                            handle_input_ralentissement(mob, self.collision)
+                    if up:pressed_up(control["perso"], down, left, right, self.pressed_up_bool, self.collision, self.render.zoom)
+                    if down:pressed_down(control["perso"])
+                    if pressed[control["touches"][4]]:pressed_dash(control["perso"], left, right, pressed[control["touches"][3]], pressed[control["touches"][2]], self.collision.joueur_sur_sol, self.collision, self.pressed_dash_bool)
+                    else: self.pressed_dash_bool[0]=False
+                    if pressed[control["touches"][5]]:pressed_attack(control["perso"])
+                    if pressed[control["touches"][6]]:pressed_heavy_attack(control["perso"], self.collision, left, right)     
+                    if pressed[control["touches"][7]]:pressed_pary(control["perso"], left, right, self.collision)                                                    
+                    if pressed[control["touches"][8]]: 
+                        id = pressed_interact(control["perso"], self.group_object)
+                        if id !=None:
+                            self.interact_object_map(id)
                 
         # joystick :
             # down : self.motion[1]>0.1:
@@ -171,32 +191,33 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            if event.type == JOYAXISMOTION:
-                if event.axis < 2:
-                    self.motion[event.axis] = event.value
-                    if abs(self.motion[0]) < 0.01:
-                        self.motion[0] = 0
-                    if abs(self.motion[1]) < 0.01:
-                        self.motion[1] = 0
-            if event.type == JOYBUTTONDOWN or event.type==JOYBUTTONUP:
-                if event.button == 0:
-                    down,left,right=False,False,False
-                    if self.motion[0]<-0.2: left=True
-                    if self.motion[0]>0.2: right=True
-                    if self.motion[1]>0.4: down=True
-                    pressed_up(perso_manette, down, left, right, self.pressed_up_bool, self.collision, self.particule, self.render.zoom)
+            if not self.menu.is_running:
+                if event.type == JOYAXISMOTION:
+                    if event.axis < 2:
+                        self.motion[event.axis] = event.value
+                        if abs(self.motion[0]) < 0.01:
+                            self.motion[0] = 0
+                        if abs(self.motion[1]) < 0.01:
+                            self.motion[1] = 0
+                if event.type == JOYBUTTONDOWN or event.type==JOYBUTTONUP:
+                    if event.button == 0:
+                        down,left,right=False,False,False
+                        if self.motion[0]<-0.2: left=True
+                        if self.motion[0]>0.2: right=True
+                        if self.motion[1]>0.4: down=True
+                        pressed_up(perso_manette, down, left, right, self.pressed_up_bool, self.collision, self.particule, self.render.zoom)
 
-                if event.button == 1:
-                    down,up,left,right=False,False,False,False
-                    if self.motion[1]>0.4:down=True
-                    if self.motion[1]<-0.4:up=True
-                    if self.motion[0]>0.4:right=True
-                    if self.motion[0]<-0.4:left=True
-                    pressed_dash(perso_manette, left, right, down, up, self.collision.joueur_sur_sol, self.particule, self.collision)
-                if event.button == 2:    
-                    pressed_attack(perso_manette)   
-                if event.button == 3:
-                    pressed_heavy_attack(perso_manette, self.collision, left, right)
+                    if event.button == 1:
+                        down,up,left,right=False,False,False,False
+                        if self.motion[1]>0.4:down=True
+                        if self.motion[1]<-0.4:up=True
+                        if self.motion[0]>0.4:right=True
+                        if self.motion[0]<-0.4:left=True
+                        pressed_dash(perso_manette, left, right, down, up, self.collision.joueur_sur_sol, self.particule, self.collision)
+                    if event.button == 2:    
+                        pressed_attack(perso_manette)   
+                    if event.button == 3:
+                        pressed_heavy_attack(perso_manette, self.collision, left, right)
                                 
         if self.motion[0]<-0.1:
             pressed_left(perso_manette, self.collision)
@@ -247,6 +268,11 @@ class Game:
 
         for p in tmp:
             self.tab_particule_dead.remove(p)
+
+    def update_timers(self, dt):
+        for group in self.all_groups:
+            for sprite in group.sprites():
+                sprite.update_timers(dt)
 
     def handle_action(self, mob):
         if "player" not in mob.id and not "dying" in mob.action:
@@ -304,10 +330,10 @@ class Game:
 
         # called every tick because distance change every tick
         
-        if mob.is_dashing_attacking and time.time()-mob.timer_debut_dash_attack_grabedge > mob.cooldown_not_collide_dash_attack:
+        if mob.is_dashing_attacking and time.time()-mob.timers["timer_debut_dash_attack_grabedge"] > mob.cooldown_not_collide_dash_attack:
             self.collision.handle_collisions_wall_dash(mob, mob.fin_dash_attack, mob.direction, fall=False)     
 
-        if mob.is_dashing and time.time()-mob.timer_debut_dash_grabedge > mob.cooldown_not_collide_dash:   
+        if mob.is_dashing and time.time()-mob.timers["timer_debut_dash_grabedge"] > mob.cooldown_not_collide_dash:   
             self.collision.handle_collisions_wall_dash(mob, mob.fin_dash, mob.dash_direction_x, ground=True)  
         
         # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
@@ -340,32 +366,37 @@ class Game:
     
     def update(self):
         """ fonction qui update les informations du jeu"""   
-        self.suppr_dash_image()
-        
-        if not self.render.current_map_is_wave:
-            for mob in [tuple[0] for tuple in self.all_mobs]:
-                tu=self.render.get_coord_tile_matrix(mob.position[0], mob.position[1])
-                mob.coord_map=(tu[-2], tu[-1])
-                
-        for group in self.all_groups:
-            group.update()
+        if not self.menu.is_running:
+            self.suppr_dash_image()
             
-        for mob in [tuple[0] for tuple in self.get_all_mob()]:
-            if mob.bot == None or mob.bot.get_distance_target()<750*self.render.zoom:
-                mob.update_action()
-                self.handle_action(mob)
-                
-                if mob.action in mob.dico_action_functions.keys():
-                    mob.dico_action_functions[mob.action]()
+            if not self.render.current_map_is_wave:
+                for mob in [tuple[0] for tuple in self.all_mobs]:
+                    tu=self.render.get_coord_tile_matrix(mob.position[0], mob.position[1])
+                    mob.coord_map=(tu[-2], tu[-1])
                     
-                if mob.is_jumping and mob.action=="run":
-                    mob.is_jumping=False
-            else:
-                mob.reset_actions()
-        
-        self.update_particle()      
-        
-        self.blit.update_camera(self.player.position[0], self.player.position[1], self.player.speed_dt)
+            for group in self.all_groups:
+                group.update()
+                
+            for mob in [tuple[0] for tuple in self.get_all_mob()]:
+                if mob.bot == None or mob.bot.get_distance_target()<750*self.render.zoom:
+                    mob.update_action()
+                    self.handle_action(mob)
+                    
+                    if mob.action in mob.dico_action_functions.keys():
+                        mob.dico_action_functions[mob.action]()
+                        
+                    if mob.is_jumping and mob.action=="run":
+                        mob.is_jumping=False
+                else:
+                    mob.reset_actions()
+            
+            self.update_particle()      
+            
+            self.blit.update_camera(self.player.position[0], self.player.position[1], self.player.speed_dt)
+
+            self.last_player_position=self.player.position.copy()
+
+            self.update_ecran()
 
     def update_ecran(self):    
         #self.bg.fill((155,100,100)) 
@@ -380,9 +411,7 @@ class Game:
             self.bg.blit(self.minimap, (self.screen.get_width()-self.minimap.get_width(), 0))
         self.blit.add_lightning(self.bg, all_coords_mobs_screen, all_coords_particule)
         self.screen.blit(self.bg, (0,0))
-
-        self.last_player_position=self.player.position.copy()
-    
+   
     def run(self):
         """boucle du jeu"""
 
@@ -392,7 +421,7 @@ class Game:
             self.player.is_mouving_x = False
             self.handle_input()
             self.update()
-            self.update_ecran()
+        
             
             #self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling")
             pygame.display.update()      

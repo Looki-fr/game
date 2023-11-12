@@ -37,8 +37,16 @@ class MOB(pygame.sprite.Sprite):
         
         self.weapon="default"
 
+        # all timers in a dict so that we can increase all of them at once when the game is paused
+
+        self.timers= {
+            "time_cooldown_ralentissement":0,
+            "t1_passage_a_travers_plateforme":0,
+            "timer_cooldown_able_to_jump":0,
+            "timer_cooldown_next_jump":0,
+        }
+
         # images
-        self.time_cooldown_ralentissement = 0
         self.action_image = "idle"
         self.action = "idle"
         self.direction = "right"
@@ -63,7 +71,6 @@ class MOB(pygame.sprite.Sprite):
         # chute
         self.original_speed_gravity = 5
         self.is_falling = False
-        self.t1_passage_a_travers_plateforme = 0
         self.cooldown_passage_a_travers_plateforme = 0.2
         self.speed_gravity = self.original_speed_gravity
         self.max_speed_gravity = 9
@@ -77,10 +84,8 @@ class MOB(pygame.sprite.Sprite):
         self.speed_jump = 0
         # allow to jump when in air for a cooldown
         self.cooldown_able_to_jump = 0
-        self.timer_cooldown_able_to_jump = 0
         # cooldown pour jump edge, 2x plus long pour saut normal
         self.cooldown_next_jump = 0.16
-        self.timer_cooldown_next_jump = 0
         self.coord_debut_jump = [-999,-999]
         self.increment_jump = 0.25   
         
@@ -136,6 +141,9 @@ class MOB(pygame.sprite.Sprite):
             self.images[weapon][action]["left"][str(i)] = pygame.transform.flip(self.images[weapon][action]["right"][str(i)], True, False).convert_alpha()
             if reverse: self.images[weapon][action]["right"][str(i)], self.images[weapon][action]["left"][str(i)] = self.images[weapon][action]["left"][str(i)], self.images[weapon][action]["right"][str(i)]
 
+    def update_timers(self, dt):
+        for i in self.timers.keys():
+            self.timers[i]+=dt
 
     def start_dying(self, ground):
         self.reset_actions(ground)
@@ -296,12 +304,12 @@ class MOB(pygame.sprite.Sprite):
         
     def fin_saut(self, ground=True, no_change=False, cogne=False):
         """reinitialisation des vvariables du saut"""
-        if cogne and "jump_edge" in self.actions: self.timer_jump_edge_cogne = time.time()
+        if cogne and "jump_edge" in self.actions: self.timers["timer_jump_edge_cogne"] = time.time()
         self.is_jumping = False
         self.compteur_jump = self.compteur_jump_min        
         self.a_sauter = True
         self.coord_debut_jump = [-999,-999]
-        self.timer_cooldown_next_jump = time.time()
+        self.timers["timer_cooldown_next_jump"] = time.time()
         if not no_change and ground and self.action_image=="jump": self.change_direction("idle", self.direction)
         elif not no_change and not ground and self.action_image=="jump": self.debut_chute()
         self.update_action()
@@ -311,7 +319,7 @@ class MOB(pygame.sprite.Sprite):
     
     def debut_chute(self, attack=False):
         if self.a_dash == False:
-            self.timer_cooldown_able_to_jump = time.time()
+            self.timers["timer_cooldown_able_to_jump"] = time.time()
         self.is_falling = True
         if not attack and not self.is_parying and not self.is_dashing_attacking:
             if "up_to_fall" in self.actions:  self.change_direction('up_to_fall', self.direction)
@@ -525,9 +533,9 @@ class MOB(pygame.sprite.Sprite):
         
         # la vitesse de course du joueur ne ralentit pas tant qu'il coure ou chute
         if self.action_image == "run" or self.action_image == "fall" or self.action_image == "up_to_fall" or self.action_image == "jump" or self.action == "jump_edge" or self.is_attacking:
-            self.time_cooldown_ralentissement = time.time()
+            self.timers["time_cooldown_ralentissement"] = time.time()
         
-        if self.action_image == "idle" and time.time() - self.time_cooldown_ralentissement > self.cooldown_ralentissement:
+        if self.action_image == "idle" and time.time() - self.timers["time_cooldown_ralentissement"] > self.cooldown_ralentissement:
             self.speed = self.origin_speed_run
         
     def update_action(self):

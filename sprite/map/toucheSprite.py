@@ -19,6 +19,9 @@ class ToucheSprite():
         self.t1 = time.time()
         self.cooldown = 1
       
+    def update_timers(self, dt):
+        self.t1 += dt
+
     def update(self):
         """alternance des 2 images pour creer une animation"""
         if time.time() - self.t1 > self.cooldown:

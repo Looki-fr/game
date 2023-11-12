@@ -3,6 +3,9 @@ from mobs.mob_functions import *
 import random
 
 class Bot:
+    def update_timers(dt):
+        pass
+
     def __init__(self, mob, target, handle_input_ralentissement):
         self.handle_input_ralentissement = handle_input_ralentissement
         self.target=target

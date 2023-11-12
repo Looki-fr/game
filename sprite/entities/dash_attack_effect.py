@@ -20,6 +20,9 @@ class Dash_attack_image(pygame.sprite.Sprite):
         self.compteur_img=0
         self.finish=False
         
+    def update_timers(self, dt):
+        self.t1 += dt
+
     def update(self):
         if self.compteur_img==3 and self.i!=2:
             self.compteur_img=0
