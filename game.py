@@ -13,6 +13,8 @@ from sprite.entities.dash_attack_effect import Dash_attack_image
 from map.render_map import RenderMap
 from blit import Blit
 from menu.menu import Menu
+from audio.audio import Audio
+import json
 
 class Game:
     def __init__(self):
@@ -25,7 +27,10 @@ class Game:
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
         self.dt = 1/30
 
-        self.menu = Menu(self.directory, self.screen, self.update_ecran, self.update_timers)
+        config = json.load(open(self.directory+"\\config.json"))
+        self.audio = Audio(self.directory, config["playlist"])
+
+        self.menu = Menu(self.directory, self.screen, self.update_ecran, self.update_timers,self.audio)
         self.pressed_escape=False
 
         self.all_mobs=[]
@@ -77,7 +82,7 @@ class Game:
         for i,line in enumerate(self.render.map_generation.matrix_map):
             for y, map in enumerate(line):
                 self.load_object_map(y, i)
-    
+
     def load_object_map(self, c, d):
         pass
         #if self.render.type_objects_map[d][c]=="wave":
@@ -191,6 +196,8 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+            if event.type == pygame.USEREVENT+1:
+                self.audio.start_music()
             if not self.menu.is_running:
                 if event.type == JOYAXISMOTION:
                     if event.axis < 2:
@@ -398,7 +405,7 @@ class Game:
 
             self.update_ecran()
 
-    def update_ecran(self):    
+    def update_ecran(self, menu=False):    
         #self.bg.fill((155,100,100)) 
         self.bg.fill((100,100,155))
         self.minimap.fill((200, 155,155))
@@ -410,8 +417,13 @@ class Game:
         if not self.render.current_map_is_wave:
             self.bg.blit(self.minimap, (self.screen.get_width()-self.minimap.get_width(), 0))
         self.blit.add_lightning(self.bg, all_coords_mobs_screen, all_coords_particule)
+        if menu:
+            s = pygame.Surface((self.screen.get_width(),self.screen.get_height()), pygame.SRCALPHA)
+            s.fill((255,255,255,64))                       
+            self.bg.blit(s, (0,0))
         self.screen.blit(self.bg, (0,0))
-   
+        
+
     def run(self):
         """boucle du jeu"""
 

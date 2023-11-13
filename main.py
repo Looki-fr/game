@@ -9,13 +9,24 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+# TODO : playlist ssbm les musiques sont déjà dl
+
 # EN COURS : 
 # menu : cf discord pour orga
-# BUG problématique du temps : faire une foncdaqtion qui donne le temps et garder en mémoire tt les temps perdus dans le menu
 # ATTENTION : bug cooldown qd yaura des botzs
 
 
+# TODO write config a chaque fois qu'on leave le jeu
+# changer config playlist qd change
 
+# afficher que x character du titre puis après 5s le deplacer (pointeur)
+
+
+# rap : section dassault et autre
+# phonk
+# chill
+# party
+# rock
 
 
 

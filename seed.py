@@ -17,6 +17,9 @@
 # map used for shadow
 # seed=1692181610.1185951
 
+# map complete
+# seed =1699827347.2238336
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 # -                                                                                                             -
 # -                                              Bugs                                                      -
@@ -25,6 +28,9 @@
 
 # BUG en bas à droite saut diagonal dans l'ile on passe a travers qd don re saute => car tete est trop enfonce elle collide pas plafond ???
 # seed=1692090527.498834
+
+# BUG generation en haut, ile ds hill ?
+#seed=1699814824.9819987
 
 import time
 seed=time.time()

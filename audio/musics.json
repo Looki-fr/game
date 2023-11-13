@@ -1,0 +1,276 @@
+{
+    "Asphalt8": [
+        {
+            "file":"through_the_gates.mp3",
+            "name":"Through the Gates - Celldweller"
+        },
+        {
+            "file":"bleach.mp3",
+            "name":"Bleach - Asphalt 8 Airborne"
+        },
+        {
+            "file":"over_it.mp3",
+            "name":"Over it - The Crystal Method"
+        },
+        {
+            "file":"fire_inside.mp3",
+            "name":"Fire Inside - Gemini"
+        },
+        {
+            "file":"animals.mp3",
+            "name":"Animals - Martin Garrix"
+        },
+        {
+            "file":"play_for_real.mp3",
+            "name":"Play for Real - The Crystal Method (Dirtyphonics Remix)"
+        },
+        {
+            "file":"professional_griefers.mp3",
+            "name":"Professional Griefers - Deadmau5 ft Gerard Way"
+        },
+        {
+            "file":"pulsar.mp3",
+            "name":"Pulsar - Celldweller"
+        },
+        {
+            "file":"holdin_on.mp3",
+            "name":"Holdin On（Skrillex&Nero Remix) MONSTER"
+        },
+        {
+            "file":"windwaker.mp3",
+            "name":"Windwaker - Mord Fustang"
+        },
+        {
+            "file":"rocksteady.mp3",
+            "name":"Rocksteady - The Bloody Beetroots"
+        },
+        {
+            "file":"chemistry.mp3",
+            "name":"Chemistry - Asphalt 8 Airborne"
+        },
+        {
+            "file":"stamina.mp3",
+            "name":"Stamina - Vitalic"
+        }
+    ],
+    "SSBM":[
+        {
+            "name": "battlefield super smash bros brawl",
+            "file": "battlefield-super-smash-bros-brawl.mp3"
+        },
+        {
+            "name": "battlefield super smash bros melee",
+            "file": "battlefield-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "battlefield ver 2 super smash bros brawl",
+            "file": "battlefield-ver-2-super-smash-bros-brawl.mp3"
+        },
+        {
+            "name": "big blue f zero super smash bros melee",
+            "file": "big-blue-f-zero-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "break the targets super smash bros melee",
+            "file": "break-the-targets-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "brinstar metroid super smash bros melee",
+            "file": "brinstar-metroid-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "corneria star fox super smash bros melee",
+            "file": "corneria-star-fox-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "dr mario fever super smash bros melee",
+            "file": "dr-mario-fever-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "dream land kirby 64 super smash bros melee",
+            "file": "dream-land-kirby-64-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "earthbound super smash bros melee",
+            "file": "earthbound-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "final destination super smash bros brawl",
+            "file": "final-destination-super-smash-bros-brawl.mp3"
+        },
+        {
+            "name": "final destination super smash bros melee",
+            "file": "final-destination-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "fire emblem super smash bros melee",
+            "file": "fire-emblem-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "fountain of dreams kirby super smash bros melee",
+            "file": "fountain-of-dreams-kirby-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "great bay the legend of zelda super smash bros melee",
+            "file": "great-bay-the-legend-of-zelda-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "green greens kirby super smash bros melee",
+            "file": "green-greens-kirby-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "hyrule temple the legend of zelda super smash bros melee",
+            "file": "hyrule-temple-the-legend-of-zelda-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "icicle mountain ice climber super smash bros melee",
+            "file": "icicle-mountain-ice-climber-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "main theme super smash bros brawl",
+            "file": "main-theme-super-smash-bros-brawl.mp3"
+        },
+        {
+            "name": "Menu 1   Super Smash Bros. Melee",
+            "file": "Menu 1 - Super Smash Bros. Melee.mp3"
+        },
+        {
+            "name": "menu 1 super smash bros brawl",
+            "file": "menu-1-super-smash-bros-brawl.mp3"
+        },
+        {
+            "name": "menu 2 super smash bros brawl",
+            "file": "menu-2-super-smash-bros-brawl.mp3"
+        },
+        {
+            "name": "menu 2 super smash bros melee",
+            "file": "menu-2-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "metal battle super smash bros melee",
+            "file": "metal-battle-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "mother earthbound super smash bros melee",
+            "file": "mother-earthbound-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "multi man melee 1 super smash bros melee",
+            "file": "multi-man-melee-1-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "multi man melee 2 super smash bros melee",
+            "file": "multi-man-melee-2-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "mushroom kingdom ii super mario bros super smash bros melee",
+            "file": "mushroom-kingdom-ii-super-mario-bros-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "mute city f zero super smash bros melee",
+            "file": "mute-city-f-zero-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "Opening   Super Smash Bros. Melee",
+            "file": "Opening - Super Smash Bros. Melee.mp3"
+        },
+        {
+            "name": "poke floats super smash bros melee",
+            "file": "poke-floats-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "pokemon battle goldsilver super smash bros melee",
+            "file": "pokemon-battle-goldsilver-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "pokemon stadium super smash bros melee",
+            "file": "pokemon-stadium-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "princess peachs castle super mario bros super smash bros melee",
+            "file": "princess-peachs-castle-super-mario-bros-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "rainbow cruise super mario 64 super smash bros melee",
+            "file": "rainbow-cruise-super-mario-64-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "sarias song the legend of zelda ocarina of time super smash bros melee",
+            "file": "sarias-song-the-legend-of-zelda-ocarina-of-time-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "super mario bros 3 super smash bros melee",
+            "file": "super-mario-bros-3-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "venom star fox super smash bros melee",
+            "file": "venom-star-fox-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "yoshis island super smash bros melee",
+            "file": "yoshis-island-super-smash-bros-melee.mp3"
+        },
+        {
+            "name": "yoshis story super smash bros melee",
+            "file": "yoshis-story-super-smash-bros-melee.mp3"
+        }
+    ],
+    "TECHNO":[
+        {
+            "name": "A$AP Rocky   Praise The Lord (Da Shine) feat. Skepta [Durdenhauer Edit]",
+            "file": "A$AP Rocky - Praise The Lord (Da Shine) feat. Skepta [Durdenhauer Edit] _ TECHNO REMIX TIKTOK SONG (192 kbps).mp3"
+        },
+        {
+            "name": "ALORS BRAZIL",
+            "file": "ALORS BRAZIL (PHONK) (192 kbps).mp3"
+        },
+        {
+            "name": "BENNETT   Vois sur ton chemin (Techno Mix)",
+            "file": "BENNETT - Vois sur ton chemin (Techno Mix) [Official Audio] (192 kbps).mp3"
+        },
+        {
+            "name": "Creeds   Push Up _ TikTok",
+            "file": "Creeds - Push Up _ TikTok (192 kbps).mp3"
+        },
+        {
+            "name": "David Guetta vs Benny Benassi   Satisfaction (Hardwell & Maddix Remix)",
+            "file": "David Guetta vs Benny Benassi - Satisfaction (Hardwell & Maddix Remix) [Official Music Video].mp3"
+        },
+        {
+            "name": "DVRST   Close Eyes",
+            "file": "DVRST - Close Eyes (192 kbps).mp3"
+        },
+        {
+            "name": "Dxrk RAVE (Official Audio)",
+            "file": "Dxrk \u30c0\u30fc\u30af - RAVE (Official Audio) (192 kbps).mp3"
+        },
+        {
+            "name": "GigaChad Theme (Phonk House Version)",
+            "file": "g3ox_em - GigaChad Theme (Phonk House Version) (192 kbps).mp3"
+        },
+        {
+            "name": "Hardwell & Maddix feat. Luciana   ACID (Official Visualizer)",
+            "file": "Hardwell & Maddix feat. Luciana - ACID (Official Visualizer).mp3"
+        },
+        {
+            "name": "Hensonn   Sahara",
+            "file": "Hensonn - Sahara (192 kbps).mp3"
+        },
+        {
+            "name": "Maddix   Heute Nacht (Techno)",
+            "file": "Maddix - Heute Nacht (Techno) (192 kbps).mp3"
+        },
+        {
+            "name": "MUPP x Sadfriendd   vendetta!",
+            "file": "MUPP x Sadfriendd - vendetta! (192 kbps).mp3"
+        },
+        {
+            "name": "PLAYAMANE x Nateki   MIDNIGHT",
+            "file": "PLAYAMANE x Nateki - MIDNIGHT (192 kbps).mp3"
+        },
+        {
+            "name": "Supermode   Tell Me Why (Maddix Remix) _ Techno",
+            "file": "Supermode - Tell Me Why (Maddix Remix) _ Techno.mp3"
+        }
+    ]
+}

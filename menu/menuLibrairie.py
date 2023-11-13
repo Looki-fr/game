@@ -38,6 +38,7 @@ class MenuLibrairie:
         self.all_menu[name]["button"]={}
         self.all_menu[name]["text"]={}
         self.all_menu[name]["text_selectionne"]=""
+        self.all_menu[name]["lines"]=0
     
     def add_button_menu(self,name_menu, name_button,image,function, arguments,y, x=None):
         """- name_menu :          (str)  name of the menu where you want to add a button
@@ -53,27 +54,62 @@ class MenuLibrairie:
            """
         if x == None:
             x=center_width(image, self.screen)
-        y=len(self.all_menu[name_menu]["button"])*(image.get_height()+y) + y
+        if type(y)==str:
+            if y in self.all_menu[name_menu]["button"].keys(): 
+                y = self.all_menu[name_menu]["button"][y]["y"]
+            else:
+                y = self.all_menu[name_menu]["text"][y]["y"]
+        elif type(y)==float:
+            y=y
+        else:
+            y=self.all_menu[name_menu]["lines"]*(image.get_height()+y) + y
+            self.all_menu[name_menu]["lines"]+=1
         self.all_menu[name_menu]["button"][name_button]={"image": image,"x":x,"y":y,"function":function, "arguments":arguments}
     
-    def add_text_menu(self,name,menu, texte, x, y, taille_carac):
-        """ ajoute une entree de text pour le menu 'load' ou le menu 'new_game' et l'ajoute dans le bon dictionnaire"""
+    def add_text_menu(self,menu,name, texte, x, y, taille_carac, height):
         BaseText = texte
-        font = pygame.font.SysFont('arial', taille_carac)
+        font = pygame.font.SysFont('courier', taille_carac, bold=True)
         img = font.render(BaseText, True, (0, 0, 0))
         rect = img.get_rect()
+        if x == None:
+            x=center_width(img, self.screen)
+        if type(y)==str:
+            if y in self.all_menu[menu]["button"].keys(): 
+                y = self.all_menu[menu]["button"][y]["y"]
+            else:
+                y = self.all_menu[menu]["text"][y]["y"]
+        elif type(y)==float:
+            y=y
+        else:
+            y=self.all_menu[menu]["lines"]*(height+y) + y
+            self.all_menu[menu]["lines"]+=1
+        y+=(height-img.get_height())/2
         rect.topleft = (x, y)
         cursor = Rect(rect.topright, (3, rect.height))
+        
+
         self.all_menu[menu]["text"][name] =  {"name":name,"text":BaseText,"font":font,"img":img,"rect":rect,"x":x,"y":y,"cursor":cursor}
         
+    def update_text_menu(self, menu, name, texte, taille_carac):
+        BaseText = texte
+        font = pygame.font.SysFont('courier', taille_carac, bold=True)
+        img = font.render(BaseText, True, (0, 0, 0))
+        rect = img.get_rect()
+        rect.topleft = (self.all_menu[menu]["text"][name]["x"], self.all_menu[menu]["text"][name]["y"])
+        self.all_menu[menu]["text"][name]["text"]=BaseText
+        self.all_menu[menu]["text"][name]["rect"]=rect
+
     def change_menu(self, name):
         self.current_menu=name
+        self.update_ecran_menu()
+    
+    def update_ecran_menu(self):
         if self.background != None:
             self.screen.blit(self.background, (0,0))
         elif self.color_background:
             self.screen.fill(self.color_background)
         else:
-            self.update_ecran()
+            self.update_ecran(True)
         
         for value in self.all_menu[self.current_menu]["text"].values():
             value["img"] = value["font"].render(value["text"], True, (0, 0, 0))
@@ -89,7 +125,7 @@ class MenuLibrairie:
         if time.time() % 1 > 0.5:
             if self.all_menu[self.current_menu]["text_selectionne"]!="":
                 pygame.draw.rect(self.screen, (0, 0, 0), self.all_menu[self.current_menu][self.all_menu[self.current_menu]["text_selectionne"]]["cursor"])
-    
+
     def bind_key(self, key, function, args):
         if self.all_bind_keys.get(str(key))==None:
             self.all_bind_keys[str(key)]=[]
