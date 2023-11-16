@@ -4,7 +4,8 @@ import random
 
 class Audio:
     def __init__(self, directory, playlist):
-        self.path=directory+"\\audio\\musics\\"
+        self.path_music=directory+"\\audio\\musics\\"
+        self.path_sound=directory+"\\audio\\sounds\\"
         self.musics = json.load(open(directory+"\\audio\\musics.json"))
         self.playlists=list(self.musics.keys())
         self.is_paused_music=False
@@ -12,9 +13,37 @@ class Audio:
         self.nbr_track=0
         self.current_playlist=self.playlists.index(playlist)
         pygame.mixer.init()
+        self.volume_music=0.01
+        self.volume_sound=1.0
+        pygame.mixer.music.set_volume(self.volume_music)
+
+        self.slide_sound=pygame.mixer.Sound(self.path_sound+"slide_1.mp3")
+        self.slide_speed_sound=pygame.mixer.Sound(self.path_sound+"slide_speed_1.mp3")
 
         self.queue_musics_playlist()
         self.start_music()
+
+    def play_slide_sound(self, speed=False):
+        if not speed:
+            pygame.mixer.Sound.set_volume(self.slide_sound, self.volume_sound)
+            pygame.mixer.Sound.play(self.slide_sound, -1)
+        else:
+            pygame.mixer.Sound.set_volume(self.slide_speed_sound, self.volume_sound)
+            pygame.mixer.Sound.play(self.slide_speed_sound, -1)
+
+    def stop_slide_sound(self, speed=False):
+        if not speed:
+            pygame.mixer.Sound.stop(self.slide_sound)
+        else:
+            pygame.mixer.Sound.stop(self.slide_speed_sound)
+
+    def play_random_sound(self, sound_name, nbr):
+        self.play_sound(sound_name+"_"+str(random.randint(1, nbr))+".mp3")
+
+    def play_sound(self, sound):
+        sound=pygame.mixer.Sound(self.path_sound+sound)
+        pygame.mixer.Sound.set_volume(sound, self.volume_sound)
+        pygame.mixer.Sound.play(sound)
 
     def change_playlist(self, next, techno=False):
         if techno:
@@ -65,7 +94,7 @@ class Audio:
         pygame.mixer.music.unload()
         if not next:
             self.nbr_track-=2
-        pygame.mixer.music.load(self.path+self.current[self.nbr_track%len(self.current)]["file"])
+        pygame.mixer.music.load(self.path_music+self.current[self.nbr_track%len(self.current)]["file"])
         self.nbr_track+=1
         pygame.mixer.music.play()
         pygame.mixer.music.set_endevent(pygame.USEREVENT+1) 

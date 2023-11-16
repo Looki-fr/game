@@ -3,7 +3,7 @@ import time
 from pygame.locals import *
 
 class Dash_attack_image(pygame.sprite.Sprite):
-    def __init__(self, x, y ,image1,image2,image3):
+    def __init__(self, x, y ,image1,image2,image3, play_random_sound):
         super().__init__()
         self.id = "dash_attack_effect"
         self.images=[image1, image2, image3]
@@ -19,6 +19,7 @@ class Dash_attack_image(pygame.sprite.Sprite):
         self.t1 = time.time()
         self.compteur_img=0
         self.finish=False
+        play_random_sound("dash_attack_sprite", 2)
         
     def update_timers(self, dt):
         self.t1 += dt

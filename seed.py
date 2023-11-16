@@ -32,6 +32,9 @@
 # BUG generation en haut, ile ds hill ?
 #seed=1699814824.9819987
 
+# BUG map on est stuck
+# seed=1700094674.006223
+
 import time
 seed=time.time()
 

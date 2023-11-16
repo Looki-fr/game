@@ -3,7 +3,7 @@ import time
 from .MOTHER import MOB
 
 class Player(MOB):
-    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, Dash_attack_image, group_dash_attack_image_player, group_dash_image_player, Dash_images):
+    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, Dash_attack_image, group_dash_attack_image_player, group_dash_image_player, Dash_images, audio):
         """parametres : 
                 - x : coordonne en x du joueur
                 - y : coordonne en y du joueur
@@ -15,7 +15,18 @@ class Player(MOB):
         action=["air_dying","air_hurt","roll","Edge_climb", "Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack"]
         for a in action:
             self.actions.append(a)
-        
+
+        self.sounds={
+            "ground_slide": 3,
+            "dash": 2,
+            "crouch":2
+        }
+        self.play_random_sound=audio.play_random_sound
+        self.is_sliding_sound=False
+        self.is_sliding_speed_sound=False
+        self.play_slide_sound = audio.play_slide_sound
+        self.stop_slide_sound = audio.stop_slide_sound
+
         coefficient=2
         self.weapon="shotgun"
         for w in ["shotgun", "crossbow", "gun"]:
@@ -185,6 +196,8 @@ class Player(MOB):
         # edge climb
         self.additionnal_compeur=0
         self.is_friendly=True
+
+        self.pieds_sur_sol=False
         
         self.dico_action_functions = {
             "fall":self.chute,
@@ -202,6 +215,10 @@ class Player(MOB):
             "dash_attack":self.dash_attack,
             "air_dying":self.air_hurt,
         }       
+
+    def update_pieds_sur_sol(self, sol):
+        self.pieds_sur_sol=sol
+        return sol
 
     def debut_edge_climb(self):
         if self.direction=="right":
@@ -254,8 +271,16 @@ class Player(MOB):
             self.change_direction("dash_attack", self.direction)
         else:
             self.change_direction("dash_attack", direct)
+        self.play_random_sound("dash", self.sounds["dash"])
     
     def dash_attack(self):
+        if not self.is_sliding_speed_sound and self.pieds_sur_sol:
+            self.play_slide_sound(True)
+            self.is_sliding_speed_sound=True
+        elif self.is_sliding_speed_sound and not self.pieds_sur_sol:
+            self.stop_slide_sound(True)
+            self.is_sliding_speed_sound=False
+
         if self.is_falling:self.chute()
         c=0.7
 
@@ -271,7 +296,7 @@ class Player(MOB):
             self.position[0] -= self.compteur_dash_attack**2 *c* self.zoom * self.speed_dt
 
         if self.current_image==2 and self.compteur_image==1 and len(self.group_dash_attack_image_player)==0:
-            self.group_dash_attack_image_player.add(self.Dash_attack_image(x,y, self.images["effect"]["dash_attack_effect"][self.direction]["1"], self.images["effect"]["dash_attack_effect"][self.direction]["2"], self.images["effect"]["dash_attack_effect"][self.direction]["3"]))
+            self.group_dash_attack_image_player.add(self.Dash_attack_image(x,y, self.images["effect"]["dash_attack_effect"][self.direction]["1"], self.images["effect"]["dash_attack_effect"][self.direction]["2"], self.images["effect"]["dash_attack_effect"][self.direction]["3"], self.play_random_sound))
         self.compteur_debut_dash_attack=time.time()
 
     def distance_dash_attack(self):
@@ -305,6 +330,7 @@ class Player(MOB):
     def debut_crouch(self):
         """very simple"""
         self.change_direction("crouch", self.direction)
+        self.play_random_sound("crouch", self.sounds["crouch"])
   
     def air_hurt(self):
         if self.is_falling:self.chute()
@@ -353,6 +379,7 @@ class Player(MOB):
         self.is_sliding_ground = True
         self.change_direction('ground_slide', slide_ground_direction_x)
         self.slide_ground_direction_x = slide_ground_direction_x
+        self.play_random_sound("ground_slide", self.sounds["ground_slide"])
 
     def slide_ground(self):
         if self.is_falling:self.chute()
@@ -432,6 +459,7 @@ class Player(MOB):
         self.dash_direction_x = dash_direction_x
         self.dash_direction_y = dash_direction_y
         self.compteur_dash_immobile = self.compteur_dash_immobile_max
+        self.play_random_sound("dash", self.sounds["dash"])
     
     def dash(self):
         #enregistrement des images transparentes lors su dash

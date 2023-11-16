@@ -473,6 +473,22 @@ class MOB(pygame.sprite.Sprite):
         
     def change_direction(self, action, direction, compteur_image=0, current_image=0):
         """change la direction et / ou l'action en cours"""
+        if "player" in self.id:
+            if action =="Wall_slide" and not self.is_sliding_sound :
+                self.play_slide_sound()
+                self.is_sliding_sound=True
+            elif action !="Wall_slide" and self.is_sliding_sound:
+                self.stop_slide_sound()
+                self.is_sliding_sound=False
+
+            if self.action_image!="dash_attack" and self.is_sliding_speed_sound:
+                self.stop_slide_sound(True)
+                self.is_sliding_speed_sound=False
+
+            
+
+        
+        
         if action != "attack1" and action != "attack2" and action != "up_to_attack" and action != "air attack":
             self.is_attacking=False
         elif self.action == "attack2":
