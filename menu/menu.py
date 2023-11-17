@@ -7,12 +7,13 @@ def help():
 def nothing():
     pass
     
-def quit():
-    sys.exit(0)
+def quit(set_running_false):
+    set_running_false()
 
 class Menu(MenuLibrairie):
-    def __init__(self, directory, screen, update_ecran, update_timers, audio):
+    def __init__(self, directory, screen, update_ecran, update_timers, audio, set_running_false, config):
         MenuLibrairie.__init__(self)
+        self.config=config
         self.screen = screen
         self.audio=audio
         self.is_running=False
@@ -58,7 +59,7 @@ class Menu(MenuLibrairie):
         self.add_text_menu("settings", "PlaylistText", "Current Radio : "+audio.get_current_playlist(), screen.get_width()/2+1.5*pic_square.get_width(), "PrevPlaylist", 30, pic.get_height())
         self.add_button_menu("settings", "Controls", get_picture_scale(f"{path}\\Controls Button.png", c, c), self.change_menu,["base"], 30)
 
-        self.add_button_menu("base", "quit", pic, quit,[],30)
+        self.add_button_menu("base", "quit", pic, quit,[set_running_false],30)
         self.add_button_menu("base", "Restart", get_picture_scale(f"{path}\\New game Button.png", c, c), self.restart,[], 30)
 
     def change_playlist(self, next):
@@ -79,6 +80,7 @@ class Menu(MenuLibrairie):
         else:
             self.audio.change_playlist(next)
         self.update_text_menu("settings", "PlaylistText", "Current Radio : "+self.audio.get_current_playlist(), 30)
+        self.config.set("playlist", self.audio.get_current_playlist())
 
     def goto_settings(self):
         self.pointeur=0

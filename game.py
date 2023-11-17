@@ -14,7 +14,7 @@ from map.render_map import RenderMap
 from blit import Blit
 from menu.menu import Menu
 from audio.audio import Audio
-import json
+from config.config import Config
 
 class Game:
     def __init__(self):
@@ -27,10 +27,10 @@ class Game:
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
         self.dt = 1/30
 
-        config = json.load(open(self.directory+"\\config.json"))
-        self.audio = Audio(self.directory, config["playlist"])
+        self.config = Config(self.directory)
+        self.audio = Audio(self.directory, self.config.get("playlist"))
 
-        self.menu = Menu(self.directory, self.screen, self.update_ecran, self.update_timers,self.audio)
+        self.menu = Menu(self.directory, self.screen, self.update_ecran, self.update_timers,self.audio, self.set_running_false, self.config)
         self.pressed_escape=False
 
         self.all_mobs=[]
@@ -423,6 +423,8 @@ class Game:
             self.bg.blit(s, (0,0))
         self.screen.blit(self.bg, (0,0))
         
+    def set_running_false(self):
+        self.running=False
 
     def run(self):
         """boucle du jeu"""
@@ -440,4 +442,5 @@ class Game:
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:
                 mob.update_tick(self.dt)
+        self.config.save()
         pygame.quit()
