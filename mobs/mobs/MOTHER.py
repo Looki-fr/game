@@ -474,16 +474,23 @@ class MOB(pygame.sprite.Sprite):
     def change_direction(self, action, direction, compteur_image=0, current_image=0):
         """change la direction et / ou l'action en cours"""
         if "player" in self.id:
-            if action =="Wall_slide" and not self.is_sliding_sound :
-                self.play_slide_sound()
-                self.is_sliding_sound=True
-            elif action !="Wall_slide" and self.is_sliding_sound:
-                self.stop_slide_sound()
-                self.is_sliding_sound=False
+            if action =="Wall_slide" and not self.dict_sounds["slide"] :
+                self.play_long_sounds("slide")
+                self.dict_sounds["slide"]=True
+            elif action !="Wall_slide" and self.dict_sounds["slide"]:
+                self.stop_long_sounds("slide")
+                self.dict_sounds["slide"]=False
 
-            if self.action_image!="dash_attack" and self.is_sliding_speed_sound:
-                self.stop_slide_sound(True)
-                self.is_sliding_speed_sound=False
+            if self.action_image!="dash_attack" and self.dict_sounds["slide_speed"]:
+                self.stop_long_sounds("slide_speed")
+                self.dict_sounds["slide_speed"]=False
+
+            if action=="run" and not self.dict_sounds["run"]:
+                self.play_long_sounds("run")
+                self.dict_sounds["run"]=True
+            elif action!="run" and self.dict_sounds["run"]:
+                self.stop_long_sounds("run")
+                self.dict_sounds["run"]=False
 
             
 

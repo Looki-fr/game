@@ -22,10 +22,13 @@ class Player(MOB):
             "crouch":2
         }
         self.play_random_sound=audio.play_random_sound
-        self.is_sliding_sound=False
-        self.is_sliding_speed_sound=False
-        self.play_slide_sound = audio.play_slide_sound
-        self.stop_slide_sound = audio.stop_slide_sound
+        self.dict_sounds={
+            "slide":False,
+            "slide_speed":False,
+            "run":False
+        }
+        self.play_long_sounds=audio.play_long_sounds
+        self.stop_long_sounds=audio.stop_long_sounds
 
         coefficient=2
         self.weapon="shotgun"
@@ -274,12 +277,12 @@ class Player(MOB):
         self.play_random_sound("dash", self.sounds["dash"])
     
     def dash_attack(self):
-        if not self.is_sliding_speed_sound and self.pieds_sur_sol:
-            self.play_slide_sound(True)
-            self.is_sliding_speed_sound=True
-        elif self.is_sliding_speed_sound and not self.pieds_sur_sol:
-            self.stop_slide_sound(True)
-            self.is_sliding_speed_sound=False
+        if not self.dict_sounds["slide_speed"] and self.pieds_sur_sol:
+            self.play_long_sounds("slide_speed")
+            self.dict_sounds["slide_speed"]=True
+        elif self.dict_sounds["slide_speed"] and not self.pieds_sur_sol:
+            self.stop_long_sounds("slide_speed")
+            self.dict_sounds["slide_speed"]=False
 
         if self.is_falling:self.chute()
         c=0.7

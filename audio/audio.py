@@ -19,23 +19,23 @@ class Audio:
 
         self.slide_sound=pygame.mixer.Sound(self.path_sound+"slide_1.mp3")
         self.slide_speed_sound=pygame.mixer.Sound(self.path_sound+"slide_speed_1.mp3")
+        self.running_sound=pygame.mixer.Sound(self.path_sound+"running_1.mp3")
+        
+        self.dict_sounds={
+            "slide":self.slide_sound,
+            "slide_speed":self.slide_speed_sound,
+            "run":self.running_sound
+        }
 
         self.queue_musics_playlist()
         self.start_music()
 
-    def play_slide_sound(self, speed=False):
-        if not speed:
-            pygame.mixer.Sound.set_volume(self.slide_sound, self.volume_sound)
-            pygame.mixer.Sound.play(self.slide_sound, -1)
-        else:
-            pygame.mixer.Sound.set_volume(self.slide_speed_sound, self.volume_sound)
-            pygame.mixer.Sound.play(self.slide_speed_sound, -1)
+    def play_long_sounds(self, sound_name):
+        pygame.mixer.Sound.set_volume(self.dict_sounds[sound_name], self.volume_sound)
+        pygame.mixer.Sound.play(self.dict_sounds[sound_name], -1)
 
-    def stop_slide_sound(self, speed=False):
-        if not speed:
-            pygame.mixer.Sound.stop(self.slide_sound)
-        else:
-            pygame.mixer.Sound.stop(self.slide_speed_sound)
+    def stop_long_sounds(self, sound_name):
+        pygame.mixer.Sound.stop(self.dict_sounds[sound_name])
 
     def play_random_sound(self, sound_name, nbr):
         self.play_sound(sound_name+"_"+str(random.randint(1, nbr))+".mp3")
