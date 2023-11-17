@@ -11,7 +11,7 @@ def quit(set_running_false):
     set_running_false()
 
 class Menu(MenuLibrairie):
-    def __init__(self, directory, screen, update_ecran, update_timers, audio, set_running_false, config):
+    def __init__(self, directory, screen, update_ecran, update_timers, audio, set_running_false, config, new_game):
         MenuLibrairie.__init__(self)
         self.config=config
         self.screen = screen
@@ -60,7 +60,7 @@ class Menu(MenuLibrairie):
         self.add_button_menu("settings", "Controls", get_picture_scale(f"{path}\\Controls Button.png", c, c), self.change_menu,["base"], 30)
 
         self.add_button_menu("base", "quit", pic, quit,[set_running_false],30)
-        self.add_button_menu("base", "Restart", get_picture_scale(f"{path}\\New game Button.png", c, c), self.restart,[], 30)
+        self.add_button_menu("base", "Restart", get_picture_scale(f"{path}\\New game Button.png", c, c), new_game,[], 30)
 
     def change_playlist(self, next):
         if self.last =="":

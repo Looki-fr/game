@@ -3,21 +3,35 @@ import time
 import random
 import pygame
 from map.shadow import Shadow
-from seed import seed
+from seed import Seed
 from map.map_generation import MapGeneration
 
-random.seed(seed)
 class RenderMap:
-    def __init__(self, screen_width, screen_height, directory):
+    def __init__(self, directory):
         self.zoom=2
-        self.map_generation=MapGeneration(screen_width, screen_height, directory, self.zoom)
+        self.tile_width=20*self.zoom
+        self.room_width=self.tile_width*30
+        self.room_height=self.tile_width*20
+
         self.minimap_tile_width=50  
-        self.matrix_picture=[ [[] for _ in range(len(self.map_generation.graphe[0]))] for _ in range(len(self.map_generation.graphe))]
         self.all_pic=[]
         self.all_pics=[self.all_pic,[]]
         self._init_all_pics(directory) 
         self.increment=7*self.zoom
         self.increment_ground=30*self.zoom         
+                
+        self.minimap_picture=pygame.image.load(f"{directory}\\assets\\minimap.png")
+        self.minimap_picture=pygame.transform.scale(self.minimap_picture, (self.minimap_tile_width,self.minimap_tile_width))
+
+        self.seed=Seed()
+
+    def init_new_map(self, screen_width, screen_height, directory):
+        self.seed.new_seed()
+        random.seed(self.seed.seed)
+
+        self.map_generation=MapGeneration(screen_width, screen_height, directory, self.zoom, self.tile_width, self.room_width, self.room_height, self.seed.seed)
+
+        self.matrix_picture=[ [[] for _ in range(len(self.map_generation.graphe[0]))] for _ in range(len(self.map_generation.graphe))]
 
 
         for i,line in enumerate(self.map_generation.graphe):
@@ -27,15 +41,13 @@ class RenderMap:
                 self.load_map(node, i, z)
                 
         self._load_pictures_tiles()
-                
-        self.minimap_picture=pygame.image.load(f"{directory}\\assets\\minimap.png")
-        self.minimap_picture=pygame.transform.scale(self.minimap_picture, (self.minimap_tile_width,self.minimap_tile_width))
 
-        self.current_map_is_wave=False
-        
         self.get_first_map()["info"]["beated"]=True
+        self.current_map_is_wave=False
 
-        self.shadow = Shadow(self.map_generation.tile_width, self.map_generation.room_width, self.map_generation.room_height, self.map_generation.all_mat, self.map_generation.graphe)
+        # self.shadow = Shadow(self.map_generation.tile_width, self.map_generation.room_width, self.map_generation.room_height, self.map_generation.all_mat, self.map_generation.graphe)
+
+
 
 
     def _load_pictures_tiles(self):
@@ -151,7 +163,7 @@ class RenderMap:
         for i in range(23):
             try:
                 pic=pygame.image.load(f"{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Terrain\\{str(i)}.png")
-                pic=pygame.transform.scale(pic, (self.map_generation.tile_width,self.map_generation.tile_width))
+                pic=pygame.transform.scale(pic, (self.tile_width,self.tile_width))
                 self.all_pic.append(pic)
             except:
                 self.all_pic.append(None)
@@ -160,15 +172,15 @@ class RenderMap:
                     self.all_pics.append([])
                 try:
                     pic=pygame.image.load(f"{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Terrain\\{str(n)}_{str(i)}.png")
-                    pic=pygame.transform.scale(pic, (self.map_generation.tile_width,self.map_generation.tile_width))
+                    pic=pygame.transform.scale(pic, (self.tile_width,self.tile_width))
                     self.all_pics[n-1].append(pic)
                 except:
                     self.all_pics[n-1].append(None)
 
         # pic=pygame.Surface((self.map_generation.tile_width, self.map_generation.tile_width))
         # pic.fill((200,200,200))
-        pic2=pygame.transform.scale(self.all_pic[11], (self.map_generation.room_width-2*self.map_generation.tile_width,self.map_generation.room_height-2*self.map_generation.tile_width))
-        pic3=pygame.Surface((self.map_generation.tile_width//2, self.map_generation.tile_width//2))
+        pic2=pygame.transform.scale(self.all_pic[11], (self.room_width-2*self.tile_width,self.room_height-2*self.tile_width))
+        pic3=pygame.Surface((self.tile_width//2, self.tile_width//2))
         pic3.fill((200,200,200))
         # self.all_pic.append(pic)
         self.all_pic.append(pic2)

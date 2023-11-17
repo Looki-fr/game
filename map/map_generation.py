@@ -3,14 +3,15 @@ from math import ceil, sqrt
 import time
 import random
 import pygame
-from seed import seed
-random.seed(seed)
+
 class MapGeneration:
-    def __init__(self, screen_width, screen_height, directory, zoom):
+    def __init__(self, screen_width, screen_height, directory, zoom, tile_width, room_width, room_height, seed):
+        random.seed(seed)
+        self.seed=seed
         self.directory=directory
         self.screen_width = screen_width
         self.screen_height = screen_height
-        self.g = Graph(5,5,3,1)
+        self.g = Graph(5,5,3,1, seed)
 
         self.graphe=self.g.get_matrix()
         new_graph=[]
@@ -24,10 +25,10 @@ class MapGeneration:
         self.g.printTab(self.graphe)
 
         self.zoom=zoom
-        self.tile_width=20*self.zoom
-        self.room_width=self.tile_width*30
-        self.room_height=self.tile_width*20
-        
+        self.tile_width=tile_width
+        self.room_width=room_width
+        self.room_height=room_height
+
         self.gen_current_height=0
         self.gen_current_width=0
         self.gen_max_height=4
@@ -355,7 +356,7 @@ class MapGeneration:
 
     def _get_lists_carre(self,print=False):
         """return a list of walls and ceillings for a square map"""
-        g=Graph(4,4,0,0)
+        g=Graph(4,4,0,0, self.seed)
         mat=g.get_matrix()
         if print:g.printTab(mat)
         tab_wall = [[True for _ in range(3)] for _ in range(2)]

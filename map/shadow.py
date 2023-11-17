@@ -1,8 +1,6 @@
 import random
 import pygame
-from seed import seed
 import math
-random.seed(seed)
 
 def lineLineIntersect(P0, P1, Q0, Q1):  
     d = (P1[0]-P0[0]) * (Q1[1]-Q0[1]) + (P1[1]-P0[1]) * (Q0[0]-Q1[0]) 

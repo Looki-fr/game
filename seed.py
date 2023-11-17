@@ -35,9 +35,20 @@
 # BUG map on est stuck
 # seed=1700094674.006223
 
-import time
-seed=time.time()
+# BUG chelou spawn
+# seed=1700251385.0795393
 
-with open("seed.txt", "w") as file:
-    file.write(str(seed))
+import time
+
+class Seed:
+    def __init__(self):
+        self.seed=0
+
+    def new_seed(self):
+        self.seed=time.time()
+
+        with open("seed.txt", "w") as file:
+            file.write(str(self.seed))
+
+
     

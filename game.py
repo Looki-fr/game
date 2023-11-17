@@ -30,8 +30,31 @@ class Game:
         self.config = Config(self.directory)
         self.audio = Audio(self.directory, self.config.get("playlist"))
 
-        self.menu = Menu(self.directory, self.screen, self.update_ecran, self.update_timers,self.audio, self.set_running_false, self.config)
+        self.menu = Menu(self.directory, self.screen, self.update_ecran, self.update_timers,self.audio, self.set_running_false, self.config, self.new_game)
         self.pressed_escape=False
+
+        self.render=RenderMap(self.directory)
+
+        self.new_game()
+
+        self.map_height=self.render.get_height()
+        self.map_width=self.render.get_width()
+
+        pygame.joystick.init()
+        self.joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
+
+        # i=1  
+        # for line in self.render.map_generation.matrix_map:
+        #     for map in line:
+        #         if map != None:      
+        #             self.add_mob_to_game(Crab(map["spawn_player"][0], map["spawn_player"][1]+1, self.directory, self.render.zoom, i, self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, handle_input_ralentissement), "bot")
+        #             i+=1
+        
+        self.all_controls={}
+        self.all_controls["solo_clavier"]={"perso":[],"touches":[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP,pygame.K_DOWN, pygame.K_q, pygame.K_a, pygame.K_d, pygame.K_z, pygame.K_e]}  
+
+    def new_game(self):
+        self.menu.is_running=False
 
         self.all_mobs=[]
         self.all_mobs_wave=[]
@@ -44,41 +67,27 @@ class Game:
         self.all_groups = [self.group_object,self.group,self.group_dash_image_player1, self.group_dash_attack_image_player1, self.group_particle]
         self.tab_particule_dead=[]
 
-        self.render=RenderMap(self.screen.get_width(), self.screen.get_height(), self.directory)
-        self.map_height=self.render.get_height()
-        self.map_width=self.render.get_width()
+        self.render.init_new_map(self.screen.get_width(), self.screen.get_height(), self.directory)
         self.first_map=self.render.get_first_map()
+
         player_position = (2000, 2000)
 
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
         self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
         
+        self.motion = [0, 0]        
+
+        self.collision=Collision(self.render.zoom, self.render.map_generation.matrix_map) 
+        self.blit = Blit(self.render.zoom, self.screen, self.bg, self.minimap, self.player.position[0], self.player.position[1])
+
         self.pressed_up_bool = [False]
         self.pressed_dash_bool = [False]
         self.last_player_position=self.player.position.copy()
-        
-        pygame.joystick.init()
-        self.joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
-        self.motion = [0, 0]
-        
+
         self.total_friendly_mob=0
         self.add_mob_to_game(self.player, "solo_clavier")
         self.add_mob_to_game(self.player, "solo_clavier", group="wave")
-        
-        self.collision=Collision(self.render.zoom, self.render.map_generation.matrix_map) 
-        self.blit = Blit(self.render.zoom, self.screen, self.bg, self.minimap, self.player.position[0], self.player.position[1])
-        
 
-        # i=1  
-        # for line in self.render.map_generation.matrix_map:
-        #     for map in line:
-        #         if map != None:      
-        #             self.add_mob_to_game(Crab(map["spawn_player"][0], map["spawn_player"][1]+1, self.directory, self.render.zoom, i, self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, handle_input_ralentissement), "bot")
-        #             i+=1
-        
-        self.all_controls={}
-        self.all_controls["solo_clavier"]={"perso":[],"touches":[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP,pygame.K_DOWN, pygame.K_q, pygame.K_a, pygame.K_d, pygame.K_z, pygame.K_e]}  
-    
         for i,line in enumerate(self.render.map_generation.matrix_map):
             for y, map in enumerate(line):
                 self.load_object_map(y, i)

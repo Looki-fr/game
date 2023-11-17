@@ -1,9 +1,8 @@
 import random
-from seed import seed
-random.seed(seed)
 
 class Graph:
-    def __init__(self, height, width,room_to_remove, remove_wall):
+    def __init__(self, height, width,room_to_remove, remove_wall, seed):
+        random.seed(seed)
         self.height=height
         self.width=width
         self.room_to_remove=room_to_remove
