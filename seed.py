@@ -38,6 +38,15 @@
 # BUG chelou spawn
 # seed=1700251385.0795393
 
+# BUG tile en moins
+# seed = 1700336112.335133
+
+# BUG trou
+# seed = 1700345499.171078
+
+# BUG climb edge traverse plafond
+# seed = 1700346541.011556
+
 import time
 
 class Seed:

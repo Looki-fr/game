@@ -15,6 +15,7 @@ from blit import Blit
 from menu.menu import Menu
 from audio.audio import Audio
 from config.config import Config
+from seed import Seed
 
 class Game:
     def __init__(self):
@@ -26,14 +27,15 @@ class Game:
         self.bg = pygame.Surface((self.screen.get_width(), self.screen.get_height()), flags=SRCALPHA)
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
         self.dt = 1/30
+        self.seed=Seed()
 
         self.config = Config(self.directory)
         self.audio = Audio(self.directory, self.config.get("playlist"))
 
-        self.menu = Menu(self.directory, self.screen, self.update_ecran, self.update_timers,self.audio, self.set_running_false, self.config, self.new_game)
+        self.menu = Menu(self.directory, self.screen, self.update_ecran, self.update_timers,self.audio, self.set_running_false, self.config, self.new_game, self.seed)
         self.pressed_escape=False
 
-        self.render=RenderMap(self.directory)
+        self.render=RenderMap(self.directory, self.seed)
 
         self.new_game()
 
@@ -53,7 +55,7 @@ class Game:
         self.all_controls={}
         self.all_controls["solo_clavier"]={"perso":[],"touches":[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP,pygame.K_DOWN, pygame.K_q, pygame.K_a, pygame.K_d, pygame.K_z, pygame.K_e]}  
 
-    def new_game(self):
+    def new_game(self, seed=None):
         self.menu.is_running=False
 
         self.all_mobs=[]
@@ -67,7 +69,7 @@ class Game:
         self.all_groups = [self.group_object,self.group,self.group_dash_image_player1, self.group_dash_attack_image_player1, self.group_particle]
         self.tab_particule_dead=[]
 
-        self.render.init_new_map(self.screen.get_width(), self.screen.get_height(), self.directory)
+        self.render.init_new_map(self.screen.get_width(), self.screen.get_height(), self.directory, seed)
         self.first_map=self.render.get_first_map()
 
         player_position = (2000, 2000)
@@ -234,6 +236,8 @@ class Game:
                         pressed_attack(perso_manette)   
                     if event.button == 3:
                         pressed_heavy_attack(perso_manette, self.collision, left, right)
+            else:
+                self.menu.handle_events(event)
                                 
         if self.motion[0]<-0.1:
             pressed_left(perso_manette, self.collision)

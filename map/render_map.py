@@ -3,11 +3,10 @@ import time
 import random
 import pygame
 from map.shadow import Shadow
-from seed import Seed
 from map.map_generation import MapGeneration
 
 class RenderMap:
-    def __init__(self, directory):
+    def __init__(self, directory, seed):
         self.zoom=2
         self.tile_width=20*self.zoom
         self.room_width=self.tile_width*30
@@ -22,11 +21,13 @@ class RenderMap:
                 
         self.minimap_picture=pygame.image.load(f"{directory}\\assets\\minimap.png")
         self.minimap_picture=pygame.transform.scale(self.minimap_picture, (self.minimap_tile_width,self.minimap_tile_width))
-
-        self.seed=Seed()
-
-    def init_new_map(self, screen_width, screen_height, directory):
-        self.seed.new_seed()
+        self.seed=seed
+        
+    def init_new_map(self, screen_width, screen_height, directory, seed):
+        if seed==None:
+            self.seed.new_seed()
+        else:
+            self.seed.seed=float(seed)
         random.seed(self.seed.seed)
 
         self.map_generation=MapGeneration(screen_width, screen_height, directory, self.zoom, self.tile_width, self.room_width, self.room_height, self.seed.seed)

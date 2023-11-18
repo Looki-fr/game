@@ -11,12 +11,14 @@ def quit(set_running_false):
     set_running_false()
 
 class Menu(MenuLibrairie):
-    def __init__(self, directory, screen, update_ecran, update_timers, audio, set_running_false, config, new_game):
+    def __init__(self, directory, screen, update_ecran, update_timers, audio, set_running_false, config, new_game, seed):
         MenuLibrairie.__init__(self)
+        self.seed=seed
         self.config=config
         self.screen = screen
         self.audio=audio
         self.is_running=False
+        self.new_game=new_game
 
         # text qui defile
         self.pointeur=0
@@ -34,6 +36,7 @@ class Menu(MenuLibrairie):
         t1=0    
         self.last=""
         self.cpt=0
+        self.nbr_load=0
 
         # 0 = music | 1 = audio
         self.music_audio=[True, True]
@@ -61,6 +64,36 @@ class Menu(MenuLibrairie):
 
         self.add_button_menu("base", "quit", pic, quit,[set_running_false],30)
         self.add_button_menu("base", "Restart", get_picture_scale(f"{path}\\New game Button.png", c, c), new_game,[], 30)
+        
+        self.add_button_menu("base", "goto_load", get_picture_scale(f"{path}\\Load Button.png", c, c), self.change_menu,["load"], 30)
+
+        self.add_menu("load")
+        self.add_button_menu("load", "goto_base", get_picture_scale(f"{path}\\Back Button.png", c, c), self.change_menu,["base"], 30)
+        self.add_text_menu("load", "error load", "", screen.get_width()/2+0.5*pic.get_width()+0.5*pic_square.get_width(), "goto_base", 30, pic.get_height())
+        self.add_button_menu("load", "validate load", get_picture_scale(f"{path2}\\V Square Button.png", c2, c2), self.validate_load,[], 30)
+        self.add_text_menu("load", "save name", "file name", screen.get_width()/2+0.5*pic.get_width()+0.5*pic_square.get_width(), "validate load", 30, pic.get_height(), entry=True)
+        self.add_button_menu("load", "PrevLoad", get_picture_scale(f"{path2}\\Back Square Button.png", c2, c2), self.prev_next_load, [False], 30, x=screen.get_width()/2-1.25*pic_square.get_width())
+        self.add_button_menu("load", "NextLoad", get_picture_scale(f"{path2}\\Next Square Button.png", c2, c2), self.prev_next_load, [True], "PrevLoad", x=screen.get_width()/2+0.25*pic_square.get_width())
+        self.add_text_menu("load", "load name", "", screen.get_width()/2+0.5*pic.get_width()+0.5*pic_square.get_width(), "NextLoad", 30, pic.get_height())
+        self.add_button_menu("load", "load_button", get_picture_scale(f"{path}\\Load Button.png", c, c), self.load,[], 30)
+        self.prev_next_load(None)
+
+    def load(self):
+        self.new_game(list(self.config.get("maps").keys())[self.nbr_load%len(self.config.get("maps"))])
+
+    def prev_next_load(self, next):
+        if next==True:self.nbr_load+=1
+        elif next==False:self.nbr_load-=1
+        self.update_text_menu("load", "load name", list(self.config.get("maps").values())[self.nbr_load%len(self.config.get("maps"))], 30)
+
+    def validate_load(self):
+        dic=self.config.get("maps")
+        if self.all_menu["load"]["text"]["save name"]["text"] not in dic.values():
+            dic[self.seed.seed]=self.all_menu["load"]["text"]["save name"]["text"]
+            self.config.set("maps", dic)
+            self.update_text_menu("load", "error load", "file loaded", 30)
+        else:
+            self.update_text_menu("load", "error load", "ERROR  : name already taken", 30)
 
     def change_playlist(self, next):
         if self.last =="":
