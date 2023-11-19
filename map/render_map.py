@@ -48,7 +48,7 @@ class RenderMap:
 
         # self.shadow = Shadow(self.map_generation.tile_width, self.map_generation.room_width, self.map_generation.room_height, self.map_generation.all_mat, self.map_generation.graphe)
 
-
+        self.map_generation.clear_memory()
 
 
     def _load_pictures_tiles(self):
@@ -190,12 +190,12 @@ class RenderMap:
     def get_height(self):
         """return the height of the map in coordonates"""
         # we remove the 2 empty map that are on the top and on the bot of the map
-        return len(self.map_generation.graphe)*self.map_generation.room_height
+        return self.map_generation.graphe_height*self.map_generation.room_height
 
     def get_width(self):
         """return the width of the map in coordonates"""
         # we remove the 2 empty map that are on the left and on the right of the map
-        return len(self.map_generation.graphe[0])*self.map_generation.room_width
+        return self.map_generation.graphe_width*self.map_generation.room_width
                     
     def get_first_map(self, index=False):
         """return the if of the map of spawn in  self.map_generation.matrix_map"""
@@ -350,9 +350,9 @@ class RenderMap:
         c=((x_max+x_min)//2)//(self.map_generation.room_width)
         d=((y_max+y_min)//2)//(self.map_generation.room_height) 
         if c<0: c=0
-        elif c>=len(self.map_generation.graphe[0]): c=len(self.map_generation.graphe[0])-1
+        elif c>=self.map_generation.graphe_width: c=self.map_generation.graphe_width-1
         if d<0: d=0
-        elif d>=len(self.map_generation.graphe): d=len(self.map_generation.graphe)-1
+        elif d>=self.map_generation.graphe_height: d=self.map_generation.graphe_height-1
         return y_min, y_max, x_min, x_max, a, b, c ,d
     
     def _not_visible(self,i, z):

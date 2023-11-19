@@ -3,6 +3,7 @@ from math import ceil, sqrt
 import time
 import random
 import pygame
+import gc
 
 class MapGeneration:
     def __init__(self, screen_width, screen_height, directory, zoom, tile_width, room_width, room_height, seed):
@@ -14,6 +15,7 @@ class MapGeneration:
         self.g = Graph(5,5,3,1, seed)
 
         self.graphe=self.g.get_matrix()
+
         new_graph=[]
         new_graph.insert(0, [[] for _ in range(len(self.graphe[0])+2)])
         
@@ -22,6 +24,8 @@ class MapGeneration:
         
         new_graph.append([[] for _ in range(len(self.graphe[0])+2)])
         self.graphe=new_graph
+        self.graphe_height=len(self.graphe)
+        self.graphe_width=len(self.graphe[0])
         self.g.printTab(self.graphe)
 
         self.zoom=zoom
@@ -104,6 +108,14 @@ class MapGeneration:
                     self.spawn_square_map(i,z)
 
         self._spawn_island()
+
+
+    def clear_memory(self):
+        del self.all_mat
+        del self.all_island
+        del self.all_hills
+        del self.g
+        gc.collect()
 
     def _get_hills(self,i,z,node, after_island=False):
         """

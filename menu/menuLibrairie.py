@@ -161,7 +161,8 @@ class MenuLibrairie:
                         self.all_menu[self.current_menu]["text"][self.all_menu[self.current_menu]["text_selectionne"]]["text"]+=event.unicode
                     self.update_text_menu(self.current_menu, self.all_menu[self.current_menu]["text_selectionne"], self.all_menu[self.current_menu]["text"][self.all_menu[self.current_menu]["text_selectionne"]]["text"], 30)
             elif event.key == pygame.K_RETURN:
-                pass
+                if self.current_menu=="load":
+                    self.validate_load()
         if self.all_menu[self.current_menu]["text_selectionne"]!="" and self.all_menu[self.current_menu]["text"][self.all_menu[self.current_menu]["text_selectionne"]]["text"]=="":
             self.all_menu[self.current_menu]["text"][self.all_menu[self.current_menu]["text_selectionne"]]["text"]="file name"
 
