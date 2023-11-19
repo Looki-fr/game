@@ -171,6 +171,7 @@ class MenuLibrairie:
         """ regarde sur quel bouton on a cliquer et agit en consequance"""
         for key, value in self.all_menu[self.current_menu]["button"].items():
             if (value["x"] < mouse_pos[0] < value["x"] + value["image"].get_width()) and (value["y"] < mouse_pos[1] < value["y"] + value["image"].get_height()):
+                self.audio.play_random_sound("menu", 3)
                 value["function"](*value["arguments"])
         
         for key, value in self.all_menu[self.current_menu]["text"].items():
