@@ -51,12 +51,10 @@ class Player(MOB):
             self._get_images("Wall_slide", 3, 4, "WallSlide", "WallSlide_", w, coefficient=coefficient, reverse=True) 
             self._get_images("air attack", 5, 3, "Air Attack", "Air-Attack_", w, coefficient=coefficient) 
             self._get_images("attack1", 8, 2, "Attack", "Attack_", w, coefficient=coefficient) 
-            self._get_images("attack2", 6, 2, "Attack2", "Attack_", w, coefficient=coefficient)
+            self._get_images("attack2", 6, 3, "Attack2", "Attack_", w, coefficient=coefficient)
             self._get_images("roll", 7, 3, "Roll", "Roll_", w, coefficient=coefficient)
         self._get_images("dash_attack_effect", 3, 0, "Dash-Attack-Effect", "Dash-Attack-Effect", weapon="effect", coefficient=2)
         
-        self.image_pp=pygame.image.load(f'{self.directory}\\assets\\pp.png').convert_alpha()
-
         self.image = self.images[self.weapon]["idle"]["right"]["1"]
         
         self.position = [x,y - self.image.get_height()]

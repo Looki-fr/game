@@ -2,17 +2,19 @@ import pygame
 from pygame.locals import *
 from sprite.map.textSprite import TextSprite
 from sprite.map.toucheSprite import ToucheSprite
+from sprite.entities.pp import Profile_picture
 
 class Blit:
-    def __init__(self, zoom, screen, bg, minimap, player_position_x, player_position_y):
+    def __init__(self, zoom, screen, bg, minimap, player):
         self.scroll=[0,0]
-        self.scroll_rect = Rect(player_position_x,player_position_y,1,1)
+        self.scroll_rect = Rect(player.position[0],player.position[1],1,1)
         self.radiusL=80
         self.radiusLInc=40
         self.zoom=zoom
         self.screen=screen
         self.bg=bg
         self.minimap=minimap
+        self.pp=Profile_picture(50, screen.get_height() - 100, pygame.image.load("assets\\pp\\Hearts\\Hearts\\Red Heart\\Idle\\Red\\heart_1.png").convert_alpha(), pygame.image.load("assets\\pp\\Hearts\\Hearts\\Red Heart\\Idle\\Red\\heart_2.png").convert_alpha(), player.play_random_sound, player)
 
     def update_camera(self, playerx, playery, player_speed_dt):
         self.scroll[0] = ((playerx - self.scroll_rect.x) // 15)*self.zoom*player_speed_dt
@@ -80,17 +82,9 @@ class Blit:
                         new_y = self.screen.get_height()/2 + tu[1] - self.scroll_rect.y
                         bg.blit(cloud["image"], (new_x, new_y))      
     
-    def blit_health_bar(self, bg, all_mobs):
-        i=1
-        for mob in all_mobs:
-            if "player" in mob.id:
-                
-                new_y = 12.5*self.zoom*(i)
-                bg.blit(mob.image_pp, (15*self.zoom, new_y +5*self.zoom*i+ mob.image_pp.get_height()*(i-1)))
-                new_x = 15*self.zoom+80/(mob.max_health/(mob.health+1))
-                
-                pygame.draw.line(bg, (200,50,50), (15*self.zoom, new_y), (new_x, new_y), 2*self.zoom)
-                i+=1
+    def blit_health_bar(self, bg):
+        self.pp.update()
+        bg.blit(self.pp.image, self.pp.position)
     
     def blit_texte(self, bg):
         """blit les images des textes sur la surface bg"""

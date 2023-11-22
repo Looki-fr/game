@@ -17,7 +17,7 @@ def get_picture_scale(path, coefx,coefy):
     img = pygame.image.load(path)
     width=ceil(img.get_width() * coefx)
     height=ceil(img.get_height() * coefy)
-    img = pygame.transform.scale(img, (width, height))
+    img = pygame.transform.scale(img, (width, height)).convert_alpha() 
     return img
 
 class MenuLibrairie:

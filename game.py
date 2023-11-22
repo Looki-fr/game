@@ -16,6 +16,7 @@ from menu.menu import Menu
 from audio.audio import Audio
 from config.config import Config
 from seed import Seed
+from sprite.cooldown.sprite_cooldown import Sprite_cooldown
 
 class Game:
     def __init__(self):
@@ -66,6 +67,7 @@ class Game:
         self.group_wave=pygame.sprite.Group()
         self.group_dash_image_player1=pygame.sprite.Group()
         self.group_dash_attack_image_player1=pygame.sprite.Group()
+        self.group_cooldown=pygame.sprite.Group()
         self.all_groups = [self.group_object,self.group,self.group_dash_image_player1, self.group_dash_attack_image_player1, self.group_particle]
         self.tab_particule_dead=[]
 
@@ -77,10 +79,14 @@ class Game:
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
         self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
         
+        self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_attack.png").convert_alpha(), 50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash_attack", self.player.cooldown_dash_attack))
+        self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash.png").convert_alpha(), 50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash", self.player.cooldown_dash))
+        self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\ground_slide.png").convert_alpha(), 50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_slide_ground", self.player.cooldown_slide_ground))
+
         self.motion = [0, 0]        
 
         self.collision=Collision(self.render.zoom, self.render.map_generation.matrix_map) 
-        self.blit = Blit(self.render.zoom, self.screen, self.bg, self.minimap, self.player.position[0], self.player.position[1])
+        self.blit = Blit(self.render.zoom, self.screen, self.bg, self.minimap, self.player)
 
         self.pressed_up_bool = [False]
         self.pressed_dash_bool = [False]
@@ -396,6 +402,8 @@ class Game:
                     
             for group in self.all_groups:
                 group.update()
+
+            self.group_cooldown.update()
                 
             for mob in [tuple[0] for tuple in self.get_all_mob()]:
                 if mob.bot == None or mob.bot.get_distance_target()<750*self.render.zoom:
@@ -424,9 +432,11 @@ class Game:
         self.minimap.fill((200, 155,155))
         self.render.render(self.bg,self.minimap, self.blit.scroll_rect.x, self.blit.scroll_rect.y)
         all_coords_mobs_screen, all_coords_particule = self.blit.blit_group(self.bg, self.all_groups)
+        for group in self.group_cooldown.sprites():
+            self.bg.blit(group.image, group.position)
         #self.render.shadow.draw_matrix(self.bg, self.blit.scroll_rect, self.player.coord_map)
         #self.render.shadow.draw_shadow(self.bg, self.blit.scroll_rect, self.player.coord_map, self.player.head)
-        self.blit.blit_health_bar(self.bg, [tuple[0] for tuple in self.get_all_mob()])
+        self.blit.blit_health_bar(self.bg)
         if not self.render.current_map_is_wave:
             self.bg.blit(self.minimap, (self.screen.get_width()-self.minimap.get_width(), 0))
         self.blit.add_lightning(self.bg, all_coords_mobs_screen, all_coords_particule)
