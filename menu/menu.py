@@ -52,7 +52,7 @@ class Menu(MenuLibrairie):
         self.add_button_menu("base", "goto_settings", get_picture_scale(f"{path}\\Settings Button.png", c, c), self.goto_settings, [], 30)
         # inside settings
         self.add_button_menu("settings", "goto_base", get_picture_scale(f"{path}\\Back Button.png", c, c), self.change_menu,["base"], 30)
-        self.add_button_menu("settings", "Audio", pic_square, nothing, [], "goto_base", x=self.all_menu["settings"]["button"]["goto_base"]["x"]+self.all_menu["settings"]["button"]["goto_base"]["image"].get_width()+pic_square.get_width()+30)
+        self.add_button_menu("settings", "Audio", pic_square, self.audio.pause_unpause_sound, [], "goto_base", x=self.all_menu["settings"]["button"]["goto_base"]["x"]+self.all_menu["settings"]["button"]["goto_base"]["image"].get_width()+pic_square.get_width()+30)
         self.add_button_menu("settings", "Music", get_picture_scale(f"{path2}\\Music Square Button.png", c2, c2), self.audio.pause_unpause_music, [], "goto_base", x=self.all_menu["settings"]["button"]["goto_base"]["x"]+self.all_menu["settings"]["button"]["goto_base"]["image"].get_width()+pic_square.get_width()*2.5+30)
         self.add_button_menu("settings", "PrevMusic", get_picture_scale(f"{path2}\\Back Square Button.png", c2, c2), self.audio.start_music, [False], 30, x=screen.get_width()/2-1.25*pic_square.get_width())
         self.add_button_menu("settings", "NextMusic", get_picture_scale(f"{path2}\\Next Square Button.png", c2, c2), self.audio.start_music, [], "PrevMusic", x=screen.get_width()/2+0.25*pic_square.get_width())

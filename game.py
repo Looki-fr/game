@@ -31,7 +31,7 @@ class Game:
         self.seed=Seed()
 
         self.config = Config(self.directory)
-        self.audio = Audio(self.directory, self.config.get("playlist"))
+        self.audio = Audio(self.directory, self.config.get("playlist"), self.config)
 
         self.menu = Menu(self.directory, self.screen, self.update_ecran, self.update_timers,self.audio, self.set_running_false, self.config, self.new_game, self.seed)
         self.pressed_escape=False

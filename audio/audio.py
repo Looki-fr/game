@@ -3,12 +3,14 @@ import json
 import random
 
 class Audio:
-    def __init__(self, directory, playlist):
+    def __init__(self, directory, playlist, config):
         self.path_music=directory+"\\audio\\musics\\"
         self.path_sound=directory+"\\audio\\sounds\\"
+        self.config=config
         self.musics = json.load(open(directory+"\\audio\\musics.json"))
         self.playlists=list(self.musics.keys())
         self.is_paused_music=False
+        self.is_paused_sound=False
         self.current=[]
         self.nbr_track=0
         self.current_playlist=self.playlists.index(playlist)
@@ -26,9 +28,17 @@ class Audio:
             "slide_speed":self.slide_speed_sound,
             "run":self.running_sound
         }
-
         self.queue_musics_playlist()
         self.start_music()
+
+        if self.config.get("sound") == "False":
+            self.volume_sound=0.0
+            self.is_paused_sound=True
+
+        if self.config.get("music") == "False":
+            self.pause_music()
+            self.is_paused_music=True
+
 
     def play_long_sounds(self, sound_name):
         pygame.mixer.Sound.set_volume(self.dict_sounds[sound_name], self.volume_sound)
@@ -66,7 +76,17 @@ class Audio:
     def get_current_track(self):
         return self.current[(self.nbr_track-1)%len(self.current)]["name"]
 
+    def pause_unpause_sound(self):
+        self.config.set("sound", str(self.is_paused_sound))
+        if self.is_paused_sound:
+            self.volume_sound=1.0
+            self.play_random_sound("menu", 3)
+        else:
+            self.volume_sound=0.0
+        self.is_paused_sound=not self.is_paused_sound
+
     def pause_unpause_music(self):
+        self.config.set("music", str(self.is_paused_music))
         if self.is_paused_music:
             self.unpause_music()
         else:

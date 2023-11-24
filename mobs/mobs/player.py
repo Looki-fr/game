@@ -19,7 +19,10 @@ class Player(MOB):
         self.sounds={
             "ground_slide": 3,
             "dash": 2,
-            "crouch":2
+            "crouch":2,
+            "attack1":1,
+            "attack2":1,
+            "air_attack":1,
         }
         self.play_random_sound=audio.play_random_sound
         self.dict_sounds={
@@ -254,9 +257,11 @@ class Player(MOB):
         if air:
             self.timers["timer_attack_aerienne"]=time.time()
             self.change_direction("air attack", self.direction)
+            self.play_random_sound("air_attack", self.sounds["air_attack"])
         else :
             self.change_direction("attack1", self.direction)
             self.a_attaquer2=False   
+            self.play_random_sound("attack1", self.sounds["attack1"])
     
     def attack2(self):
         self.compteur_attack=0
@@ -264,6 +269,7 @@ class Player(MOB):
         self.a_attaquer2=True
         self.change_direction("attack2", self.direction)
         self.direction_attack=self.direction
+        self.play_random_sound("attack2", self.sounds["attack2"])
         
     def debut_dash_attack(self, direct):
         self.compteur_dash_attack=self.compteur_dash_attack_min
