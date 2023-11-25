@@ -12,7 +12,7 @@ class Player(MOB):
         MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule,update_particle, directory, "assets\\Bounty Hunter\\Individual Sprite")
 
         #"up_to_fall", 
-        action=["air_dying","air_hurt","roll","Edge_climb", "Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack"]
+        action=["dash_ground","air_dying","air_hurt","roll","Edge_climb", "Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack"]
         for a in action:
             self.actions.append(a)
 
@@ -56,6 +56,7 @@ class Player(MOB):
             self._get_images("attack1", 8, 2, "Attack", "Attack_", w, coefficient=coefficient) 
             self._get_images("attack2", 6, 3, "Attack2", "Attack_", w, coefficient=coefficient)
             self._get_images("roll", 7, 3, "Roll", "Roll_", w, coefficient=coefficient)
+            self._get_images("dash_ground", 8, 4, "Dash", "Dash_", w, coefficient=coefficient)
         self._get_images("dash_attack_effect", 3, 0, "Dash-Attack-Effect", "Dash-Attack-Effect", weapon="effect", coefficient=2)
         
         self.image = self.images[self.weapon]["idle"]["right"]["1"]
@@ -132,7 +133,6 @@ class Player(MOB):
         self.cooldown_dash=2
     
         # ground slide
-        self.is_sliding_ground = False
         self.compteur_slide_ground_min = -5
         self.compteur_slide_ground = self.compteur_slide_ground_min
         self.compteur_slide_ground_increment = 0.25
@@ -201,6 +201,17 @@ class Player(MOB):
         self.additionnal_compeur=0
         self.is_friendly=True
 
+        # dash ground
+        self.compteur_dash_ground_min = -4.5
+        self.compteur_dash_ground = self.compteur_dash_ground_min
+        self.compteur_dash_ground_increment = 0.12
+        # le mouvement doit durer exactement le temps necessaire à passer toutes les images de wall slide
+        self.compteur_dash_ground_max = self.compteur_dash_ground_min + self.compteur_dash_ground_increment*self.images[self.weapon]["dash_ground"]["compteur_image_max"]*self.images[self.weapon]["dash_ground"]["nbr_image"]
+        self.speed_dash_ground = 0
+        self.dash_ground_direction_x = ""
+        self.cooldown_dash_ground = 2
+        self.timers["timer_cooldown_dash_ground"] = 0
+
         self.pieds_sur_sol=False
         
         self.dico_action_functions = {
@@ -218,6 +229,7 @@ class Player(MOB):
             "air_hurt":self.air_hurt,
             "dash_attack":self.dash_attack,
             "air_dying":self.air_hurt,
+            "dash_ground":self.dash_ground,
         }       
 
     def update_pieds_sur_sol(self, sol):
@@ -414,6 +426,41 @@ class Player(MOB):
         self.compteur_slide_ground = self.compteur_slide_ground_min
             
         self.timers["timer_cooldown_slide_ground"] = time.time()
+        self.update_action()
+
+    def debut_dash_ground(self, dash_ground_direction_x):
+        #penser à bien utiliser .copy() parce que sinon la valeur est la meme que self.position tous le temps
+        self.is_dashing_ground = True
+        self.change_direction('dash_ground', dash_ground_direction_x)
+        self.dash_ground_direction_x = dash_ground_direction_x
+        self.play_random_sound("dash", self.sounds["dash"])
+
+    def dash_ground(self):
+        if self.is_falling:self.chute()
+        if self.compteur_dash_ground < self.compteur_dash_ground_max:
+            self.update_speed_dash_ground()
+            if self.dash_ground_direction_x == "right":
+                self.position[0] += (self.speed_dash_ground + self.speed *0.5) * self.zoom * self.speed_dt 
+            elif self.dash_ground_direction_x == "left":
+                self.position[0] -= (self.speed_dash_ground + self.speed *0.5) * self.zoom * self.speed_dt 
+            self.compteur_dash_ground += self.compteur_dash_ground_increment* self.speed_dt
+        else:
+            self.fin_dash_ground()
+    
+    def update_speed_dash_ground(self):
+        self.speed_dash_ground = (self.compteur_dash_ground**2) * 1.2
+        # the base speed is also increasing
+        if self.speed < self.max_speed_run:
+            self.speed += (self.speed*0.003 + self.origin_speed_run*0.010)
+    
+    def fin_dash_ground(self):
+        self.is_dashing_ground = False
+        if not self.is_falling:self.change_direction("run", self.dash_ground_direction_x)
+        else: self.change_direction("fall", self.dash_ground_direction_x)
+        self.dash_ground_direction_x = ""
+        self.compteur_dash_ground = self.compteur_dash_ground_min
+            
+        self.timers["timer_cooldown_dash_ground"] = time.time()
         self.update_action()
         
     def debut_grab_edge(self, head_only=False):

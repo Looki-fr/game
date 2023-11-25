@@ -5,7 +5,7 @@ def pressed_left(liste_mob, collision):
         if not "hurt" in mob.action_image:
             if "ground_slide" in mob.actions and mob.is_sliding_ground and mob.slide_ground_direction_x == 'right':
                 mob.fin_slide_ground()
-            if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_grabing_edge and not mob.is_sliding_ground and not mob.is_dashing and not mob.is_dashing_attacking:
+            if not mob.is_dashing_ground and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_grabing_edge and not mob.is_sliding_ground and not mob.is_dashing and not mob.is_dashing_attacking:
                 mob.save_location()
                 bool = collision.joueur_sur_sol(mob)
                 if bool:
@@ -22,7 +22,7 @@ def pressed_right(liste_mob, collision):
             if "ground_slide" in mob.actions:
                 if mob.is_sliding_ground and mob.slide_ground_direction_x == 'left':
                     mob.fin_slide_ground()
-            if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_grabing_edge and not mob.is_sliding_ground and not mob.is_dashing and not mob.is_dashing_attacking:
+            if not mob.is_dashing_ground and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_grabing_edge and not mob.is_sliding_ground and not mob.is_dashing and not mob.is_dashing_attacking:
                 mob.save_location()
                 bool = collision.joueur_sur_sol(mob)
                 if bool:
@@ -68,6 +68,8 @@ def jump_edge(mob, pressed_up_bool, left, right,down, collision, pieds, zoom):
     if not down and (collision.joueur_sur_sol(mob) or time.time() - mob.timers["timer_cooldown_able_to_jump"] < mob.cooldown_able_to_jump) and not mob.a_sauter and time.time() - mob.timers["timer_cooldown_next_jump"] > mob.cooldown_next_jump*2:
         if mob.is_sliding_ground:
             mob.fin_slide_ground()
+        if mob.is_dashing_ground:
+            mob.fin_dash_ground()
         mob.debut_saut()
         if collision.stop_if_collide(mob.direction, mob):
             if mob.direction=="right":mob.position[0]-=5*zoom
@@ -95,7 +97,7 @@ def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, collision, pr
     for mob in liste_mob:
         if 'dash' in mob.actions:
             
-            if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_dashing and not mob.a_dash and not mob.is_sliding_ground and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking:           
+            if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_dashing and not mob.a_dash and not mob.is_sliding_ground and not mob.is_dashing_ground and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking:           
                 if not joueur_sur_sol(mob) and not collision.joueur_se_cogne(mob):
                     mob.update_rect()
                     wall=collision.stop_if_collide(mob.direction, mob, dash=True, dontmove=True)
@@ -128,21 +130,37 @@ def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, collision, pr
 
                         # collision.handle_collisions_wall_dash(mob, mob.fin_dash, mob.dash_direction_x, ground=True)         
                         pressed_dash_bool[0] = True
-                elif down and not ((left and collision.stop_if_collide("left",mob, dontmove=True)) or (right and collision.stop_if_collide("right",mob, dontmove=True)))and time.time() - mob.timers["timer_cooldown_slide_ground"] > mob.cooldown_slide_ground : 
-                    if mob.is_parying:
-                        mob.is_parying=False
-                    if mob.is_falling: mob.fin_chute()
-                    if left:
-                        mob.debut_slide_ground("left")
-                        mob.update_rect()
-                        if collision.stop_if_collide("left",mob, dontmove=True):
-                            mob.fin_slide_ground()
-                    elif right:
-                        mob.debut_slide_ground("right")
-                        mob.update_rect()
-                        if collision.stop_if_collide("right",mob, dontmove=True):
-                            mob.fin_slide_ground()
-                    pressed_dash_bool[0] = True
+                elif not ((left and collision.stop_if_collide("left",mob, dontmove=True)) or (right and collision.stop_if_collide("right",mob, dontmove=True))):
+                    if down and time.time() - mob.timers["timer_cooldown_slide_ground"] > mob.cooldown_slide_ground : 
+                        if mob.is_parying:
+                            mob.is_parying=False
+                        if mob.is_falling: mob.fin_chute()
+                        if left:
+                            mob.debut_slide_ground("left")
+                            mob.update_rect()
+                            if collision.stop_if_collide("left",mob, dontmove=True):
+                                mob.fin_slide_ground()
+                        elif right:
+                            mob.debut_slide_ground("right")
+                            mob.update_rect()
+                            if collision.stop_if_collide("right",mob, dontmove=True):
+                                mob.fin_slide_ground()
+                        pressed_dash_bool[0] = True
+                    elif time.time() - mob.timers["timer_cooldown_dash_ground"] > mob.cooldown_dash_ground:
+                        if mob.is_parying:
+                            mob.is_parying=False
+                        if mob.is_falling: mob.fin_chute()
+                        if left:
+                            mob.debut_dash_ground("left")
+                            mob.update_rect()
+                            if collision.stop_if_collide("left",mob, dontmove=True):
+                                mob.fin_dash_ground()
+                        elif right:
+                            mob.debut_dash_ground("right")
+                            mob.update_rect()
+                            if collision.stop_if_collide("right",mob, dontmove=True):
+                                mob.fin_dash_ground()
+                        pressed_dash_bool[0] = True 
                         
                     
                     
@@ -153,6 +171,8 @@ def pressed_attack(liste_mob):
             if not mob.is_rolling and mob.action != "Edge_climb" and (not mob.is_jumping or mob.can_attack_while_jump) and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_grabing_edge and not mob.is_parying and not mob.is_dashing_attacking and not "hurt" in mob.action_image:
                 if mob.is_sliding_ground:
                     mob.fin_slide_ground()
+                if mob.is_dashing_ground:
+                    mob.fin_dash_ground()
                 if (not mob.is_falling and not mob.action == "jump") or not mob.has_air_attack:
                     if "player" in mob.id and time.time()-mob.timers["timer_attack"] < mob.cooldown_attack and not mob.a_attaquer2:
                         mob.attack2()
@@ -167,6 +187,8 @@ def pressed_pary(liste_mob, left, right, collision):
             if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_grabing_edge and not mob.is_dashing_attacking and time.time()-mob.timers["timer_pary"]>mob.cooldown_pary and not "hurt" in mob.action_image:
                 if mob.is_sliding_ground:
                     mob.fin_slide_ground()
+                if mob.is_dashing_ground:
+                    mob.fin_dash_ground()
                 if not mob.is_parying:
                     mob.debut_pary()
         if "roll" in mob.actions:
@@ -271,7 +293,7 @@ def gestion_chute(mob, collision):
     # si le joueur n'est pas sur un sol et ne chute pas on commence la chute
     if (not "player" in mob.id and not collision.joueur_sur_sol(mob)) or ("player" in mob.id and not mob.update_pieds_sur_sol(collision.joueur_sur_sol(mob))):
         if mob.action_image != "hurt_air" and mob.action != "Edge_climb" and not mob.is_falling and not mob.is_jumping and not mob.is_dashing and not mob.is_grabing_edge and not mob.is_jumping_edge:
-            if mob.is_attacking or mob.is_dashing_attacking or mob.is_rolling or mob.is_sliding_ground:
+            if mob.is_attacking or mob.is_dashing_attacking or mob.is_rolling or mob.is_sliding_ground or mob.is_dashing_ground:
                 mob.debut_chute(attack=True)
             else:
                 mob.debut_chute()

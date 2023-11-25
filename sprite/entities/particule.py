@@ -55,6 +55,7 @@ class Particule:
         self.all_particle["jump_edge"]= []
         self.all_particle["ground_slide"] = []
         self.all_particle["roll"]=[]
+        self.all_particle["dash_ground"]=[]
         
         self.update_particle=update_particle
     
@@ -132,7 +133,14 @@ class Particule:
                     for _ in range(2):
                         self.add_particle_base_mouvement("roll",LittleParticle(x, y, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi, 3*math.pi/4)))
                 
-        
+            elif action == "dash_ground":
+                if self.player.direction=="left":
+                    for _ in range(5):
+                        self.add_particle_base_mouvement("dash_ground",LittleParticle(x, y, self.directory, self.zoom, self.speed_dt, random.uniform(0, math.pi/3)))
+                if self.player.direction=="right":
+                    for _ in range(5):
+                        self.add_particle_base_mouvement("dash_ground",LittleParticle(x, y, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi, 2*math.pi/3)))
+
     def update(self):
         """methode appeler a chaque tick"""
         # when the dictonnary of the current mouvement are not 'full' we add particles in it
@@ -144,3 +152,4 @@ class Particule:
         elif self.player.action == "jump_edge" and len(self.all_particle["jump_edge"]) < 20 and self.pieds_collide_jump_edge: self.spawn_particle("jump_edge")
         elif self.player.action == "ground_slide" and len(self.all_particle["ground_slide"]) < 20: self.spawn_particle("ground_slide")
         elif self.player.action == "roll" and len(self.all_particle["roll"]) < 10: self.spawn_particle("roll")
+        elif self.player.action == "dash_ground" and len(self.all_particle["dash_ground"]) < 15: self.spawn_particle("dash_ground")

@@ -331,7 +331,7 @@ class Collision:
             sol=self.joueur_sur_sol(mob, dash=True, change_pos=False) 
 
 
-        if ( wall and not (mob.action=="dash_attack" and self.foot_on_little_ground(mob) and not self.stop_if_collide(direction, mob, dash=True, chest=True, dontmove=True)))  or cogne or (ground and sol):
+        if ( wall and not ((mob.action=="dash_attack" or mob.action=="dash_ground") and self.foot_on_little_ground(mob) and not self.stop_if_collide(direction, mob, dash=True, chest=True, dontmove=True)))  or cogne or (ground and sol):
             if wall : self.stop_if_collide(direction, mob, dash=True)
             dashing_attacking=mob.is_dashing_attacking ; pieds=self.joueur_sur_sol(mob, change_pos=False)
             fin_dash()

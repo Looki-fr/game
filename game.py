@@ -82,6 +82,7 @@ class Game:
         self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_attack.png").convert_alpha(), 50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash_attack", self.player.cooldown_dash_attack))
         self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash.png").convert_alpha(), 50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash", self.player.cooldown_dash))
         self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\ground_slide.png").convert_alpha(), 50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_slide_ground", self.player.cooldown_slide_ground))
+        self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_ground.png").convert_alpha(), 50+95+50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_dash_ground", self.player.cooldown_dash_ground))
 
         self.motion = [0, 0]        
 
@@ -331,6 +332,11 @@ class Game:
             mob.fin_slide_ground()
             self.collision.check_grab(mob, tmp)
 
+        # if mob.is_dashing_ground and self.collision.stop_if_collide(mob.dash_ground_direction_x, mob, dash=True, dontmove=True):
+        #     temp_ground=not mob.is_falling
+        #     tmp=mob.dash_ground_direction_x
+        #     mob.fin_dash_ground()
+        #     self.collision.check_grab(mob, tmp)
         
         if mob.is_rolling and self.collision.stop_if_collide(mob.roll_direction_x, mob):
             tmp=mob.roll_direction_x
@@ -362,6 +368,9 @@ class Game:
         if mob.is_dashing and time.time()-mob.timers["timer_debut_dash_grabedge"] > mob.cooldown_not_collide_dash:   
             self.collision.handle_collisions_wall_dash(mob, mob.fin_dash, mob.dash_direction_x, ground=True)  
         
+        if mob.is_dashing_ground:
+            self.collision.handle_collisions_wall_dash(mob, mob.fin_dash_ground, mob.dash_ground_direction_x, fall=True)
+
         # le joueur glisse contre les murs au debut du saut puis les grabs ensuite
         if mob.is_jumping and mob.compteur_jump > mob.compteur_jump_min * 0.4 and self.collision.stop_if_collide(mob.direction, mob):
             mob.fin_saut(ground=self.collision.joueur_sur_sol(mob))
