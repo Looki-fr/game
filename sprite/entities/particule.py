@@ -46,6 +46,7 @@ class Particule:
         self.player=player
         self.directory = directory
         self.pieds_collide_jump_edge = False
+        self.sur_sol = False
         self.all_particle={}
         # key : id | value : object of class LittleParticle
         self.all_particle["run"] = []
@@ -74,7 +75,7 @@ class Particule:
             if self.player.direction=="right":x=self.player.position[0]+15*self.zoom
             else:x=self.player.position[0]+self.player.rect.w-15*self.zoom
             y=self.player.position[1]+self.player.rect.h
-            if (action == "run" or action == "crouch") and random.random()*self.player.speed>self.player.origin_speed_run:
+            if (action == "run" or action == "crouch") and (random.random()*self.player.speed>self.player.origin_speed_run or self.player.action == "dash_attack"):
                 if action == "crouch":
                     if self.player.direction=="left":self.add_particle_base_mouvement("run", LittleParticle(x-25*self.zoom, y, self.directory, self.zoom, self.speed_dt, random.uniform(0, math.pi/4)))
                     elif self.player.direction=="right":self.add_particle_base_mouvement("run", LittleParticle(x+20*self.zoom, y, self.directory, self.zoom, self.speed_dt, random.uniform(math.pi, 3*math.pi/4)))
@@ -144,7 +145,7 @@ class Particule:
     def update(self):
         """methode appeler a chaque tick"""
         # when the dictonnary of the current mouvement are not 'full' we add particles in it
-        if self.player.action == "run" and len(self.all_particle["run"]) < 40: self.spawn_particle("run")
+        if (self.player.action == "run" or (self.player.action == "dash_attack" and self.sur_sol)) and len(self.all_particle["run"]) < 40: self.spawn_particle("run")
         elif self.player.action == "crouch" and len(self.all_particle["run"]) < 20: self.spawn_particle("crouch")
         elif self.player.action == "jump" and len(self.all_particle["jump"]) < 25: self.spawn_particle("jump")
         elif self.player.action == "dash" and len(self.all_particle["dash"]) < 30: self.spawn_particle("dash")

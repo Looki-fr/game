@@ -56,7 +56,7 @@ class Player(MOB):
             self._get_images("attack1", 8, 2, "Attack", "Attack_", w, coefficient=coefficient) 
             self._get_images("attack2", 6, 3, "Attack2", "Attack_", w, coefficient=coefficient)
             self._get_images("roll", 7, 3, "Roll", "Roll_", w, coefficient=coefficient)
-            self._get_images("dash_ground", 8, 4, "Dash", "Dash_", w, coefficient=coefficient)
+            self._get_images("dash_ground", 8, 3, "Dash", "Dash_", w, coefficient=coefficient)
         self._get_images("dash_attack_effect", 3, 0, "Dash-Attack-Effect", "Dash-Attack-Effect", weapon="effect", coefficient=2)
         
         self.image = self.images[self.weapon]["idle"]["right"]["1"]
@@ -448,7 +448,7 @@ class Player(MOB):
             self.fin_dash_ground()
     
     def update_speed_dash_ground(self):
-        self.speed_dash_ground = (self.compteur_dash_ground**2) * 1.2
+        self.speed_dash_ground = (self.compteur_dash_ground**2) * 1
         # the base speed is also increasing
         if self.speed < self.max_speed_run:
             self.speed += (self.speed*0.003 + self.origin_speed_run*0.010)
