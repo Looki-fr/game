@@ -355,12 +355,16 @@ class Game:
             elif mob.direction == "left":
                 mob.change_direction("run", "right")
 
+
         # le joueur ne peut pas de cogner pendant 2 ticks car sinon il ne peut pas sauter si il tiens un wall du bout des doigts
         if mob.is_jumping_edge and self.collision.joueur_se_cogne(mob) and (mob.jump_edge_pieds or (not mob.jump_edge_pieds and mob.compteur_jump_edge >= mob.compteur_jump_edge_min + mob.increment_jump_edge*4)):
             mob.fin_saut_edge(cogne=True)
         
         if mob.is_jumping and self.collision.joueur_se_cogne(mob):
             mob.fin_saut(ground=self.collision.joueur_sur_sol(mob), cogne=True)
+
+        if mob.action=="Edge_climb" and self.collision.joueur_se_cogne(mob):
+            mob.fin_grab_edge_cogne()
 
         # called every tick because distance change every tick
         

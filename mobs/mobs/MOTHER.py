@@ -474,7 +474,7 @@ class MOB(pygame.sprite.Sprite):
                 
 
         
-    def change_direction(self, action, direction, compteur_image=0, current_image=0):
+    def change_direction(self, action, direction, compteur_image=0, current_image=1):
         """change la direction et / ou l'action en cours"""
         if "player" in self.id:
             if action =="Wall_slide" and not self.dict_sounds["slide"] :

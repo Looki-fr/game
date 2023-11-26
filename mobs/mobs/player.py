@@ -200,6 +200,7 @@ class Player(MOB):
         # edge climb
         self.additionnal_compeur=0
         self.is_friendly=True
+        self.info_before_climb=([0,0], 0, 0, "left", "")
 
         # dash ground
         self.compteur_dash_ground_min = -4.5
@@ -252,6 +253,23 @@ class Player(MOB):
             if (self.additionnal_compeur<=5):
                 self.compteur_image=1
             self.additionnal_compeur+=1
+
+    def fin_grab_edge_cogne(self):
+        pos, image, compteur_image, direction, sliding=self.info_before_climb
+        self.position=pos.copy()
+        self.is_grabing_edge = True
+        if sliding == False:
+            self.image = self.images[self.weapon]["Edge_grab"][direction][str(image)]
+            self.action_image = "Edge_grab"
+            self.action = "Edge_grab"
+        else:
+            self.image = self.images[self.weapon]["Wall_slide"][direction][str(image)]
+            self.action_image = "Wall_slide"
+            self.action = "Wall_slide"
+        self.current_image = image
+        self.compteur_image = compteur_image
+        self.is_sliding = sliding
+        
 
     def debut_pary(self):
         self.compteur_pary=0
@@ -486,6 +504,7 @@ class Player(MOB):
         """
         ne pas appeler quand on veut wallslide
         """
+        self.info_before_climb=(self.position.copy(), self.current_image, self.compteur_image, self.direction, self.is_sliding)
         self.is_grabing_edge = False
         self.is_sliding = False
         self.additionnal_compeur=0

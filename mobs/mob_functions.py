@@ -85,8 +85,8 @@ def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
                 wall, w = collision.stop_if_collide(mob.direction, mob, dontmove=True, get_pos=True, dash=True, big_head=True)  
                 sol, s=collision.check_head_collide_ground(mob, changing_y=False, get_pos=mob.direction)
                 if wall and sol and w in s:
-                    collision.check_head_collide_ground(mob, changing_y=True, x=w)
                     mob.fin_grab_edge()
+                    collision.check_head_collide_ground(mob, changing_y=True, x=w)
                     mob.debut_edge_climb()
                 else:
                     jump_edge(mob, pressed_up_bool, left, right,down, collision, pieds, zoom)
@@ -146,7 +146,7 @@ def pressed_dash(liste_mob, left, right, down, up, joueur_sur_sol, collision, pr
                             if collision.stop_if_collide("right",mob, dontmove=True):
                                 mob.fin_slide_ground()
                         pressed_dash_bool[0] = True
-                    elif time.time() - mob.timers["timer_cooldown_dash_ground"] > mob.cooldown_dash_ground:
+                    elif not down and time.time() - mob.timers["timer_cooldown_dash_ground"] > mob.cooldown_dash_ground:
                         if mob.is_parying:
                             mob.is_parying=False
                         if mob.is_falling: mob.fin_chute()
