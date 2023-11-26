@@ -431,7 +431,7 @@ class Game:
             
             self.update_particle()      
             
-            self.blit.update_camera(self.player.position[0], self.player.position[1], self.player.speed_dt)
+            self.blit.update_camera(self.player.position[0], self.player.position[1], self.player.speed_dt, self.player.rect.width)
 
             self.last_player_position=self.player.position.copy()
 
