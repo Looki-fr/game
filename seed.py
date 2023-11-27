@@ -29,12 +29,6 @@
 # BUG en bas à droite saut diagonal dans l'ile on passe a travers qd don re saute => car tete est trop enfonce elle collide pas plafond ???
 # seed=1692090527.498834
 
-# BUG generation en haut, ile ds hill ?
-#seed=1699814824.9819987
-
-# BUG map on est stuck
-# seed=1700094674.006223
-
 # BUG chelou spawn
 # seed=1700251385.0795393
 
@@ -59,6 +53,6 @@ class Seed:
         with open("seed.txt", "w") as file:
             file.write(str(self.seed))
 
-
-
-    
+            
+        # BUG map on est stuck
+        # seed=1700094674.006223

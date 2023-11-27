@@ -118,6 +118,7 @@ class RenderMap:
                         elif not bot and top and not left and right: self.matrix_picture[i][y][i_]["img"]=10
                         elif bot and top and left and right: self.matrix_picture[i][y][i_]["img"]=11
                         elif not bot and top and left and right : self.matrix_picture[i][y][i_]["img"]=12
+                        elif not bot and not top and left and right: self.matrix_picture[i][y][i_]["img"]=13
                         elif left and not top and not bot and not right: self.matrix_picture[i][y][i_]["img"]=21
                         elif right and not top and not bot and not left: self.matrix_picture[i][y][i_]["img"]=22
                         if bot and top and right and left and not (top_right and top_left and bot_right and bot_left):
