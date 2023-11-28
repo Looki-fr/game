@@ -263,11 +263,14 @@ def pressed_interact(liste_mob, group_object):
                 if sprite.rect.collidelist([mob.body]) > -1:
                     return sprite.id
                 
-def handle_is_attacking(attacking_mob, get_all_mob):
+def handle_is_attacking(attacking_mob, get_all_mob, collision):
     if attacking_mob.is_dashing_attacking or attacking_mob.current_image in attacking_mob.attack_damage[attacking_mob.action_image][0]:
         for mob in [tuple[0] for tuple in get_all_mob()]:
             if mob.id != attacking_mob.id and mob.is_mob != attacking_mob.is_mob and (not "roll" in mob.actions or not mob.is_rolling):
-                if (attacking_mob.is_dashing_attacking and attacking_mob.dash_attack_image != None and mob.body.collidelist([attacking_mob.dash_attack_image.body]) > -1) or (mob.body.collidelist([attacking_mob.rect_attack]) > -1 or (attacking_mob.has_air_attack and mob.body.collidelist([attacking_mob.rect_air_attack]) > -1)) and not "dying" in mob.action_image:
+                dash_attack_image=None
+                if attacking_mob.is_dashing_attacking and len(attacking_mob.group_dash_attack_image_player.sprites())>0:
+                    dash_attack_image = attacking_mob.group_dash_attack_image_player.sprites()[0]
+                if (attacking_mob.is_dashing_attacking and dash_attack_image != None and mob.body.collidelist([dash_attack_image.body]) > -1) or (mob.body.collidelist([attacking_mob.rect_attack]) > -1 or (attacking_mob.has_air_attack and mob.body.collidelist([attacking_mob.rect_air_attack]) > -1)) and not "dying" in mob.action_image:
                     if not mob.is_parying or attacking_mob.is_dashing_attacking:
                         if attacking_mob.is_dashing_attacking: mob.health -= attacking_mob.dash_attack_damage
                         else :mob.health -=  attacking_mob.attack_damage[attacking_mob.action_image][1]
@@ -275,7 +278,7 @@ def handle_is_attacking(attacking_mob, get_all_mob):
                         if not "hurt" in mob.action_image:
                             mob.take_damage()
                         if mob.health <=0:
-                            mob.start_dying()
+                            mob.start_dying(collision.joueur_sur_sol(mob, change_pos=False))
 
                     else:
                         attacking_mob.take_damage()

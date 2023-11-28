@@ -158,7 +158,11 @@ class RenderMap:
     def has_bot_right(self,i,y,i_,mat, mapbot, matright, matbotright, texture):
         return (texture == 1 and  self.matrix_picture[i][y][i_]["y"]%self.map_generation.room_height < self.map_generation.room_height-self.map_generation.tile_width and self.matrix_picture[i][y][i_]["x"]%self.map_generation.room_width < self.map_generation.room_width-self.map_generation.tile_width and self.matrix_picture[i][y][0]["img"]==len(self.all_pic)-2) or  (texture == 1 and self.matrix_picture[i][y][i_]["x"]%self.map_generation.room_width == self.map_generation.room_width-self.map_generation.tile_width and not self.matrix_picture[i][y][i_]["y"]%self.map_generation.room_height == self.map_generation.room_height-self.map_generation.tile_width and y<len(self.matrix_picture[i])-1 and self.matrix_picture[i][y+1] and self.matrix_picture[i][y+1][0]["img"]==len(self.all_pic)-2) or (texture == 1 and self.matrix_picture[i][y][i_]["y"]%self.map_generation.room_height == self.map_generation.room_height-self.map_generation.tile_width and not self.matrix_picture[i][y][i_]["x"]%self.map_generation.room_width == self.map_generation.room_width-self.map_generation.tile_width and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y] and self.matrix_picture[i+1][y][0]["img"]==len(self.all_pic)-2) or (texture == 1 and self.matrix_picture[i][y][i_]["y"]%self.map_generation.room_height == self.map_generation.room_height-self.map_generation.tile_width and self.matrix_picture[i][y][i_]["x"]%self.map_generation.room_width == self.map_generation.room_width-self.map_generation.tile_width and y<len(self.matrix_picture[i])-1 and i<len(self.matrix_picture)-1 and self.matrix_picture[i+1][y+1] and self.matrix_picture[i+1][y+1][0]["img"]==len(self.all_pic)-2) or (self.matrix_picture[i][y][i_]["x"]+self.map_generation.tile_width, self.matrix_picture[i][y][i_]["y"]+self.map_generation.tile_width,texture) in mat+matbotright+mapbot+matright
 
-    
+    def get_random_spawn(self, i, z):
+        grounds_platforms=self.map_generation.matrix_map[i][z]["ground"]+self.map_generation.matrix_map[i][z]["platform"]
+        if len(grounds_platforms)==0:return None
+        c = random.choice(grounds_platforms)
+        return [random.randint(c[0].x, c[0].x+c[0].width), c[0].y]
 
     def _init_all_pics(self, directory):
 

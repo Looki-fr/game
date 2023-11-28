@@ -74,11 +74,27 @@ class Game:
         self.render.init_new_map(self.screen.get_width(), self.screen.get_height(), self.directory, seed)
         self.first_map=self.render.get_first_map()
 
-        player_position = (2000, 2000)
+        for i,line in enumerate(self.render.map_generation.matrix_map):
+            for y, map in enumerate(line):
+                self.load_object_map(y, i)
+
+        positions=[]
+        cpt=0
+        for i in range(len(self.render.map_generation.matrix_map)):
+            for y in range(len(self.render.map_generation.matrix_map[i])):
+                if self.render.map_generation.matrix_map[i][y]!=None:
+                    if cpt==0:
+                        player_position=self.render.get_random_spawn(i, y)
+                        if player_position!=None:
+                            cpt+=1
+                    else:
+                        pos=self.render.get_random_spawn(i, y)
+                        if pos!=None:
+                            positions.append(pos)
+                
 
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
         self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
-        
         self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_attack.png").convert_alpha(), 50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash_attack", self.player.cooldown_dash_attack))
         self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash.png").convert_alpha(), 50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash", self.player.cooldown_dash))
         self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\ground_slide.png").convert_alpha(), 50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_slide_ground", self.player.cooldown_slide_ground))
@@ -97,9 +113,9 @@ class Game:
         self.add_mob_to_game(self.player, "solo_clavier")
         self.add_mob_to_game(self.player, "solo_clavier", group="wave")
 
-        for i,line in enumerate(self.render.map_generation.matrix_map):
-            for y, map in enumerate(line):
-                self.load_object_map(y, i)
+        for pos in positions:
+            self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player), "bot")
+
 
     def load_object_map(self, c, d):
         pass
@@ -141,7 +157,7 @@ class Game:
             self.player.position, self.player.position_wave_map = self.player.position_wave_map, self.player.position
             self.checkpoint=[self.collision.dico_map_wave['spawn_player'][0], self.collision.dico_map_wave['spawn_player'][1]]
             for i, coord in enumerate(self.collision.dico_map_wave["spawn_crab"]):
-                self.add_mob_to_game(Crab(coord[0], coord[1]+1, self.directory, self.render.zoom, str(i+1), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, handle_input_ralentissement), "bot", group="wave")  
+                self.add_mob_to_game(Crab(coord[0], coord[1]+1, self.directory, self.render.zoom, str(i+1), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player), "bot", group="wave")  
             self.all_groups.remove(self.group)
             self.all_groups.insert(1, self.group_wave)
 
@@ -179,7 +195,7 @@ class Game:
                             perso_manette.append(mob[0])
                         elif mob[1]=="bot":
                             if mob[0].bot.get_distance_target()<750*self.render.zoom:
-                                mob[0].bot.make_mouvement(self.collision)
+                                mob[0].bot.make_mouvement(self.collision, self.render.zoom)
                             else:
                                 mob[0].reset_actions()
                 
@@ -304,7 +320,7 @@ class Game:
                 sprite.update_timers(dt)
 
     def handle_action(self, mob):
-        if "player" not in mob.id and not "dying" in mob.action:
+        if "player" not in mob.id and "dying" in mob.action:
             if mob.compteur_image==mob.images[mob.weapon][mob.action_image]["compteur_image_max"] and mob.current_image == mob.images[mob.weapon][mob.action_image]["nbr_image"]:
                 mob.particule.is_alive=False
                 self.tab_particule_dead.append(mob.particule)
@@ -388,7 +404,7 @@ class Game:
         gestion_chute(mob, self.collision) 
         
         if (mob.is_attacking or mob.is_dashing_attacking) and mob.action_image!="up_to_attack":
-            handle_is_attacking(mob, self.get_all_mob)
+            handle_is_attacking(mob, self.get_all_mob, self.collision)
         
         if mob.is_sliding:
             self.collision.check_tombe_ou_grab(mob)

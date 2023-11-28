@@ -5,7 +5,7 @@ from mobs.bot import Bot
 
 class Crab(MOB):
 
-    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, player, handle_input_ralentissement):
+    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, player):
         """parametres : 
                 - x : coordonne en x du joueur
                 - y : coordonne en y du joueur
@@ -69,7 +69,7 @@ class Crab(MOB):
         
         self.range_attack=self.rect_attack.w
         
-        self.bot=Bot(self, player, handle_input_ralentissement)
+        self.bot=Bot(self, player)
     
     def debut_crouch(self):
         """very simple"""

@@ -10,3 +10,5 @@ if __name__ == "__main__":
     game.run()
 
 # BUG dash attack sprite pas au bon moment
+
+# BUG spawn ds mur

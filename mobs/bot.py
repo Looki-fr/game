@@ -6,8 +6,7 @@ class Bot:
     def update_timers(dt):
         pass
 
-    def __init__(self, mob, target, handle_input_ralentissement):
-        self.handle_input_ralentissement = handle_input_ralentissement
+    def __init__(self, mob, target):
         self.target=target
         self.mob=mob
         
@@ -86,7 +85,7 @@ class Bot:
         else:
             return "right"
     
-    def make_mouvement(self, collision):
+    def make_mouvement(self, collision, zoom):
         if self.get_distance_target() < 500:
             right = left = down = up = False
             
@@ -111,12 +110,12 @@ class Bot:
             
             if sol and not self.mob.is_jumping and cprj and rand and self.is_jumping_platform == False and time.time()-self.timer_jump_platform>self.cooldown_jump_platform:
                 self.is_jumping_platform="right"
-                pressed_up([self.mob], down, left, True, [False], collision)
+                pressed_up([self.mob], down, left, True, [False], collision, zoom)
                 self._reset_coeff("jump_platform")
             
             if sol and not self.mob.is_jumping and cplj and rand and self.is_jumping_platform == False and time.time()-self.timer_jump_platform>self.cooldown_jump_platform:
                 self.is_jumping_platform="left"
-                pressed_up([self.mob], down, True, right, [False], collision)
+                pressed_up([self.mob], down, True, right, [False], collision, zoom)
                 self._reset_coeff("jump_platform")
             
             # we force the mob to move right or left if he collide a special rect in the map
@@ -185,17 +184,17 @@ class Bot:
             if not self.mob.is_attacking:
                 if self.random_coefficient["type_attack"][1]==0: 
                     if not(x < -self.mob.range_attack or x > self.mob.range_attack):
-                        handle_input_ralentissement(self.mob)
+                        handle_input_ralentissement(self.mob, collision)
                         if time.time() - self.mob.timer_attack > self.mob.cooldown_attack: 
                             pressed_attack([self.mob])
                         self._reset_coeff("type_attack")
                 elif self.random_coefficient["type_attack"][1]==1 and behind and self._get_distance_target_x(abs_bool=True) < self.mob.range_attack:
-                    handle_input_ralentissement(self.mob)
+                    handle_input_ralentissement(self.mob, collision)
                     if time.time() - self.mob.timer_attack > self.mob.cooldown_attack:
                         self._reset_coeff("type_attack")
                         pressed_attack([self.mob])
                 elif self.random_coefficient["type_attack"][1]==2 and forward and self._get_distance_target_x(abs_bool=True) < self.mob.range_attack:
-                    handle_input_ralentissement(self.mob)
+                    handle_input_ralentissement(self.mob, collision)
                     if time.time() - self.mob.timer_attack > self.mob.cooldown_attack:
                         self._reset_coeff("type_attack")
                         pressed_attack([self.mob])
@@ -203,12 +202,12 @@ class Bot:
             # if the mob is running we make him do random jump if the target is not bellow it and if he is not on a platform        
             if (sol and self.mob.is_mouving_x) and not collision.joueur_sur_sol(self.mob, platform_only=True) and not cprj and not cplj and not cpl and not cpr:
                 if random.randint(1,self.random_coefficient["jump_run"][1])==2: 
-                    pressed_up([self.mob], down, left, right, [False], collision)
+                    pressed_up([self.mob], down, left, right, [False], collision, zoom)
                     self._reset_coeff("jump_run")
 
             # we dont want every mob to jump at the same time so we add randomness
             if y > 200 and not cprj and not cplj and not cpl and not cpr: 
-                if random.randint(1,10)==5: pressed_up([self.mob], down, left, right, [False], collision)
+                if random.randint(1,10)==5: pressed_up([self.mob], down, left, right, [False], collision, zoom)
             elif y < - 200: 
                 if random.randint(1,10)==5: pressed_down([self.mob])
                 
@@ -216,5 +215,5 @@ class Bot:
                 pressed_attack([self.mob])
                 self._reset_coeff("attack_air")
         else :
-            self.mob.reset_actions()
-            self.handle_input_ralentissement(self.mob)
+            self.mob.reset_actions(collision.joueur_sur_sol(self.mob, change_pos=False))
+            handle_input_ralentissement(self.mob, collision)

@@ -45,7 +45,7 @@ class Seed:
         # seed = 1700336112.335133
 
         # BUG trou
-        self.seed = 1700345499.171078
+        # self.seed = 1700345499.171078
 
         # BUG climb edge traverse plafond
         # seed = 1700346541.011556
