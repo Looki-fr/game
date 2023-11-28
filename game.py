@@ -5,7 +5,6 @@ import time
 from mobs.mobs.player import Player
 from mobs.mobs.crab import Crab
 from mobs.mob_functions import *
-from mobs.bot import *
 from mobs.collision import Collision
 from sprite.entities.dash_images import Dash_images
 from sprite.entities.particule import Particule
@@ -29,6 +28,7 @@ class Game:
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
         self.dt = 1/30
         self.seed=Seed()
+        self.distance_target_bot=350
 
         self.config = Config(self.directory)
         self.audio = Audio(self.directory, self.config.get("playlist"), self.config)
@@ -194,10 +194,7 @@ class Game:
                         elif mob[1]=="manette":
                             perso_manette.append(mob[0])
                         elif mob[1]=="bot":
-                            if mob[0].bot.get_distance_target()<750*self.render.zoom:
-                                mob[0].bot.make_mouvement(self.collision, self.render.zoom)
-                            else:
-                                mob[0].reset_actions()
+                            mob[0].bot.make_mouvement(self.collision, self.render.zoom, self.distance_target_bot)
                 
                 for control in self.all_controls.values():
                     down=pressed[control["touches"][3]]
@@ -437,7 +434,7 @@ class Game:
             self.group_cooldown.update()
                 
             for mob in [tuple[0] for tuple in self.get_all_mob()]:
-                if mob.bot == None or mob.bot.get_distance_target()<750*self.render.zoom:
+                if mob.bot == None or mob.bot.get_distance_target()<self.distance_target_bot*2*self.render.zoom:
                     mob.update_action()
                     self.handle_action(mob)
                     
@@ -446,8 +443,6 @@ class Game:
                         
                     if mob.is_jumping and mob.action=="run":
                         mob.is_jumping=False
-                else:
-                    mob.reset_actions()
             
             self.update_particle()      
             

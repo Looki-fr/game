@@ -11,6 +11,9 @@ class Player(MOB):
         # initialisation de la classe mere permettant de faire de cette classe un sprite
         MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule,update_particle, directory, "assets\\Bounty Hunter\\Individual Sprite")
 
+        self.max_health=10000000
+        self.health=self.max_health
+
         #"up_to_fall", 
         action=["dash_ground","air_dying","air_hurt","roll","Edge_climb", "Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack"]
         for a in action:

@@ -1,6 +1,6 @@
 {
-    "sound": "True",
-    "music": "True",
+    "sound": "False",
+    "music": "False",
     "playlist": "SSBM",
     "maps": {
         "1700345499.171078": "dfdsfdsf",

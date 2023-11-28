@@ -32,16 +32,22 @@ class Bot:
             self.direction_forward = "right"
         
         # variables used when the mob is forced to jump when it collide specials rect in the map
+        self.timers={
+            "timer_jump_platform":0,
+            "timer_changed_direction_behind":0,
+            "timer_changed_direction_forward":0
+
+        }
+        
         self.is_jumping_platform=False
-        self.timer_jump_platform=0
         self.cooldown_jump_platform=0.2
-        
-        self.timer_changed_direction_behind=0
-        self.cooldown_changed_direction_behind=0.5
-        
-        self.timer_changed_direction_forward=0
-        self.cooldown_changed_direction_forward=0.5
+        self.cooldown_changed_direction_behind=1
+        self.cooldown_changed_direction_forward=1
     
+    def update_timers(self, dt):
+        for key in self.timers.keys():
+            self.timers[key]+=dt
+
     def _reset_coeff(self, key):
         """choose an element from self.random_coefficient using the weights"""
         self.random_coefficient[key][1]=self.mob._random_choice(self.random_coefficient[key][0])
@@ -54,16 +60,16 @@ class Bot:
     def _get_distance_target_x(self, abs_bool=False):
         """when x>0 : the mob is on the right of the target and
            when x<0 : the mob is on the left of the target"""
-        if abs_bool: return abs(self.target.position[0] + self.target.image.get_width()/2 - self.mob.position[0] - self.mob.image.get_width()/2)/self.mob.zoom
-        else: return (self.mob.position[0] - self.target.position[0])/self.mob.zoom
+        if abs_bool: return abs(self.target.position[0] + self.target.image.get_width()/2 - self.mob.position[0] - self.mob.image.get_width()/2)
+        else: return (self.mob.position[0]+self.mob.rect.width/2 - self.target.position[0]-self.target.rect.width/2)
     
     def _get_distance_target_y(self, abs_bool=False):
-        if abs_bool: return abs(self.mob.position[1] + self.mob.image.get_height() - self.mob.increment_foot*2 - (self.target.position[1]+self.target.image.get_height()-self.target.increment_foot*2))/self.mob.zoom
-        else: return  (self.mob.position[1] + self.mob.image.get_height() - self.mob.increment_foot*2 - (self.target.position[1]+self.target.image.get_height()-self.target.increment_foot*2))/self.mob.zoom
+        if abs_bool: return abs(self.mob.position[1] + self.mob.image.get_height() - self.mob.increment_foot*2 - (self.target.position[1]+self.target.image.get_height()-self.target.increment_foot*2))
+        else: return  (self.mob.position[1] + self.mob.image.get_height() - self.mob.increment_foot*2 - (self.target.position[1]+self.target.image.get_height()-self.target.increment_foot*2))
     
     def get_distance_target(self):
         """pythagore"""
-        return sqrt(self._get_distance_target_x()**2 + self._get_distance_target_y()**2)/self.mob.zoom
+        return sqrt(self._get_distance_target_x()**2 + self._get_distance_target_y()**2)
     
     def _is_behind(self):
         """a mob is concidered behind if he is far enough from the target and if he is in his back"""
@@ -85,8 +91,8 @@ class Bot:
         else:
             return "right"
     
-    def make_mouvement(self, collision, zoom):
-        if self.get_distance_target() < 500:
+    def make_mouvement(self, collision, zoom, distance):
+        if self.get_distance_target() < distance*zoom:
             right = left = down = up = False
             
             # initialisation of all variables that will be use multiple times to optimisation purpose (not calling the functions multiple times)
@@ -103,17 +109,17 @@ class Bot:
             # reset self.is_jumping_platform if the jump is ended
             if sol and not self.mob.is_jumping and self.is_jumping_platform!=False:
                 self.is_jumping_platform=False
-                self.timer_jump_platform=time.time()
+                self.timers["timer_jump_platform"]=time.time()
             
             # we dont want every mob to jump at the same time so we add randomness
             rand=(y>0 and random.randint(1,5)==1) or (y == 0 and random.randint(1, self.random_coefficient["jump_platform"][1])==1)
             
-            if sol and not self.mob.is_jumping and cprj and rand and self.is_jumping_platform == False and time.time()-self.timer_jump_platform>self.cooldown_jump_platform:
+            if sol and not self.mob.is_jumping and cprj and rand and self.is_jumping_platform == False and time.time()-self.timers["timer_jump_platform"]>self.cooldown_jump_platform:
                 self.is_jumping_platform="right"
                 pressed_up([self.mob], down, left, True, [False], collision, zoom)
                 self._reset_coeff("jump_platform")
             
-            if sol and not self.mob.is_jumping and cplj and rand and self.is_jumping_platform == False and time.time()-self.timer_jump_platform>self.cooldown_jump_platform:
+            if sol and not self.mob.is_jumping and cplj and rand and self.is_jumping_platform == False and time.time()-self.timers["timer_jump_platform"]>self.cooldown_jump_platform:
                 self.is_jumping_platform="left"
                 pressed_up([self.mob], down, True, right, [False], collision, zoom)
                 self._reset_coeff("jump_platform")
@@ -128,21 +134,21 @@ class Bot:
                 left=True
             
             # inversed the direction of the behind attack when we need (take a paper and do a sketch)
-            if time.time() - self.timer_changed_direction_behind > self.cooldown_changed_direction_behind and \
+            if time.time() - self.timers["timer_changed_direction_behind"] > self.cooldown_changed_direction_behind and \
                 self.random_coefficient["type_attack"][1]==1 and (((self.direction_behind=="right" and self.target.direction=="right" and x >0) or \
                 (self.direction_behind=="left" and self.target.direction=="left" and x<-0)) or (behind and self.direction_behind!=self.target.direction)):
-                self.timer_changed_direction_behind=time.time()
+                self.timers["timer_changed_direction_behind"]=time.time()
                 self.direction_behind=self._invert_dir(self.direction_behind)
             
             # inversed the direction of the forward attack when we need (take a paper and do a sketch)    
-            if time.time() - self.timer_changed_direction_forward > self.cooldown_changed_direction_forward and \
+            if time.time() - self.timers["timer_changed_direction_forward"] > self.cooldown_changed_direction_forward and \
                 self.random_coefficient["type_attack"][1]==2 and (((self.direction_forward=="right" and self.target.direction=="left" and x >0) or \
                     (self.direction_forward=="left" and self.target.direction=="right" and x<0)) or (forward and self.direction_forward==self.target.direction)):
-                self.timer_changed_direction_forward=time.time()
+                self.timers["timer_changed_direction_forward"]=time.time()
                 self.direction_forward=self._invert_dir(self.direction_forward)
             
             # sometimes the mob will attack you even if you are not in range because we want it to anticipate
-            if random.randint(1,self.random_coefficient["anticipation"][1])==1 and ((self.target.direction=="right" and 0 < x < (self.mob.range_attack)*2) or (self.target.direction=="left" and 0 > x > (-self.mob.range_attack)*2)) and self._get_distance_target_y(abs_bool=True)<100:
+            if random.randint(1,self.random_coefficient["anticipation"][1])==1 and ((self.target.direction=="right" and 0 < x < (self.mob.range_attack)*2) or (self.target.direction=="left" and 0 > x > (-self.mob.range_attack)*2)) and self._get_distance_target_y(abs_bool=True)<100 and time.time() - self.mob.timers["timer_attack"] > self.mob.cooldown_attack:
                 self._reset_coeff("anticipation")
                 pressed_attack([self.mob])
             
@@ -179,23 +185,26 @@ class Bot:
                 elif self.is_jumping_platform=="right":
                     pressed_right([self.mob], collision)
                 elif self.is_jumping_platform=="left":
-                    pressed_left([self.mob], collision)          
+                    pressed_left([self.mob], collision) 
+
+                if random.randint(1,25)==1 and self.get_distance_target() <= self.mob.range_attack and time.time() - self.mob.timers["timer_attack"] > self.mob.cooldown_attack: 
+                    pressed_attack([self.mob])         
                     
             if not self.mob.is_attacking:
                 if self.random_coefficient["type_attack"][1]==0: 
                     if not(x < -self.mob.range_attack or x > self.mob.range_attack):
                         handle_input_ralentissement(self.mob, collision)
-                        if time.time() - self.mob.timer_attack > self.mob.cooldown_attack: 
+                        if time.time() - self.mob.timers["timer_attack"] > self.mob.cooldown_attack: 
                             pressed_attack([self.mob])
                         self._reset_coeff("type_attack")
                 elif self.random_coefficient["type_attack"][1]==1 and behind and self._get_distance_target_x(abs_bool=True) < self.mob.range_attack:
                     handle_input_ralentissement(self.mob, collision)
-                    if time.time() - self.mob.timer_attack > self.mob.cooldown_attack:
+                    if time.time() - self.mob.timers["timer_attack"] > self.mob.cooldown_attack:
                         self._reset_coeff("type_attack")
                         pressed_attack([self.mob])
                 elif self.random_coefficient["type_attack"][1]==2 and forward and self._get_distance_target_x(abs_bool=True) < self.mob.range_attack:
                     handle_input_ralentissement(self.mob, collision)
-                    if time.time() - self.mob.timer_attack > self.mob.cooldown_attack:
+                    if time.time() - self.mob.timers["timer_attack"] > self.mob.cooldown_attack:
                         self._reset_coeff("type_attack")
                         pressed_attack([self.mob])
             
@@ -211,7 +220,7 @@ class Bot:
             elif y < - 200: 
                 if random.randint(1,10)==5: pressed_down([self.mob])
                 
-            if not sol and random.randint(1,self.random_coefficient["attack_air"][1])==2 and self.get_distance_target() <= self.mob.range_attack: 
+            if not sol and random.randint(1,self.random_coefficient["attack_air"][1])==2 and self.get_distance_target() <= self.mob.range_attack and time.time() - self.mob.timers["timer_attack"] > self.mob.cooldown_attack: 
                 pressed_attack([self.mob])
                 self._reset_coeff("attack_air")
         else :

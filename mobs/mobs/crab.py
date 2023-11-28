@@ -1,7 +1,7 @@
 import pygame
 import time
 from .MOTHER import MOB
-from mobs.bot import Bot
+from mobs.botGroundCloseFight import Bot
 
 class Crab(MOB):
 
@@ -45,6 +45,7 @@ class Crab(MOB):
         self.rect_attack_update_pos="mid"
         self.complement_collide_wall_right = self.body.w
         self.complement_collide_wall_left = self.body.w
+        self.increment_left_right=0
         
         # enregistrement de l'ancienne position pour que si on entre en collision avec un element du terrain la position soit permutte avec l'anciene
         self.old_position = self.position.copy()
@@ -56,8 +57,8 @@ class Crab(MOB):
         self.attack_damage={}
         self.attack_damage["attack1"]=([1,2,3,4], self._random_choice([(1, 2), (1.2, 3), (1.4, 5),(1.6, 10),(1.8, 5),(2, 3),(2.2, 2)]))
         self.is_attacking = False
-        self.timer_attack=0
-        self.cooldown_attack=2
+        self.timers["timer_attack"] = 0
+        self.cooldown_attack=4
         self.direction_attack=""
         
         self.compteur_jump_min = -5
@@ -71,6 +72,10 @@ class Crab(MOB):
         
         self.bot=Bot(self, player)
     
+    def update_timers(self, dt):
+        super().update_timers(dt)
+        self.bot.update_timers(dt)
+
     def debut_crouch(self):
         """very simple"""
         if not self.is_attacking:
@@ -80,5 +85,5 @@ class Crab(MOB):
         self.compteur_attack=0
         self.is_attacking = True
         self.change_direction("up_to_attack", self.direction)
-        self.timer_attack=time.time()
+        self.timers["timer_attack"]=time.time()
         self.direction_attack=self.direction
