@@ -194,7 +194,7 @@ class Game:
                         elif mob[1]=="manette":
                             perso_manette.append(mob[0])
                         elif mob[1]=="bot":
-                            mob[0].bot.make_mouvement(self.collision, self.render.zoom, self.distance_target_bot)
+                            mob[0].bot.make_mouvement(self.collision, self.render.zoom, self.distance_target_bot, self.render.tile_width)
                 
                 for control in self.all_controls.values():
                     down=pressed[control["touches"][3]]

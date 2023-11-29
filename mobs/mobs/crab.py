@@ -2,6 +2,7 @@ import pygame
 import time
 from .MOTHER import MOB
 from mobs.botGroundCloseFight import Bot
+import random
 
 class Crab(MOB):
 
@@ -50,8 +51,9 @@ class Crab(MOB):
         # enregistrement de l'ancienne position pour que si on entre en collision avec un element du terrain la position soit permutte avec l'anciene
         self.old_position = self.position.copy()
         
-        self.speed_coeff=self._random_choice([(0.65, 2), (0.68, 3), (0.71, 3),(0.74, 5),(0.77, 10),(0.80, 10),(0.83, 5),(0.86, 3), (0.89, 3), (0.92, 2)])
-        
+        # self.speed_coeff=self._random_choice([(0.65, 2), (0.68, 3), (0.71, 3),(0.74, 5),(0.77, 10),(0.80, 10),(0.83, 5),(0.86, 3), (0.89, 3), (0.92, 2)])
+        self.speed_coeff=random.random() * 0.3 + 0.65
+
         #attack
         self.can_attack_while_jump=True
         self.attack_damage={}
