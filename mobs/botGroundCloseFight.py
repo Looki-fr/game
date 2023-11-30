@@ -20,15 +20,17 @@ class Bot:
         self.current_behind=random.randint(self.behind_start, self.behind_end)
 
         if self._get_distance_target_x()<0: 
-            self.direction_behind = "right"
+            self.direction = "right"
         else : 
-            self.direction_behind = "left"
+            self.direction = "left"
         
         # variables used when the mob is forced to jump when it collide specials rect in the map
         self.timers={
+            "change_dir_collision_wall": 0,
         }
         
         self.cooldowns={
+            "change_dir_collision_wall": 0.5,
             }
         
         #jump
@@ -70,13 +72,14 @@ class Bot:
         else:
             return "right"
         
-    def need_to_jump(self, tile_width, dist_y):
-        if (dist_y > tile_width*3):
-           return random.randint(1, self.random_coefficient["jump"]["top"]) == 1
-        elif (dist_y < -tile_width*3):
-            return random.randint(1, self.random_coefficient["jump"]["bottom"]) == 1
-        else:
-            return random.randint(1, self.random_coefficient["jump"]["normal"]) == 1
+    def need_to_jump(self, tile_width, dist_y, dist_x):
+        if (dist_x < 0 and self.direction == "right") or (dist_x > 0 and self.direction == "left"):
+            if (dist_y > tile_width*3):
+                return random.randint(1, self.random_coefficient["jump"]["top"]) == 1
+            elif (dist_y < -tile_width*3):
+                return random.randint(1, self.random_coefficient["jump"]["bottom"]) == 1
+            else:
+                return random.randint(1, self.random_coefficient["jump"]["normal"]) == 1
     
     def make_mouvement(self, collision, zoom, distance, tile_width):
         if self.get_distance_target() < distance*zoom:
@@ -87,19 +90,44 @@ class Bot:
             y=self._get_distance_target_y()
             x=self._get_distance_target_x()
 
-            
-            if abs(x) > self.current_behind*zoom:
-                if x < 0:
-                    self.direction_behind = "right"
-                else:
-                    self.direction_behind = "left"
+            change_dir_falling=False
+            if sol :
+                temp=self.mob.position[0]
+                if self.direction == "right":
+                    self.mob.position[0] += self.mob.speed * 3 * zoom
+                elif self.direction == "left":
+                    self.mob.position[0] -= self.mob.speed * 3 * zoom
+                self.mob.update_rect()
+                if not collision.joueur_sur_sol(self.mob, change_pos=False):
+                    change_dir_falling=True
+                self.mob.position[0]=temp
+                self.mob.update_rect()
+
+            if change_dir_falling and y>-tile_width*2.5 and not ((x < 0 and self.direction == "right") or (x > 0 and self.direction == "left")):
+                self.direction = self._invert_dir(self.direction)
                 self.current_behind=random.randint(self.behind_start, self.behind_end)
-            if self.direction_behind == "right":
+                self.timers["change_dir_collision_wall"]=time.time()
+            elif collision.stop_if_collide(self.direction, self.mob, dontmove=True) and time.time() - self.timers["change_dir_collision_wall"] > self.cooldowns["change_dir_collision_wall"]:
+                self.direction = self._invert_dir(self.direction)
+                self.current_behind=random.randint(self.behind_start, self.behind_end)
+                self.timers["change_dir_collision_wall"]=time.time()
+            elif time.time() - self.timers["change_dir_collision_wall"] > self.cooldowns["change_dir_collision_wall"] :
+                if abs(x) > self.current_behind*zoom:
+                    if x < 0:
+                        self.direction = "right"
+                    else:
+                        self.direction = "left"
+                    self.current_behind=random.randint(self.behind_start, self.behind_end)
+                self.timers["change_dir_collision_wall"]=time.time()
+            elif change_dir_falling and ((x < 0 and self.direction == "right") or (x > 0 and self.direction == "left")):
+                up=True
+
+            if self.direction == "right":
                 right = True
-            elif self.direction_behind == "left":
+            elif self.direction == "left":
                 left = True
 
-            if self.need_to_jump(tile_width, y):
+            if self.need_to_jump(tile_width, y, x):
                 up = True
 
             if not self.attack_focus_behind and time.time() - self.mob.timers["timer_attack"] > self.mob.cooldown_attack and ((sol and abs(x) < self.mob.range_attack and random.randint(1, self.random_coefficient["attack"]["normal"]) == 1) \

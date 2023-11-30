@@ -87,6 +87,7 @@ class Game:
                         player_position=self.render.get_random_spawn(i, y)
                         if player_position!=None:
                             cpt+=1
+                            positions.append(player_position)
                     else:
                         pos=self.render.get_random_spawn(i, y)
                         if pos!=None:
