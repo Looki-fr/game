@@ -4,6 +4,7 @@ import os
 import time
 from mobs.mobs.player import Player
 from mobs.mobs.crab import Crab
+from mobs.mobs.star import Star
 from mobs.mob_functions import *
 from mobs.collision import Collision
 from sprite.entities.dash_images import Dash_images
@@ -16,13 +17,12 @@ from audio.audio import Audio
 from config.config import Config
 from seed import Seed
 from sprite.cooldown.sprite_cooldown import Sprite_cooldown
-
 class Game:
     def __init__(self):
         self.directory = os.path.dirname(os.path.realpath(__file__))
         
         info_screen = pygame.display.Info()
-        self.screen = pygame.display.set_mode((round(info_screen.current_w*1),round(info_screen.current_h*0.8)))
+        self.screen = pygame.display.set_mode((round(info_screen.current_w*1),round(info_screen.current_h*0.7)))
         self.screen.fill((0,0,0))       
         self.bg = pygame.Surface((self.screen.get_width(), self.screen.get_height()), flags=SRCALPHA)
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
@@ -95,11 +95,16 @@ class Game:
                 
 
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
-        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
-        self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_attack.png").convert_alpha(), 50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash_attack", self.player.cooldown_dash_attack))
-        self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash.png").convert_alpha(), 50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash", self.player.cooldown_dash))
-        self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\ground_slide.png").convert_alpha(), 50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_slide_ground", self.player.cooldown_slide_ground))
-        self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_ground.png").convert_alpha(), 50+95+50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_dash_ground", self.player.cooldown_dash_ground))
+        self.player = Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
+        #self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
+        if "dash_attack" in self.player.actions:
+            self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_attack.png").convert_alpha(), 50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash_attack", self.player.cooldown_dash_attack))
+        if "dash" in self.player.actions:
+            self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash.png").convert_alpha(), 50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash", self.player.cooldown_dash))
+        if "ground_slide" in self.player.actions:
+            self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\ground_slide.png").convert_alpha(), 50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_slide_ground", self.player.cooldown_slide_ground))
+        if "dash_ground" in self.player.actions:
+            self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_ground.png").convert_alpha(), 50+95+50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_dash_ground", self.player.cooldown_dash_ground))
 
         self.motion = [0, 0]        
 
@@ -115,7 +120,7 @@ class Game:
         self.add_mob_to_game(self.player, "solo_clavier", group="wave")
 
         for pos in positions:
-            self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player), "bot")
+            self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
 
 
     def load_object_map(self, c, d):
@@ -334,6 +339,9 @@ class Game:
         # gestion collision avec les murs
         
         mob.save_location()    
+
+        if "star" in mob.id and mob.is_attacking and self.collision.stop_if_collide(mob.direction_attack, mob):
+            mob.fin_attack(self.collision.joueur_sur_sol(mob, change_pos=True))
 
         if mob.is_jumping_edge and self.collision.stop_if_collide(mob.direction_jump_edge, mob):
             tmp=mob.direction_jump_edge

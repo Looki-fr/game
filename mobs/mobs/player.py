@@ -9,7 +9,7 @@ class Player(MOB):
                 - y : coordonne en y du joueur
                 - directory : chemin absolu vers le dossier du jeu"""
         # initialisation de la classe mere permettant de faire de cette classe un sprite
-        MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule,update_particle, directory, "assets\\Bounty Hunter\\Individual Sprite")
+        MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule,update_particle, directory, "assets\\Bounty Hunter\\Individual Sprite", audio)
 
         self.max_health=10000000
         self.health=self.max_health
@@ -27,14 +27,12 @@ class Player(MOB):
             "attack2":1,
             "air_attack":1,
         }
-        self.play_random_sound=audio.play_random_sound
+
         self.dict_sounds={
             "slide":False,
             "slide_speed":False,
             "run":False
         }
-        self.play_long_sounds=audio.play_long_sounds
-        self.stop_long_sounds=audio.stop_long_sounds
 
         coefficient=2
         self.weapon="shotgun"
