@@ -39,18 +39,14 @@ class Bot:
                 {
                     "normal": 100,
                     "top": 50,
-                    "bottom": 200
+                    "bottom": 150
                 },
             "attack":
                 {
-                    "focus_behind": 4,
                     "normal": 25,
                     "anticipation": 35,
-                    "air": 15,
                 }
         }
-
-        self.attack_focus_behind=True
 
     def update_timers(self, dt):
         for key in self.timers.keys():
@@ -82,7 +78,7 @@ class Bot:
                 return random.randint(1, self.random_coefficient["jump"]["normal"]) == 1
     
     def make_mouvement(self, collision, zoom, distance, tile_width):
-        if self.get_distance_target() < distance*zoom:
+        if self.get_distance_target() < distance*zoom and not self.mob.is_attacking:
             right = left = down = up = attack = False
             
             # initialisation of all variables that will be use multiple times to optimisation purpose (not calling the functions multiple times)
@@ -130,17 +126,9 @@ class Bot:
             if self.need_to_jump(tile_width, y, x):
                 up = True
 
-            if not self.attack_focus_behind and time.time() - self.mob.timers["timer_attack"] > self.mob.cooldown_attack and ((sol and abs(x) < self.mob.range_attack and random.randint(1, self.random_coefficient["attack"]["normal"]) == 1) \
-                or (not sol and abs(x) < self.mob.range_attack and random.randint(1, self.random_coefficient["attack"]["air"]) == 1) \
+            if time.time() - self.mob.timers["timer_attack"] > self.mob.cooldown_attack and ((sol and abs(x) < self.mob.range_attack and random.randint(1, self.random_coefficient["attack"]["normal"]) == 1) \
                 or (self.mob.range_attack < abs(x) < self.mob.range_attack*3 and ((x<0 and self.target.direction=="left") or (x>0 and self.target.direction=="right")) and random.randint(1, self.random_coefficient["attack"]["anticipation"]) == 1)):
                 attack=True
-                self.attack_focus_behind=random.randint(1, self.random_coefficient["attack"]["focus_behind"]) == 1
-            elif self.attack_focus_behind and time.time() - self.mob.timers["timer_attack"] > self.mob.cooldown_attack and abs(x) < self.mob.range_attack \
-                and ((x<0 and self.target.direction=="right") or (x>0 and self.target.direction=="left"))\
-                and random.randint(1, self.random_coefficient["attack"]["normal"]//2) == 1:
-                attack=True
-                self.attack_focus_behind=random.randint(1, self.random_coefficient["attack"]["focus_behind"]) == 1
-
 
             if right:
                 pressed_right([self.mob], collision)

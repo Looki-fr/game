@@ -1,7 +1,7 @@
 import pygame
 import time
 from .MOTHER import MOB
-from mobs.botGroundCloseFight import Bot
+from mobs.bot.botGroundCloseFight import Bot
 import random
 
 class Crab(MOB):

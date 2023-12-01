@@ -1,7 +1,7 @@
 import pygame
 import time
 from .MOTHER import MOB
-from mobs.botGroundCloseFight import Bot
+from mobs.bot.botStar import Bot
 import random
 
 class Star(MOB):
@@ -38,9 +38,9 @@ class Star(MOB):
         self.rect = self.image.get_rect()
         
         # creation d'un rect pour les pieds et le corps
-        self.feet = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.1)
-        self.head = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.1)
-        self.body = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.8)
+        self.feet = pygame.Rect(0,0,self.rect.width * 0.7, self.rect.height*0.1)
+        self.head = pygame.Rect(0,0,self.rect.width * 0.7, self.rect.height*0.1)
+        self.body = pygame.Rect(0,0,self.rect.width * 0.7, self.rect.height*0.8)
         self.rect_attack = self.body
         self.rect_attack_update_pos="mid"
         self.complement_collide_wall_right = self.body.w
@@ -70,7 +70,7 @@ class Star(MOB):
             "attack1":self.attack,
         }       
         
-        self.range_attack=self.rect_attack.w
+        self.range_attack=self.rect_attack.w * 10
         
         #self.bot=Bot(self, player)
     
@@ -89,6 +89,7 @@ class Star(MOB):
         self.change_direction("up_to_attack", self.direction)
         self.timers["timer_attack"]=time.time()
         self.direction_attack=self.direction
+        self.max_speed_run = self.max_speed_run * 2
     
     def attack(self):
         if self.is_falling:
@@ -106,6 +107,7 @@ class Star(MOB):
             self.change_direction("idle", self.direction)
         else:
             self.change_direction("fall", self.direction)
+        self.max_speed_run = self.max_speed_run / 2
 
     def debut_saut(self):
         if self.is_attacking:

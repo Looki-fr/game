@@ -95,7 +95,7 @@ class Game:
                 
 
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
-        self.player = Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
+        self.player=Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
         #self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
         if "dash_attack" in self.player.actions:
             self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_attack.png").convert_alpha(), 50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash_attack", self.player.cooldown_dash_attack))
@@ -119,8 +119,8 @@ class Game:
         self.add_mob_to_game(self.player, "solo_clavier")
         self.add_mob_to_game(self.player, "solo_clavier", group="wave")
 
-        for pos in positions:
-            self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
+        # for pos in positions:
+        #     self.add_mob_to_game(Star(pos[0], pos[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
 
 
     def load_object_map(self, c, d):

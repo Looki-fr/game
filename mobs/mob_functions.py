@@ -2,7 +2,7 @@ import time
 
 def pressed_left(liste_mob, collision):
     for mob in liste_mob:
-        if not "hurt" in mob.action_image:
+        if not "hurt" in mob.action_image and not ("star" in mob.id and mob.is_attacking):
             if "ground_slide" in mob.actions and mob.is_sliding_ground and mob.slide_ground_direction_x == 'right':
                 mob.fin_slide_ground()
             if not mob.is_dashing_ground and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_grabing_edge and not mob.is_sliding_ground and not mob.is_dashing and not mob.is_dashing_attacking:
@@ -18,7 +18,7 @@ def pressed_left(liste_mob, collision):
 
 def pressed_right(liste_mob, collision):
     for mob in liste_mob:
-        if not "hurt" in mob.action_image:
+        if not "hurt" in mob.action_image and not ("star" in mob.id and mob.is_attacking):
             if "ground_slide" in mob.actions:
                 if mob.is_sliding_ground and mob.slide_ground_direction_x == 'left':
                     mob.fin_slide_ground()

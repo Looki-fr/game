@@ -310,10 +310,14 @@ class MOB(pygame.sprite.Sprite):
     def saut(self):
         # utilisation de la fonction carre avec un compteur qui commence en negatif et finis à 0
         # => le mouvement est RALLENTIT       
+        if "star" in self.id and self.is_attacking:
+            c=0.5
+        else:
+            c=1
         if not self.is_attacking or self.can_attack_while_jump:
             if self.compteur_jump < self.compteur_jump_max:
                 self.update_speed_jump()
-                self.position[1] -= self.speed_jump
+                self.position[1] -= self.speed_jump * c
                 self.compteur_jump += self.increment_jump*self.speed_dt
             else:
                 self.fin_saut(False)
