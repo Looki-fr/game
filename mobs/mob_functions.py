@@ -295,7 +295,7 @@ def gestion_chute(mob, collision):
     
     # si le joueur n'est pas sur un sol et ne chute pas on commence la chute
     if (not "player" in mob.id and not collision.joueur_sur_sol(mob)) or ("player" in mob.id and not mob.update_pieds_sur_sol(collision.joueur_sur_sol(mob))):
-        if mob.action_image != "hurt_air" and mob.action != "Edge_climb" and not mob.is_falling and not mob.is_jumping and not mob.is_dashing and not mob.is_grabing_edge and not mob.is_jumping_edge:
+        if mob.action_image != "air_hurt" and mob.action != "Edge_climb" and not mob.is_falling and not mob.is_jumping and not mob.is_dashing and not mob.is_grabing_edge and not mob.is_jumping_edge:
             if mob.is_attacking or mob.is_dashing_attacking or mob.is_rolling or mob.is_sliding_ground or mob.is_dashing_ground:
                 mob.debut_chute(attack=True)
             else:

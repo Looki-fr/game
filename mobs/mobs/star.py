@@ -75,12 +75,16 @@ class Star(MOB):
         }       
         
         self.range_attack=self.rect_attack.w * 10
+        #self.bot.update_timers(dt)
+        #self.bot.update_timers(dt)
+        #self.bot.update_timers(dt)
+        #self.bot.update_timers(dt)
         
-        self.bot=Bot(self, player)
+        #self.bot=Bot(self, player)
     
     def update_timers(self, dt):
         super().update_timers(dt)
-        self.bot.update_timers(dt)
+        #self.bot.update_timers(dt)
 
     def debut_crouch(self):
         """very simple"""

@@ -97,7 +97,8 @@ class Game:
                 
 
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
-        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
+        #self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
+        self.player=Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
         if "dash_attack" in self.player.actions:
             self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_attack.png").convert_alpha(), 50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash_attack", self.player.cooldown_dash_attack))
         if "dash" in self.player.actions:
@@ -120,11 +121,11 @@ class Game:
         self.add_mob_to_game(self.player, "solo_clavier")
         self.add_mob_to_game(self.player, "solo_clavier", group="wave")
 
-        for i,pos in enumerate(positions):
-            if random.randint(1,2)==1:
-                self.add_mob_to_game(Star(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
-            else:
-                self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
+        # for i,pos in enumerate(positions):
+        #     if random.randint(1,2)==1:
+        #         self.add_mob_to_game(Star(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
+        #     else:
+        #         self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
 
     def load_object_map(self, c, d):
         pass
@@ -344,6 +345,8 @@ class Game:
         mob.save_location()    
 
         if "star" in mob.id and mob.is_attacking and self.collision.star_is_attacking(mob):
+            if mob.is_jumping:
+                mob.fin_saut()
             mob.fin_attack(self.collision.joueur_sur_sol(mob, change_pos=True))
 
         if mob.is_jumping_edge and self.collision.stop_if_collide(mob.direction_jump_edge, mob):
@@ -359,12 +362,6 @@ class Game:
             mob.fin_slide_ground()
             self.collision.check_grab(mob, tmp)
 
-        # if mob.is_dashing_ground and self.collision.stop_if_collide(mob.dash_ground_direction_x, mob, dash=True, dontmove=True):
-        #     temp_ground=not mob.is_falling
-        #     tmp=mob.dash_ground_direction_x
-        #     mob.fin_dash_ground()
-        #     self.collision.check_grab(mob, tmp)
-        
         if mob.is_rolling and self.collision.stop_if_collide(mob.roll_direction_x, mob):
             tmp=mob.roll_direction_x
             mob.fin_roll()
