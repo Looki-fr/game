@@ -154,6 +154,26 @@ class Collision:
         if get_pos==None:return False
         return pos!=None, pos
 
+    def star_is_attacking(self, mob):
+        temp=mob.position.copy()
+        temp_speed=mob.speed
+        mob.speed*=0.33
+        for i in range(6):
+            if mob.direction_attack == "right":
+                mob.move_right(change_image=False,just_run=True)
+            elif mob.direction_attack == "left":
+                mob.move_left(change_image=False,just_run=True)
+            mob.update_rect()
+            if self.foot_on_little_ground(mob):
+                mob.speed=temp_speed
+                return False
+            if self.stop_if_collide(mob.direction_attack, mob, dash=True): 
+                mob.speed=temp_speed
+                return True
+        mob.position=temp.copy()
+        mob.update_rect()
+        mob.speed=temp_speed
+
         
     def stop_if_collide(self, direction,mob, head = False, move_back=True, dash=False, dontmove=False, chest=False, stick=False,get_pos=False,big_head=False):
         """fait en sorte que le joueur avance plus lorsque qu'il avance dans un mur

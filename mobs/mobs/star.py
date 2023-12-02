@@ -31,6 +31,7 @@ class Star(MOB):
         self._get_images("attack1", 4, 3, "07-Attack", "Attack 0", reverse=True, coefficient=self.coefficient) 
         self._get_images("hurt", 4, 4, "08-Hit", "Hit 0", reverse=True, coefficient=self.coefficient) 
         self._get_images("dying", 4, 5, "09-Dead Hit", "Dead Hit 0", reverse=True, coefficient=self.coefficient) 
+        self._get_images("air_hurt", 4, 4, "08-Hit", "Hit 0", reverse=True, coefficient=self.coefficient) 
         
         self.image = self.images[self.weapon]["idle"]["right"]["1"]
         
@@ -59,7 +60,9 @@ class Star(MOB):
         self.attack_damage["attack1"]=([1,2,3,4], self._random_choice([(1, 2), (1.2, 3), (1.4, 5),(1.6, 10),(1.8, 5),(2, 3),(2.2, 2)]))
         self.is_attacking = False
         self.timers["timer_attack"] = 0
-        self.cooldown_attack=4
+        self.cooldown_attack=2
+        self.timers["fin_attack"] = 0
+        self.cooldown_fin_attack=1
         self.direction_attack=""
         
         self.compteur_jump_min = -5
@@ -68,11 +71,12 @@ class Star(MOB):
             "fall":self.chute,
             "jump":self.saut,
             "attack1":self.attack,
+            "air_hurt":self.air_hurt,
         }       
         
         self.range_attack=self.rect_attack.w * 10
         
-        #self.bot=Bot(self, player)
+        self.bot=Bot(self, player)
     
     def update_timers(self, dt):
         super().update_timers(dt)
@@ -104,10 +108,15 @@ class Star(MOB):
     def fin_attack(self, ground=True):
         self.is_attacking = False
         if ground:
-            self.change_direction("idle", self.direction)
+            self.change_direction("hurt", self.direction)
+            self.action="idle"
         else:
-            self.change_direction("fall", self.direction)
+            self.change_direction("air_hurt", self.direction)
         self.max_speed_run = self.max_speed_run / 2
+        self.timers["fin_attack"]=time.time()
+
+    def air_hurt(self):
+        if self.is_falling:self.chute()
 
     def debut_saut(self):
         if self.is_attacking:

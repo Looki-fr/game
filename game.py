@@ -17,6 +17,7 @@ from audio.audio import Audio
 from config.config import Config
 from seed import Seed
 from sprite.cooldown.sprite_cooldown import Sprite_cooldown
+import random
 class Game:
     def __init__(self):
         self.directory = os.path.dirname(os.path.realpath(__file__))
@@ -28,7 +29,7 @@ class Game:
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
         self.dt = 1/30
         self.seed=Seed()
-        self.distance_target_bot=350
+        self.distance_target_bot=500
 
         self.config = Config(self.directory)
         self.audio = Audio(self.directory, self.config.get("playlist"), self.config)
@@ -89,14 +90,14 @@ class Game:
                             cpt+=1
                             positions.append(player_position)
                     else:
-                        pos=self.render.get_random_spawn(i, y)
-                        if pos!=None:
-                            positions.append(pos)
+                        for _ in range(2):
+                            pos=self.render.get_random_spawn(i, y)
+                            if pos!=None:
+                                positions.append(pos)
                 
 
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
-        self.player=Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
-        #self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
+        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
         if "dash_attack" in self.player.actions:
             self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_attack.png").convert_alpha(), 50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash_attack", self.player.cooldown_dash_attack))
         if "dash" in self.player.actions:
@@ -119,9 +120,11 @@ class Game:
         self.add_mob_to_game(self.player, "solo_clavier")
         self.add_mob_to_game(self.player, "solo_clavier", group="wave")
 
-        # for pos in positions:
-        #     self.add_mob_to_game(Star(pos[0], pos[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
-
+        for i,pos in enumerate(positions):
+            if random.randint(1,2)==1:
+                self.add_mob_to_game(Star(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
+            else:
+                self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
 
     def load_object_map(self, c, d):
         pass
@@ -340,7 +343,7 @@ class Game:
         
         mob.save_location()    
 
-        if "star" in mob.id and mob.is_attacking and self.collision.stop_if_collide(mob.direction_attack, mob):
+        if "star" in mob.id and mob.is_attacking and self.collision.star_is_attacking(mob):
             mob.fin_attack(self.collision.joueur_sur_sol(mob, change_pos=True))
 
         if mob.is_jumping_edge and self.collision.stop_if_collide(mob.direction_jump_edge, mob):
