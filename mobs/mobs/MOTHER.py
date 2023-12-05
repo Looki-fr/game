@@ -17,7 +17,7 @@ class MOB(pygame.sprite.Sprite):
         self.sounds={}
 
         self.actions = ["run", "fall", "jump", "idle", "dying", "hurt"]
-        
+        self.one_animation=False
         self.coord_map=[0,0]
         
         self.checkpoint=checkpoint
@@ -123,8 +123,10 @@ class MOB(pygame.sprite.Sprite):
         
         self.motion=[1,1]
         
-        self.particule=Particule(directory, self, self.zoom, update_particle)
-
+        if Particule :
+            self.particule=Particule(directory, self, self.zoom, update_particle)
+        else:
+            self.particule=None
     
     def _random_choice(self, liste):
         choice=random.randint(0, sum([e[1] for e in liste]))
@@ -210,7 +212,7 @@ class MOB(pygame.sprite.Sprite):
         the game has a lower frame rate, same for animations but it doesnt work perfectly for animations"""
         self.dt = dt
         self.speed_dt = round(self.dt/17)
-        self.particule.update_tick(dt)
+        if self.particule:self.particule.update_tick(dt)
 
     def update_speed(self):
         """appeler quand le joueur avance"""
@@ -361,7 +363,10 @@ class MOB(pygame.sprite.Sprite):
         self.is_falling = False
         self.speed_gravity = self.original_speed_gravity
         if not self.is_dashing_attacking and not self.is_sliding_ground and not self.is_rolling and not jump_or_dash and not self.is_parying and not self.is_dashing_ground:
-            self.debut_crouch()
+            if "crouch" in self.actions:
+                self.debut_crouch()
+            else:
+                self.change_direction("idle", self.direction)
         self.update_action()
     
     def update_speed_gravity(self):
@@ -516,10 +521,6 @@ class MOB(pygame.sprite.Sprite):
                 self.stop_long_sounds("run")
                 self.dict_sounds["run"]=False
 
-            
-
-        
-        
         if action != "attack1" and action != "attack2" and action != "up_to_attack" and action != "air attack":
             self.is_attacking=False
         elif self.action == "attack2":
@@ -535,12 +536,13 @@ class MOB(pygame.sprite.Sprite):
             self.images[self.weapon]["fall"]["compteur_image_max"] = self.origin_compteur_image_fall
         self.action_image = action
         self.direction = direction
-        self.compteur_image = compteur_image
-        self.current_image = current_image
-        self.image = self.images[self.weapon][self.action_image][self.direction]["1"]
-        transColor = self.image.get_at((0,0))
-        self.image.set_colorkey(transColor)
-        self.update_action()
+        if not self.one_animation:
+            self.compteur_image = compteur_image
+            self.current_image = current_image
+            self.image = self.images[self.weapon][self.action_image][self.direction]["1"]
+            transColor = self.image.get_at((0,0))
+            self.image.set_colorkey(transColor)
+            self.update_action()
         
     def update_rect(self):
         self.rect.topleft = self.position

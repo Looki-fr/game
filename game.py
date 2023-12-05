@@ -17,7 +17,9 @@ from audio.audio import Audio
 from config.config import Config
 from seed import Seed
 from sprite.cooldown.sprite_cooldown import Sprite_cooldown
+from sprite.object.counter import Counter
 import random
+from sprite.object.object import Object
 class Game:
     def __init__(self):
         self.directory = os.path.dirname(os.path.realpath(__file__))
@@ -62,6 +64,7 @@ class Game:
 
         self.all_mobs=[]
         self.all_mobs_wave=[]
+        self.all_objects=[]
         self.group = pygame.sprite.Group()
         self.group_particle = pygame.sprite.Group()
         self.group_object=pygame.sprite.Group()
@@ -97,8 +100,11 @@ class Game:
                 
 
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
-        #self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
-        self.player=Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
+        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
+        
+        self.add_object("coin", player_position[0], player_position[1]-200)
+        
+        #self.player=Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
         if "dash_attack" in self.player.actions:
             self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_attack.png").convert_alpha(), 50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash_attack", self.player.cooldown_dash_attack))
         if "dash" in self.player.actions:
@@ -107,6 +113,8 @@ class Game:
             self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\ground_slide.png").convert_alpha(), 50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_slide_ground", self.player.cooldown_slide_ground))
         if "dash_ground" in self.player.actions:
             self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_ground.png").convert_alpha(), 50+95+50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_dash_ground", self.player.cooldown_dash_ground))
+        if "player" in self.player.id:
+            self.group_cooldown.add(Counter(25, 10, self.directory+"\\assets\\TreasureHunters\\Pirate Treasure\\Sprites\\Gold Coin\\", "0", 4, self.player, "coin", 5, 10))
 
         self.motion = [0, 0]        
 
@@ -121,11 +129,16 @@ class Game:
         self.add_mob_to_game(self.player, "solo_clavier")
         self.add_mob_to_game(self.player, "solo_clavier", group="wave")
 
-        # for i,pos in enumerate(positions):
-        #     if random.randint(1,2)==1:
-        #         self.add_mob_to_game(Star(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
-        #     else:
-        #         self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
+        for i,pos in enumerate(positions):
+            if random.randint(1,2)==1:
+                self.add_mob_to_game(Star(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
+            else:
+                self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
+
+    def add_object(self, id, x, y):
+        if id == "coin":
+            self.all_objects.append(Object(self.render.zoom, "coin", self.checkpoint.copy(), self.directory, "assets\\TreasureHunters\\Pirate Treasure\\Sprites\\", self.audio, "Gold Coin", 4, "0", 2, x, y, 5))
+            self.group.add(self.all_objects[-1])
 
     def load_object_map(self, c, d):
         pass
@@ -337,6 +350,7 @@ class Game:
                     if len(self.group_wave)==1:
                         self.end_wave_map()
                 else:
+                    self.add_object("coin", mob.position[0]+random.randint(0, mob.rect.width), mob.position[1]+random.randint(0, mob.rect.height))
                     self.group.remove(mob)
                     self.all_mobs.remove([mob, "bot"])
         
@@ -433,16 +447,22 @@ class Game:
             self.suppr_dash_image()
             
             if not self.render.current_map_is_wave:
-                for mob in [tuple[0] for tuple in self.all_mobs]:
+                for mob in [tuple[0] for tuple in self.all_mobs] + [i for i in self.all_objects]:
                     tu=self.render.get_coord_tile_matrix(mob.position[0], mob.position[1])
                     mob.coord_map=(tu[-2], tu[-1])
                     
             for group in self.all_groups:
                 group.update()
 
+            for object in self.all_objects:
+                if self.collision.mob_collide_object(self.player, object):
+                    self.player.inventory[object.id]+=1
+                    self.all_objects.remove(object)
+                    self.group.remove(object)
+
             self.group_cooldown.update()
                 
-            for mob in [tuple[0] for tuple in self.get_all_mob()]:
+            for mob in [tuple[0] for tuple in self.get_all_mob()] + [i for i in self.all_objects]:
                 if mob.bot == None or mob.bot.get_distance_target()<self.distance_target_bot*2*self.render.zoom:
                     mob.update_action()
                     self.handle_action(mob)
@@ -493,7 +513,6 @@ class Game:
             self.player.is_mouving_x = False
             self.handle_input()
             self.update()
-        
             
             #self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling")
             pygame.display.update()      

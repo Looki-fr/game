@@ -375,3 +375,8 @@ class Collision:
             if not direction=="" and mob.is_grabing_edge and cogne and ((direction=="right" and c<w) or (direction=="left" and c>w)):
                 mob.fin_grab_edge()
                 mob.debut_chute()
+
+    def mob_collide_object(self, mob, obj):
+        if mob.body.collidelist([obj.body]) > -1:
+            return True
+        return False

@@ -5,7 +5,7 @@ from pygame.locals import *
 class Sprite_cooldown(pygame.sprite.Sprite):
     def __init__(self, image, x, y, timers, key, cooldown):
         super().__init__()
-        self.id = "image_dash"
+        self.id = "cooldown"
         self.img = image 
         self.image=self.img.copy()
         self.position = [x, y]

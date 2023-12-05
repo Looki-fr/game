@@ -34,6 +34,10 @@ class Player(MOB):
             "run":False
         }
 
+        self.inventory = {
+            "coin":0,
+        }
+
         coefficient=2
         self.weapon="shotgun"
         for w in ["shotgun", "crossbow", "gun"]:
