@@ -84,6 +84,7 @@ class MOB(pygame.sprite.Sprite):
         self.max_speed_gravity = 9
         
         # jump
+        self.speed_coeff_jump=1
         self.a_sauter = True
         self.is_jumping = False
         self.compteur_jump_min = -4.5
@@ -321,7 +322,7 @@ class MOB(pygame.sprite.Sprite):
         if not self.is_attacking or self.can_attack_while_jump:
             if self.compteur_jump < self.compteur_jump_max:
                 self.update_speed_jump()
-                self.position[1] -= self.speed_jump * c
+                self.position[1] -= self.speed_jump * c * self.speed_coeff_jump
                 self.compteur_jump += self.increment_jump*self.speed_dt
             else:
                 self.fin_saut(False)

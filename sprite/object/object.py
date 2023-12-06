@@ -10,6 +10,7 @@ class Object(MOB):
         self._get_images("idle", nbr_image, animation_speed, dir_name, img_name, reverse=True, coefficient=self.coefficient)
         self.origin_compteur_image_fall = animation_speed
         self.images[self.weapon]["fall"] = self.images[self.weapon]["idle"]
+        self.images[self.weapon]["jump"] = self.images[self.weapon]["idle"]
 
         self.one_animation=True
         self.image = self.images[self.weapon]["idle"]["right"]["1"]
@@ -29,6 +30,25 @@ class Object(MOB):
 
         self.dico_action_functions = {
             "fall":self.chute,
-        }       
-        
-    
+            "jump":self.saut,
+        }      
+
+        self.action="parabolic"
+        self.action_image="parabolic"
+
+        #parabolic
+        self.parabolic=True
+        self.direction_parabolic="right"
+        if random.randint(0,1)==0:
+            self.direction_parabolic="left"
+        self.speed_coeff=random.random() * 0.8 + 0.15
+        self.speed_coeff_jump=1.25-self.speed_coeff
+        self.debut_saut()
+
+    def update(self):
+        super().update()
+        if self.parabolic:
+            if self.direction_parabolic=="right":
+                self.move_right(just_run=True)
+            else:
+                self.move_left(just_run=True)

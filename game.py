@@ -102,8 +102,6 @@ class Game:
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
         self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
         
-        self.add_object("coin", player_position[0], player_position[1]-200)
-        
         #self.player=Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
         if "dash_attack" in self.player.actions:
             self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_attack.png").convert_alpha(), 50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash_attack", self.player.cooldown_dash_attack))
@@ -350,13 +348,16 @@ class Game:
                     if len(self.group_wave)==1:
                         self.end_wave_map()
                 else:
-                    self.add_object("coin", mob.position[0]+random.randint(0, mob.rect.width), mob.position[1]+random.randint(0, mob.rect.height))
+                    self.add_object("coin", mob.position[0]+random.randint(0, mob.rect.width), mob.position[1]+mob.rect.height-1)
                     self.group.remove(mob)
                     self.all_mobs.remove([mob, "bot"])
         
         # gestion collision avec les murs
         
         mob.save_location()    
+
+        if type(mob)==Object and mob.parabolic and not mob.is_jumping and self.collision.joueur_sur_sol(mob, change_pos=False):
+            mob.parabolic=False
 
         if "star" in mob.id and mob.is_attacking and self.collision.star_is_attacking(mob):
             if mob.is_jumping:
