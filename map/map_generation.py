@@ -15,7 +15,8 @@ class MapGeneration:
         self.g = Graph(5,5,3,1, seed)
 
         self.graphe=self.g.get_matrix()
-
+        self.mat_room=self.g.get_matrix_room(self.graphe)
+        self.g.printTab(self.graphe, valMat=self.mat_room)
         new_graph=[]
         new_graph.insert(0, [[] for _ in range(len(self.graphe[0])+2)])
         
@@ -43,8 +44,8 @@ class MapGeneration:
         self.gen_width_width_hill=1
         self.gen_max_hill_height=(self.room_height//self.tile_width)//self.gen_width_hill + 4
         self.gen_min_hill_height=2
-        self.gen_falaise_max_width=self.room_width/self.tile_width // 2
-        self.gen_falaise_min_width=self.room_width/self.tile_width // 3
+        self.gen_falaise_max_width=int(self.room_width/self.tile_width // 2)
+        self.gen_falaise_min_width=int(self.room_width/self.tile_width // 3)
         self.gen_island_max_width=int(self.room_width/self.tile_width // 3)
         self.gen_island_additionnal_height=int(self.room_height/self.tile_width // 10)
         self.gen_island_random_horizontal=int(self.room_height/self.tile_width // 5)
@@ -236,7 +237,12 @@ class MapGeneration:
         # generation of the ground
         if self.all_hills[i][z]==5:
             #self.re_initialize_gen_var()
-            self._generate_relief_ground(0, random.randint(self.gen_falaise_min_width, self.gen_falaise_max_width), node, mat, not_right=True)
+            try :
+                self._generate_relief_ground(0, random.randint(self.gen_falaise_min_width, self.gen_falaise_max_width), node, mat, not_right=True)
+            except TypeError as e :
+                print("ERROR : ",e, self.gen_falaise_min_width, self.gen_falaise_max_width)
+            finally:
+                self._generate_relief_ground(0, random.randint(int(self.gen_falaise_min_width), int(self.gen_falaise_max_width)), node, mat, not_right=True)
 
         # generation of the bottom of the falaise
         if self.all_hills[i][z]==50:
@@ -303,7 +309,13 @@ class MapGeneration:
         # generation of the ground
         if self.all_hills[i][z]==6:
             self.re_initialize_gen_var()
-            self._generate_relief_ground(random.randint(self.gen_falaise_min_width, self.gen_falaise_max_width), len(mat[0])-1, node, mat)
+            try:
+
+                self._generate_relief_ground(random.randint(self.gen_falaise_min_width, self.gen_falaise_max_width), len(mat[0])-1, node, mat)
+            except TypeError as e :
+                print("ERROR : ",e, self.gen_falaise_min_width, self.gen_falaise_max_width)
+            finally:
+                self._generate_relief_ground(random.randint(int(self.gen_falaise_min_width), int(self.gen_falaise_max_width)), len(mat[0])-1, node, mat)
 
         self.all_mat[i][z]=mat[::]
 

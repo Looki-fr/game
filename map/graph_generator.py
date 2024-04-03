@@ -8,11 +8,14 @@ class Graph:
         self.room_to_remove=room_to_remove
         self.remove_wall=remove_wall
 
-    def printTab(self,mat):
-        for line in mat:
-            for val in line:
+    def printTab(self,mat, valMat=None):
+        for i, line in enumerate(mat):
+            for y, val in enumerate(line):
                 if val : 
-                    print("O", end="")
+                    if valMat:
+                        print(valMat[i][y], end="")
+                    else:
+                        print("O", end="")
                     if val[1]:print("-",end="")
                     else :print(" ",end="")
                 else : print("X ", end="")
@@ -188,7 +191,72 @@ class Graph:
     
         return mat
 
+    def get_matrix_room_recur(self, mat, mat_room_bal, i, y, vu, cur, cur_length):
+        if mat[i][y]:
+            if cur_length[0] > 2 or (cur_length[0]==2 and random.randint(0,1)==0):
+                cur_length[0]=0
+                cur[0]+=1
+            vu.add((i,y))
+            mat_room_bal[i][y]=self.get_letter(cur)
+            cur_length[0]+=1
+            tab=self.get_all_neighboors(i, y, mat, vu)
+            for node in tab:
+                if node not in vu:
+                    self.get_matrix_room_recur(mat, mat_room_bal, node[0], node[1], vu, cur, cur_length)
+            if len(tab)==0:
+                cur_length[0]=0
+                cur[0]+=1
+        else:
+            vu.add((i,y))
 
+    def get_all_neighboors_rooms_rec(self,i, y, mat, mat_room, tab):
+        if mat[i][y]:
+            if mat[i][y][2] and (i-1, y) not in tab and mat_room[i][y]==mat_room[i-1][y]:
+                tab.append((i-1, y))
+                self.get_all_neighboors_rooms_rec(i-1, y, mat, mat_room, tab)
+            if mat[i][y][3]  and (i+1, y) not in tab and mat_room[i][y]==mat_room[i+1][y]:
+                tab.append((i+1, y))
+                self.get_all_neighboors_rooms_rec(i+1, y, mat, mat_room, tab)
+            if mat[i][y][0]  and (i, y-1) not in tab and mat_room[i][y]==mat_room[i][y-1]:
+                tab.append((i, y-1))
+                self.get_all_neighboors_rooms_rec(i, y-1, mat, mat_room, tab)
+            if mat[i][y][1]  and (i, y+1) not in tab and mat_room[i][y]==mat_room[i][y+1]:
+                tab.append((i, y+1))
+                self.get_all_neighboors_rooms_rec(i, y+1, mat, mat_room, tab)
+
+    def get_all_neighboors_rooms(self,i, y, mat, mat_room):
+        tab=[(i, y)]
+        self.get_all_neighboors_rooms_rec(i, y, mat, mat_room, tab)
+        return tab
+
+    def get_letter(self, cur):
+        return chr(ord('a')+cur[0]-1)
+
+    def get_matrix_room(self, mat):
+        mat_room_bal=[[0 for _ in range(len(mat[0]))] for _ in range(len(mat))]
+        cur=[1]
+        vu=set()
+        cur_length=[0]
+        for i in range(len(mat)):
+            for y in range(len(mat[0])):
+                if len(mat[i][y])>0 and mat[i][y][1] and mat[i][y][3] and mat[i][y+1][3] and mat[i+1][y][1]:
+                    mat_room_bal[i][y]=self.get_letter(cur)
+                    vu.add((i,y))
+                    mat_room_bal[i][y+1]=self.get_letter(cur)
+                    vu.add((i,y+1))
+                    mat_room_bal[i+1][y]=self.get_letter(cur)
+                    vu.add((i+1,y))
+                    mat_room_bal[i+1][y+1]=self.get_letter(cur)
+                    vu.add((i+1,y+1))
+                    cur[0]+=1
+        for i in range(len(mat)):
+            for y in range(len(mat[0])):
+                if len(mat[i][y])>0 and (i,y) not in vu:
+                    self.get_matrix_room_recur(mat, mat_room_bal, i, y, vu,cur, cur_length)
+        print(self.get_all_neighboors_rooms(0,0,mat,mat_room_bal))
+        return mat_room_bal
+
+                    
 
 
 

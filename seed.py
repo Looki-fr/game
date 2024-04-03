@@ -20,6 +20,7 @@
 # seed =1699827347.2238336
 
 
+
 import time
 
 class Seed:
@@ -37,6 +38,9 @@ class Seed:
         # -                                              Bugs                                                      -
         # -                                                                                                             -
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+        # BUG crash
+        # seed = 1712149021.3348393
 
         # BUG en bas à droite saut diagonal dans l'ile on passe a travers qd don re saute => car tete est trop enfonce elle collide pas plafond ???
         # seed=1692090527.498834
