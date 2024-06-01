@@ -5,9 +5,7 @@ Thus it is unfinished and not really playable but still fun to explore.
 
 ## Demonstration video
 
-<a href="https://youtu.be/OSPUqmmySLY?si=G1mIvhiB2GCLVhWZ" target="_blank">
-    <img src="https://youtu.be/OSPUqmmySLY?si=G1mIvhiB2GCLVhWZ/0.jpg" alt="Watch the video" width="600" />
-</a>
+https://github.com/Looki-fr/game/assets/74359642/cecbd141-5ff5-4923-9f55-e3091be31214
 
 ## Screenshots from the game
 
