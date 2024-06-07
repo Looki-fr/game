@@ -10,3 +10,5 @@ if __name__ == "__main__":
     game.run()
 
 # BUG : piece spawn dans le vide et passe a travers mur
+
+# remplacer tt les \\ par des os.path.join

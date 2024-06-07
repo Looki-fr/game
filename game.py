@@ -25,7 +25,7 @@ class Game:
         self.directory = os.path.dirname(os.path.realpath(__file__))
         
         info_screen = pygame.display.Info()
-        self.screen = pygame.display.set_mode((round(info_screen.current_w*1),round(info_screen.current_h*0.7)))
+        self.screen = pygame.display.set_mode((round(info_screen.current_w*1),round(info_screen.current_h*1)))
         self.screen.fill((0,0,0))       
         self.bg = pygame.Surface((self.screen.get_width(), self.screen.get_height()), flags=SRCALPHA)
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
