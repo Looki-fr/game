@@ -3,7 +3,7 @@ import time
 from .MOTHER import MOB
 from mobs.bot.botGroundCloseFight import Bot
 import random
-
+import os
 class Crab(MOB):
 
     def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, player, audio):
@@ -12,7 +12,7 @@ class Crab(MOB):
                 - y : coordonne en y du joueur
                 - directory : chemin absolu vers le dossier du jeu"""
         # initialisation de la classe mere permettant de faire de cette classe un sprite
-        MOB.__init__(self, zoom, f"crab{id}", checkpoint, Particule,update_particle, directory, "assets\\Crabby", audio)
+        MOB.__init__(self, zoom, f"crab{id}", checkpoint, Particule,update_particle, directory, os.path.join("assets","Crabby"), audio)
         
         action=["attack", "crouch"]
         for a in action:

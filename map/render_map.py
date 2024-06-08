@@ -4,6 +4,7 @@ import random
 import pygame
 from map.shadow import Shadow
 from map.map_generation import MapGeneration
+import os
 
 class RenderMap:
     def __init__(self, directory, seed):
@@ -19,7 +20,7 @@ class RenderMap:
         self.increment=7*self.zoom
         self.increment_ground=30*self.zoom         
                 
-        self.minimap_picture=pygame.image.load(f"{directory}\\assets\\minimap.png")
+        self.minimap_picture=pygame.image.load(os.path.join(directory,"assets","minimap.png"))
         self.minimap_picture=pygame.transform.scale(self.minimap_picture, (self.minimap_tile_width,self.minimap_tile_width))
         self.seed=seed
         
@@ -168,7 +169,7 @@ class RenderMap:
 
         for i in range(23):
             try:
-                pic=pygame.image.load(f"{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Terrain\\{str(i)}.png")
+                pic=pygame.image.load(os.path.join(directory,"assets","TreasureHunters","PalmTreeIsland","Sprites","Terrain",f"{str(i)}.png"))
                 pic=pygame.transform.scale(pic, (self.tile_width,self.tile_width))
                 self.all_pic.append(pic)
             except:
@@ -177,7 +178,7 @@ class RenderMap:
                 if n-1==len(self.all_pics):
                     self.all_pics.append([])
                 try:
-                    pic=pygame.image.load(f"{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Terrain\\{str(n)}_{str(i)}.png")
+                    pic=pygame.image.load(os.path.join(directory,"assets","TreasureHunters","PalmTreeIsland","Sprites","Terrain",f"{str(n)}_{str(i)}.png"))
                     pic=pygame.transform.scale(pic, (self.tile_width,self.tile_width))
                     self.all_pics[n-1].append(pic)
                 except:
@@ -186,9 +187,9 @@ class RenderMap:
         # pic=pygame.Surface((self.map_generation.tile_width, self.map_generation.tile_width))
         # pic.fill((200,200,200))
         pic2=pygame.transform.scale(self.all_pic[11], (self.room_width-2*self.tile_width,self.room_height-2*self.tile_width))
-        pic3=pygame.image.load(f"{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Terrain\\little_1.png")
+        pic3=pygame.image.load(os.path.join(directory,"assets","TreasureHunters","PalmTreeIsland","Sprites","Terrain","little_1.png"))
         pic3=pygame.transform.scale(pic3, (self.tile_width//2,self.tile_width//2))
-        pic4=pygame.image.load(f"{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Terrain\\little_2.png")
+        pic4=pygame.image.load(os.path.join(directory,"assets","TreasureHunters","PalmTreeIsland","Sprites","Terrain","little_2.png"))
         pic4=pygame.transform.scale(pic4, (self.tile_width//2,self.tile_width//2))
         # self.all_pic.append(pic)
         self.all_pic.append(pic2)

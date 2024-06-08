@@ -3,7 +3,7 @@ from pygame.locals import *
 from sprite.map.textSprite import TextSprite
 from sprite.map.toucheSprite import ToucheSprite
 from sprite.entities.pp import Profile_picture
-
+import os
 class Blit:
     def __init__(self, zoom, screen, bg, minimap, player):
         self.scroll=[0,0]
@@ -14,7 +14,7 @@ class Blit:
         self.screen=screen
         self.bg=bg
         self.minimap=minimap
-        self.pp=Profile_picture(50, screen.get_height() - 100, pygame.image.load("assets\\pp\\Hearts\\Hearts\\Red Heart\\Idle\\Red\\heart_1.png").convert_alpha(), pygame.image.load("assets\\pp\\Hearts\\Hearts\\Red Heart\\Idle\\Red\\heart_2.png").convert_alpha(), player.play_random_sound, player)
+        self.pp=Profile_picture(50, screen.get_height() - 100, pygame.image.load(os.path.join("assets","pp","Hearts","Hearts","Red Heart","Idle","Red","heart_1.png")).convert_alpha(), pygame.image.load(os.path.join("assets","pp","Hearts","Hearts","Red Heart","Idle","Red","heart_2.png")).convert_alpha(), player.play_random_sound, player)
 
     def update_camera(self, playerx, playery, player_speed_dt, player_rect_width):
         self.scroll[0] = ((playerx + player_rect_width/2 - self.scroll_rect.x) // 15)*self.zoom*player_speed_dt

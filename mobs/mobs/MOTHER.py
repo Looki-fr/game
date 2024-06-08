@@ -1,7 +1,7 @@
 import pygame
 import time
 import random
-
+import os
 class MOB(pygame.sprite.Sprite):
 
     def __init__(self, zoom, id, checkpoint, Particule, update_particle, directory, directory_assets, audio):
@@ -146,9 +146,8 @@ class MOB(pygame.sprite.Sprite):
             "right":{},
             "left":{}
         }
-        s="\\"
         for i in range(1,nbr_image+1):
-            self.images[weapon][action]["right"][str(i)] = pygame.image.load(f'{self.directory}\\{self.directory_assets}{s+weapon if weapon != "default" else ""}\\{directory_name}\\{image_name}{i}.png').convert_alpha()
+            self.images[weapon][action]["right"][str(i)] = pygame.image.load(os.path.join(self.directory,self.directory_assets,f"{weapon if weapon != 'default' else ''}",directory_name,f"{image_name}{i}.png")).convert_alpha()
             self.images[weapon][action]["right"][str(i)] = pygame.transform.scale(self.images[weapon][action]["right"][str(i)], (round(self.images[weapon][action]["right"][str(i)].get_width()*self.zoom*coefficient), round(self.images[weapon][action]["right"][str(i)].get_height()*self.zoom*coefficient))).convert_alpha()
             self.images[weapon][action]["left"][str(i)] = pygame.transform.flip(self.images[weapon][action]["right"][str(i)], True, False).convert_alpha()
             if reverse: self.images[weapon][action]["right"][str(i)], self.images[weapon][action]["left"][str(i)] = self.images[weapon][action]["left"][str(i)], self.images[weapon][action]["right"][str(i)]

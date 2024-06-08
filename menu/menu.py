@@ -1,5 +1,6 @@
 from menu.menuLibrairie import *
 import sys
+import os
 
 def help():
     print("help is not available for the moment")
@@ -40,42 +41,42 @@ class Menu(MenuLibrairie):
 
         # 0 = music | 1 = audio
         self.music_audio=[True, True]
-        path=f"{directory}\\menu\\assets\\Menu Buttons\\Large Buttons\\Large Buttons"
-        path2=f"{directory}\\menu\\assets\\Menu Buttons\\Square Buttons\\Square Buttons"
+        path=os.path.join(directory,"menu","assets","Menu Buttons","Large Buttons","Large Buttons")
+        path2=os.path.join(directory,"menu","assets","Menu Buttons","Square Buttons","Square Buttons")
         c=0.4
-        pic=get_picture_scale(f"{path}\\Quit Button.png", c, c)
+        pic=get_picture_scale(os.path.join(path,"Quit Button.png"), c, c)
         c2=0.4
-        pic_square = get_picture_scale(f"{path2}\\Audio Square Button.png", c2, c2)
-        self.add_button_menu("base", "Resume", get_picture_scale(f"{path}\\Resume Button.png", c, c), self.end,[], 30)
+        pic_square = get_picture_scale(os.path.join(path2,"Audio Square Button.png"), c2, c2)
+        self.add_button_menu("base", "Resume", get_picture_scale(os.path.join(path,"Resume Button.png"), c, c), self.end,[], 30)
 
         self.add_menu("settings")
-        self.add_button_menu("base", "goto_settings", get_picture_scale(f"{path}\\Settings Button.png", c, c), self.goto_settings, [], 30)
+        self.add_button_menu("base", "goto_settings", get_picture_scale(os.path.join(path,"Settings Button.png"), c, c), self.goto_settings, [], 30)
         # inside settings
-        self.add_button_menu("settings", "goto_base", get_picture_scale(f"{path}\\Back Button.png", c, c), self.change_menu,["base"], 30)
+        self.add_button_menu("settings", "goto_base", get_picture_scale(os.path.join(path,"Back Button.png"), c, c), self.change_menu,["base"], 30)
         self.add_button_menu("settings", "Audio", pic_square, self.audio.pause_unpause_sound, [], "goto_base", x=self.all_menu["settings"]["button"]["goto_base"]["x"]+self.all_menu["settings"]["button"]["goto_base"]["image"].get_width()+pic_square.get_width()+30)
-        self.add_button_menu("settings", "Music", get_picture_scale(f"{path2}\\Music Square Button.png", c2, c2), self.audio.pause_unpause_music, [], "goto_base", x=self.all_menu["settings"]["button"]["goto_base"]["x"]+self.all_menu["settings"]["button"]["goto_base"]["image"].get_width()+pic_square.get_width()*2.5+30)
-        self.add_button_menu("settings", "PrevMusic", get_picture_scale(f"{path2}\\Back Square Button.png", c2, c2), self.audio.start_music, [False], 30, x=screen.get_width()/2-1.25*pic_square.get_width())
-        self.add_button_menu("settings", "NextMusic", get_picture_scale(f"{path2}\\Next Square Button.png", c2, c2), self.audio.start_music, [], "PrevMusic", x=screen.get_width()/2+0.25*pic_square.get_width())
+        self.add_button_menu("settings", "Music", get_picture_scale(os.path.join(path2,"Music Square Button.png"), c2, c2), self.audio.pause_unpause_music, [], "goto_base", x=self.all_menu["settings"]["button"]["goto_base"]["x"]+self.all_menu["settings"]["button"]["goto_base"]["image"].get_width()+pic_square.get_width()*2.5+30)
+        self.add_button_menu("settings", "PrevMusic", get_picture_scale(os.path.join(path2,"Back Square Button.png"), c2, c2), self.audio.start_music, [False], 30, x=screen.get_width()/2-1.25*pic_square.get_width())
+        self.add_button_menu("settings", "NextMusic", get_picture_scale(os.path.join(path2,"Next Square Button.png"), c2, c2), self.audio.start_music, [], "PrevMusic", x=screen.get_width()/2+0.25*pic_square.get_width())
         self.add_text_menu("settings", "MusicText", "♫ "+ "music"+ " ♫ ", screen.get_width()/2+1.5*pic_square.get_width(), "PrevMusic", 30, pic.get_height())
-        self.add_button_menu("settings", "PrevPlaylist", get_picture_scale(f"{path2}\\Back Square Button.png", c2, c2), self.change_playlist, [True], 30, x=screen.get_width()/2-1.25*pic_square.get_width())
-        self.add_button_menu("settings", "NextPlaylist", get_picture_scale(f"{path2}\\Next Square Button.png", c2, c2), self.change_playlist, [False], "PrevPlaylist", x=screen.get_width()/2+0.25*pic_square.get_width())
+        self.add_button_menu("settings", "PrevPlaylist", get_picture_scale(os.path.join(path2,"Back Square Button.png"), c2, c2), self.change_playlist, [True], 30, x=screen.get_width()/2-1.25*pic_square.get_width())
+        self.add_button_menu("settings", "NextPlaylist", get_picture_scale(os.path.join(path2,"Next Square Button.png"), c2, c2), self.change_playlist, [False], "PrevPlaylist", x=screen.get_width()/2+0.25*pic_square.get_width())
         self.add_text_menu("settings", "PlaylistText", "Current Radio : "+audio.get_current_playlist(), screen.get_width()/2+1.5*pic_square.get_width(), "PrevPlaylist", 30, pic.get_height())
-        self.add_button_menu("settings", "Controls", get_picture_scale(f"{path}\\Controls Button.png", c, c), self.change_menu,["base"], 30)
+        self.add_button_menu("settings", "Controls", get_picture_scale(os.path.join(path,"Controls Button.png"), c, c), self.change_menu,["base"], 30)
 
         self.add_button_menu("base", "quit", pic, quit,[set_running_false],30)
-        self.add_button_menu("base", "Restart", get_picture_scale(f"{path}\\New game Button.png", c, c), new_game,[], 30)
+        self.add_button_menu("base", "Restart", get_picture_scale(os.path.join(path,"New game Button.png"), c, c), new_game,[], 30)
         
-        self.add_button_menu("base", "goto_load", get_picture_scale(f"{path}\\Load Button.png", c, c), self.change_menu,["load"], 30)
+        self.add_button_menu("base", "goto_load", get_picture_scale(os.path.join(path,"Load Button.png"), c, c), self.change_menu,["load"], 30)
 
         self.add_menu("load")
-        self.add_button_menu("load", "goto_base", get_picture_scale(f"{path}\\Back Button.png", c, c), self.change_menu,["base"], 30)
+        self.add_button_menu("load", "goto_base", get_picture_scale(os.path.join(path,"Back Button.png"), c, c), self.change_menu,["base"], 30)
         self.add_text_menu("load", "error load", "", screen.get_width()/2+0.5*pic.get_width()+0.5*pic_square.get_width(), "goto_base", 30, pic.get_height())
-        self.add_button_menu("load", "validate load", get_picture_scale(f"{path2}\\V Square Button.png", c2, c2), self.validate_load,[], 30)
+        self.add_button_menu("load", "validate load", get_picture_scale(os.path.join(path2,"V Square Button.png"), c2, c2), self.validate_load,[], 30)
         self.add_text_menu("load", "save name", "file name", screen.get_width()/2+0.5*pic.get_width()+0.5*pic_square.get_width(), "validate load", 30, pic.get_height(), entry=True)
-        self.add_button_menu("load", "PrevLoad", get_picture_scale(f"{path2}\\Back Square Button.png", c2, c2), self.prev_next_load, [False], 30, x=screen.get_width()/2-1.25*pic_square.get_width())
-        self.add_button_menu("load", "NextLoad", get_picture_scale(f"{path2}\\Next Square Button.png", c2, c2), self.prev_next_load, [True], "PrevLoad", x=screen.get_width()/2+0.25*pic_square.get_width())
+        self.add_button_menu("load", "PrevLoad", get_picture_scale(os.path.join(path2,"Back Square Button.png"), c2, c2), self.prev_next_load, [False], 30, x=screen.get_width()/2-1.25*pic_square.get_width())
+        self.add_button_menu("load", "NextLoad", get_picture_scale(os.path.join(path2,"Next Square Button.png"), c2, c2), self.prev_next_load, [True], "PrevLoad", x=screen.get_width()/2+0.25*pic_square.get_width())
         self.add_text_menu("load", "load name", "", screen.get_width()/2+0.5*pic.get_width()+0.5*pic_square.get_width(), "NextLoad", 30, pic.get_height())
-        self.add_button_menu("load", "load_button", get_picture_scale(f"{path}\\Load Button.png", c, c), self.load,[], 30)
+        self.add_button_menu("load", "load_button", get_picture_scale(os.path.join(path,"Load Button.png"), c, c), self.load,[], 30)
         self.prev_next_load(None)
 
     def load(self):

@@ -1,4 +1,4 @@
-from os import cpu_count
+import os
 import pygame
 from pygame.locals import *     
 
@@ -20,7 +20,7 @@ class Clouds():
         c=100
         for i in range(1,4):
             #small cloud
-            image=pygame.image.load(f'{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Background\\Small_Cloud_{i}.png')
+            image=pygame.image.load(os.path.join(directory,"assets","TreasureHunters","PalmTreeIsland","Sprites","Background","Small_Cloud_{i}.png"))
             self.objList[f"SmallCloud{i}"]={
                 "originalSpeed":1 if i == 1 else 1.2 if i == 2 else 1.4 ,
                 "speed":2 if i == 1 else 1.4 if i == 2 else 1,
@@ -37,7 +37,7 @@ class Clouds():
             c+=80
         
         #big clouds
-        image=pygame.image.load(f'{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Background\\BigClouds.png').convert_alpha()
+        image=pygame.image.load(os.path.join(directory,"assets","TreasureHunters","PalmTreeIsland","Sprites","Background","BigClouds.png")).convert_alpha()
         self.objList["BigClouds"]={
             "originalSpeed":1.25,
             "speed":1.25,
@@ -79,7 +79,7 @@ class Background():
         self.all_obj=[Clouds(x, y, directory, zoom)]
         
         # image of the sky / the water
-        self.images["bg_image"]=pygame.image.load(f'{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Background\\BG_Image.png').convert()
+        self.images["bg_image"]=pygame.image.load(os.path.join(directory,"assets","TreasureHunters","PalmTreeIsland","Sprites","Background","BG_Image.png")).convert()
         self.images["bg_image"]=pygame.transform.scale(self.images["bg_image"], (round(self.images["bg_image"].get_width()*self.zoom*2), round(self.images["bg_image"].get_height()*self.zoom*2))).convert()   
         
         self.y = y
@@ -90,10 +90,10 @@ class Background():
         self.coordsX=[x-self.width, x, x+self.width]
         
         # image of the size of the screen that only the color of the sky
-        self.images["additionalSky"]=pygame.image.load(f'{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Background\\AdditionalSky.png').convert()
+        self.images["additionalSky"]=pygame.image.load(os.path.join(directory,"assets","TreasureHunters","PalmTreeIsland","Sprites","Background","AdditionalSky.png")).convert()
         self.images["additionalSky"]=pygame.transform.scale(self.images["additionalSky"], (screen_width, screen_height)).convert()
         
-        self.images["additionalWater"]=pygame.image.load(f'{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Background\\AdditionalWater.png').convert()
+        self.images["additionalWater"]=pygame.image.load(f'{directory}","assets","TreasureHunters","PalmTreeIsland","Sprites","Background","AdditionalWater.png').convert()
         self.images["additionalWater"]=pygame.transform.scale(self.images["additionalWater"], (screen_width, screen_height)).convert()
         
         # water reflexion animation
@@ -103,7 +103,7 @@ class Background():
             "image":{}
         }
         for i in range(1,5):
-            self.images["WaterReflexion"]["image"][str(i)] = pygame.image.load(f'{directory}\\assets\\TreasureHunters\\PalmTreeIsland\\Sprites\\Background\\WaterReflectBig{i}.png').convert_alpha()
+            self.images["WaterReflexion"]["image"][str(i)] = pygame.image.load(os.path.join(directory,"assets","TreasureHunters","PalmTreeIsland","Sprites","Background",f"WaterReflectBig{i}.png")).convert_alpha()
             self.images["WaterReflexion"]["image"][str(i)] = pygame.transform.scale(self.images["WaterReflexion"]["image"][str(i)], (self.images["WaterReflexion"]["image"][str(i)].get_width()*self.zoom*3, self.images["WaterReflexion"]["image"][str(i)].get_height()*self.zoom*3)).convert_alpha()
         
         self.compteur_image = 0

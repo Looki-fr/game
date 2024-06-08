@@ -1,15 +1,15 @@
 import pygame
 import time
 from pygame.locals import *
-
+import os
 class ToucheSprite():
     """ class affichant une image du joueur quand il dash pour une courte duree"""
     def __init__(self, x, y ,id, directory, zoom):
         self.id = id
-        self.image1 = pygame.image.load(f'{directory}\\assets\\text\\{id}.png')
+        self.image1 = pygame.image.load(os.path.join(directory,"assets","text",f"{id}.png"))
         self.image1=pygame.transform.scale(self.image1, (self.image1.get_width()*zoom, self.image1.get_height()*zoom))
         self.image1.set_colorkey(self.image1.get_at((0,0)))
-        self.image2 = pygame.image.load(f'{directory}\\assets\\text\\{id}2.png')
+        self.image2 = pygame.image.load(os.path.join(directory,"assets","text",f"{id}2.png"))
         self.image2=pygame.transform.scale(self.image2, (self.image2.get_width()*zoom, self.image2.get_height()*zoom))
         self.image2.set_colorkey(self.image2.get_at((0,0)))
         self.image = self.image1

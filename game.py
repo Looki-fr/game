@@ -104,15 +104,15 @@ class Game:
         
         #self.player=Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
         if "dash_attack" in self.player.actions:
-            self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_attack.png").convert_alpha(), 50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash_attack", self.player.cooldown_dash_attack))
+            self.group_cooldown.add(Sprite_cooldown(pygame.image.load(os.path.join(self.directory,"assets","cooldown","dash_attack.png")).convert_alpha(), 50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash_attack", self.player.cooldown_dash_attack))
         if "dash" in self.player.actions:
-            self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash.png").convert_alpha(), 50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash", self.player.cooldown_dash))
+            self.group_cooldown.add(Sprite_cooldown(pygame.image.load(os.path.join(self.directory,"assets","cooldown","dash.png")).convert_alpha(), 50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_dash", self.player.cooldown_dash))
         if "ground_slide" in self.player.actions:
-            self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\ground_slide.png").convert_alpha(), 50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_slide_ground", self.player.cooldown_slide_ground))
+            self.group_cooldown.add(Sprite_cooldown(pygame.image.load(os.path.join(self.directory,"assets","cooldown","ground_slide.png")).convert_alpha(), 50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_slide_ground", self.player.cooldown_slide_ground))
         if "dash_ground" in self.player.actions:
-            self.group_cooldown.add(Sprite_cooldown(pygame.image.load(self.directory+"\\assets\\cooldown\\dash_ground.png").convert_alpha(), 50+95+50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_dash_ground", self.player.cooldown_dash_ground))
+            self.group_cooldown.add(Sprite_cooldown(pygame.image.load(os.path.join(self.directory,"assets","cooldown","dash_ground.png")).convert_alpha(), 50+95+50+95+50+95+50+95+50, self.screen.get_height() - 100, self.player.timers, "timer_cooldown_dash_ground", self.player.cooldown_dash_ground))
         if "player" in self.player.id:
-            self.group_cooldown.add(Counter(25, 10, self.directory+"\\assets\\TreasureHunters\\Pirate Treasure\\Sprites\\Gold Coin\\", "0", 4, self.player, "coin", 5, 10))
+            self.group_cooldown.add(Counter(25, 10, os.path.join(self.directory,"assets","TreasureHunters","Pirate Treasure","Sprites","Gold Coin"), "0", 4, self.player, "coin", 5, 10))
 
         self.motion = [0, 0]        
 
@@ -135,14 +135,14 @@ class Game:
 
     def add_object(self, id, x, y):
         if id == "coin":
-            self.all_objects.append(Object(self.render.zoom, "coin", self.checkpoint.copy(), self.directory, "assets\\TreasureHunters\\Pirate Treasure\\Sprites\\", self.audio, "Gold Coin", 4, "0", 2, x, y, 5))
+            self.all_objects.append(Object(self.render.zoom, "coin", self.checkpoint.copy(), self.directory, os.path.join("assets","TreasureHunters","Pirate Treasure","Sprites"), self.audio, "Gold Coin", 4, "0", 2, x, y, 5))
             self.group.add(self.all_objects[-1])
 
     def load_object_map(self, c, d):
         pass
         #if self.render.type_objects_map[d][c]=="wave":
             # coord=self.render.map_generation.matrix_map[d][c]["object_map"]
-            # self.group_object.add(Object_map(self.render.zoom, "wave", coord[0], coord[1], self.directory, 5, 8, "assets\\flag", "flag_", 2, 30, 5, c, d))
+            # self.group_object.add(Object_map(self.render.zoom, "wave", coord[0], coord[1], self.directory, 5, 8, os.path.join("assets","flag"), "flag_", 2, 30, 5, c, d))
     
     def add_mob_to_game(self, mob, input, group="base"):
         if group=="base":

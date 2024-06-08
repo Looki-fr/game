@@ -1,7 +1,7 @@
 import pygame
 import time
 from .MOTHER import MOB
-
+import os
 class Player(MOB):
     def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, Dash_attack_image, group_dash_attack_image_player, group_dash_image_player, Dash_images, audio):
         """parametres : 
@@ -9,7 +9,7 @@ class Player(MOB):
                 - y : coordonne en y du joueur
                 - directory : chemin absolu vers le dossier du jeu"""
         # initialisation de la classe mere permettant de faire de cette classe un sprite
-        MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule,update_particle, directory, "assets\\Bounty Hunter\\Individual Sprite", audio)
+        MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule,update_particle, directory, os.path.join("assets","Bounty Hunter","Individual Sprite"), audio)
 
         self.max_health=10000000
         self.health=self.max_health

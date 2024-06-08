@@ -3,6 +3,7 @@ import time
 import random
 from pygame.locals import *
 import math
+import os
 
 class LittleParticle(pygame.sprite.Sprite):
     """ class d'une particle"""
@@ -15,7 +16,7 @@ class LittleParticle(pygame.sprite.Sprite):
         self.zoom = zoom
         self.speed_dt = speed_dt
 
-        self.image = pygame.image.load(f'{directory}\\assets\\particle.png')
+        self.image = pygame.image.load(os.path.join(directory,"assets","particle.png"))
         self.image = pygame.transform.scale(self.image, (taille*self.zoom, taille*self.zoom))
 
         self.position = [x,y-self.image.get_height()]

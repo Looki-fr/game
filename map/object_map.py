@@ -1,6 +1,7 @@
 import pygame
 import time
 import random
+import os
 
 class Object_map(pygame.sprite.Sprite):
     
@@ -16,7 +17,7 @@ class Object_map(pygame.sprite.Sprite):
             "images":{},
         }
         for i in range(1,nbr_image+1):
-            self.images["images"][str(i)] = pygame.image.load(f'{self.directory}\\{directory_assets}\\{name_image}{i}.png').convert_alpha()
+            self.images["images"][str(i)] = pygame.image.load(os.path.join(self.directory,directory_assets,f"{name_image}{i}.png")).convert_alpha()
             self.images["images"][str(i)] = pygame.transform.scale(self.images["images"][str(i)], (round(self.images["images"][str(i)].get_width()*zoom*coefficient), round(self.images["images"][str(i)].get_height()*zoom*coefficient))).convert_alpha()
         self.image=self.images["images"]["1"]
         self.position=[x-self.image.get_width()/2 +complement_x*zoom, y-self.image.get_height()+1+complement_y*zoom]

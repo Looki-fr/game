@@ -3,7 +3,7 @@ import time
 from .MOTHER import MOB
 from mobs.bot.botStar import Bot
 import random
-
+import os
 class Star(MOB):
 
     def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, player, audio):
@@ -12,7 +12,7 @@ class Star(MOB):
                 - y : coordonne en y du joueur
                 - directory : chemin absolu vers le dossier du jeu"""
         # initialisation de la classe mere permettant de faire de cette classe un sprite
-        MOB.__init__(self, zoom, f"star{id}", checkpoint, Particule,update_particle, directory, "assets\\Pink Star", audio)
+        MOB.__init__(self, zoom, f"star{id}", checkpoint, Particule,update_particle, directory, os.path.join("assets","Pink Star"), audio)
         
         action=["attack", "crouch"]
         for a in action:

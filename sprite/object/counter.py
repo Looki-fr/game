@@ -1,14 +1,14 @@
 import pygame
 import time
 from pygame.locals import *
-
+import os
 class Counter(pygame.sprite.Sprite):
     def __init__(self, x, y ,dir,img_name, nbr_image, player, key, coefficient, compteur_max):
         super().__init__()
         self.id = "profile_picture"
         self.images=[]
         for i in range(nbr_image):
-            self.images.append(pygame.image.load(dir+img_name+str(i+1)+".png").convert_alpha())
+            self.images.append(pygame.image.load(os.path.join(dir,img_name+str(i+1)+".png")).convert_alpha())
             self.images[i]=pygame.transform.scale(self.images[i], (int(self.images[i].get_width()*coefficient), int(self.images[i].get_height()*coefficient)))
         self.i=0
         self.img=self.images[self.i]
