@@ -55,6 +55,7 @@ class MOB(pygame.sprite.Sprite):
             "timer_cooldown_next_jump":0,
         }
 
+        self.projectile_sticked=[]
 
         # images
         self.action_image = "idle"
@@ -166,7 +167,12 @@ class MOB(pygame.sprite.Sprite):
         for i in self.timers.keys():
             self.timers[i]+=dt
 
-    def start_dying(self, ground):
+    def start_dying(self, ground, group_projectile):
+        for i in self.projectile_sticked:
+            i.mob_sticked=None
+            i.sticked=False
+            if i in group_projectile:
+                group_projectile.remove(i)
         self.reset_actions(ground)
         if ground or not "air_dying" in self.images[self.weapon].keys() : self.change_direction("dying", self.direction)
         else : self.change_direction("air_dying", self.direction)

@@ -268,8 +268,14 @@ def pressed_interact(liste_mob, group_object):
             for sprite in group_object:
                 if sprite.rect.collidelist([mob.body]) > -1:
                     return sprite.id
-                
-def handle_is_attacking(attacking_mob, get_all_mob, collision):
+
+def handle_take_damage(mob, collision, group_projectile):
+    if not "hurt" in mob.action_image:
+        mob.take_damage()
+    if mob.health <=0:
+        mob.start_dying(collision.joueur_sur_sol(mob, change_pos=False), group_projectile)     
+
+def handle_is_attacking(attacking_mob, get_all_mob, collision, group_projectile):
     if attacking_mob.is_dashing_attacking or attacking_mob.current_image in attacking_mob.attack_damage[attacking_mob.action_image][0]:
         for mob in [tuple[0] for tuple in get_all_mob()]:
             if mob.id != attacking_mob.id and mob.is_mob != attacking_mob.is_mob and (not "roll" in mob.actions or not mob.is_rolling):
@@ -280,12 +286,7 @@ def handle_is_attacking(attacking_mob, get_all_mob, collision):
                     if not mob.is_parying or attacking_mob.is_dashing_attacking:
                         if attacking_mob.is_dashing_attacking: mob.health -= attacking_mob.dash_attack_damage
                         else :mob.health -=  attacking_mob.attack_damage[attacking_mob.action_image][1]
-
-                        if not "hurt" in mob.action_image:
-                            mob.take_damage()
-                        if mob.health <=0:
-                            mob.start_dying(collision.joueur_sur_sol(mob, change_pos=False))
-
+                        handle_take_damage(mob, collision, group_projectile)
                     else:
                         attacking_mob.take_damage()
                         mob.is_parying=False

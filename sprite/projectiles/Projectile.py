@@ -2,9 +2,10 @@ import pygame
 import os
 import math
 import time
+import random
 
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, x, y, img_dict, angle, speed, damage):
+    def __init__(self, x, y, img_dict, angle, speed, damage,sender):
         """
         
         img_dict: {
@@ -18,6 +19,7 @@ class Projectile(pygame.sprite.Sprite):
         
         """
         super().__init__()
+        self.sender=sender
         self.id=img_dict["id"]
         self.images = []
         for i in range(img_dict["nbr_image"]):
@@ -31,11 +33,14 @@ class Projectile(pygame.sprite.Sprite):
         self.compteur_img=0
         self.compteur_max=img_dict["cpt_img_max"]
         self.damage = damage
-        self.angle = math.radians(angle)
+        self.angle = math.radians(angle+random.uniform(-5,5))
         self.speed = speed
+        self.sticked=False
+        self.mob_sticked=None
+        self.mob_sticked_d=[0,0]
 
     def change_img(self):
-        if self.compteur_img==self.compteur_max:
+        if self.compteur_img>=self.compteur_max:
             self.compteur_img=0
             self.i+=1
             if self.i==len(self.images):
@@ -48,7 +53,26 @@ class Projectile(pygame.sprite.Sprite):
         self.position[0] += self.speed * math.cos(self.angle)
         self.position[1] += self.speed * math.sin(self.angle)
 
+    def stay_put(self):
+        self.sticked=True
+
+    def stick_to_mob(self, mob, handle_take_damage, collision,group_projectile):
+        self.sticked=True
+        self.mob_sticked=mob
+        self.mob_sticked_d[0]=self.position[0]-mob.position[0]
+        self.mob_sticked_d[1]=self.position[1]-mob.position[1]
+        mob.health-=self.damage
+        mob.projectile_sticked.append(self)
+        handle_take_damage(mob, collision, group_projectile)
+        
+
     def update(self):
-        self.parabole_function()
-        self.rect.topleft = self.position
+        if not self.sticked:
+            self.parabole_function()
+            self.rect.topleft = self.position
+        elif self.mob_sticked:
+            self.position[0]=self.mob_sticked.position[0]+self.mob_sticked_d[0]
+            self.position[1]=self.mob_sticked.position[1]+self.mob_sticked_d[1]
+            self.rect.topleft = self.position
         self.change_img()
+

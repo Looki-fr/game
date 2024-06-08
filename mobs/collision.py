@@ -376,7 +376,24 @@ class Collision:
                 mob.fin_grab_edge()
                 mob.debut_chute()
 
-    def mob_collide_object(self, mob, obj):
-        if mob.body.collidelist([obj.body]) > -1:
-            return True
+    def mob_collide_object(self, mobs, obj, Projectile):
+        for mob in mobs:
+            if mob.body.collidelist([obj.rect]) > -1 and (type(obj)!=Projectile or obj.sender!=mob):
+                return mob
+        return None
+
+    def projectile_collide_map(self, projectile):
+        for dico in self.get_dico(projectile.coord_map):
+            for wall in dico["wall"]:
+                if projectile.rect.collidelist(wall) > -1:
+                    return True
+            for ground in dico["ground"]:
+                if projectile.rect.collidelist(ground) > -1:
+                    return True
+            for platform in dico["platform"]:
+                if projectile.rect.collidelist(platform) > -1:
+                    return True
+            for ceilling in dico["ceilling"]:
+                if projectile.rect.collidelist(ceilling) > -1:
+                    return True
         return False

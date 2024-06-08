@@ -111,9 +111,9 @@ class Player(MOB):
         self.images["crossbow"]["projectile"]={
             "dir_path":os.path.join(directory, "assets","Bounty Hunter","Individual Sprite","effect","Shoot Effect","Arrow"),
             "img_name":"Arrow_",
-            "nbr_image":1,
+            "nbr_image":4,
             "coefficient":2,
-            "cpt_img_max":2,
+            "cpt_img_max":6,
             "id":"arrow"
         }
         self.timer_attack_aim=0
@@ -320,14 +320,14 @@ class Player(MOB):
         
     def lauch_projectile(self):
         if self.direction=="right":
-            x, y=self.body.topright[0]+5*self.zoom, self.position[1]+32*self.zoom
+            x, y=self.body.topright[0]+15*self.zoom, self.position[1]+45*self.zoom
             angle=0
         else:
-            x, y=self.body.topleft[0]-55*self.zoom, self.position[1]+32*self.zoom
+            x, y=self.body.topleft[0]-40*self.zoom, self.position[1]+45*self.zoom
             angle=180
         if self.action_image=="crouch":
             y+=15*self.zoom
-        self.group_projectile.add(Projectile(x, y, self.images[self.weapon]["projectile"], angle, 15*self.zoom, 15))
+        self.group_projectile.add(Projectile(x, y, self.images[self.weapon]["projectile"], angle, 15*self.zoom, 34, self))
         self.timer_attack_aim=time.time()
         self.is_shooting=True
         self.change_direction(self.action_image, self.direction)

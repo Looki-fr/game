@@ -20,6 +20,7 @@ from sprite.cooldown.sprite_cooldown import Sprite_cooldown
 from sprite.object.counter import Counter
 import random
 from sprite.object.object import Object
+from sprite.projectiles.Projectile import Projectile
 class Game:
     def __init__(self):
         self.directory = os.path.dirname(os.path.realpath(__file__))
@@ -75,8 +76,8 @@ class Game:
         self.group_dash_image_player1=pygame.sprite.Group()
         self.group_dash_attack_image_player1=pygame.sprite.Group()
         self.group_cooldown=pygame.sprite.Group()
-        self.group_projectile_player1=pygame.sprite.Group()
-        self.all_groups = [self.group_projectile_player1, self.group_object,self.group,self.group_dash_image_player1, self.group_dash_attack_image_player1, self.group_particle]
+        self.group_projectile=pygame.sprite.Group()
+        self.all_groups = [self.group_projectile, self.group_object,self.group,self.group_dash_image_player1, self.group_dash_attack_image_player1, self.group_particle]
         self.tab_particule_dead=[]
 
         self.render.init_new_map(self.screen.get_width(), self.screen.get_height(), self.directory, seed)
@@ -104,7 +105,7 @@ class Game:
                 
 
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
-        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio, self.group_projectile_player1)
+        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio, self.group_projectile)
         
         #self.player=Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
         if "dash_attack" in self.player.actions:
@@ -435,7 +436,7 @@ class Game:
         gestion_chute(mob, self.collision) 
         
         if (mob.is_attacking or mob.is_dashing_attacking) and mob.action_image!="up_to_attack":
-            handle_is_attacking(mob, self.get_all_mob, self.collision)
+            handle_is_attacking(mob, self.get_all_mob, self.collision, self.group_projectile)
         
         if mob.is_sliding:
             self.collision.check_tombe_ou_grab(mob)
@@ -458,7 +459,7 @@ class Game:
             self.suppr_dash_image()
             
             if not self.render.current_map_is_wave:
-                for mob in [tuple[0] for tuple in self.all_mobs] + [i for i in self.all_objects]:
+                for mob in [tuple[0] for tuple in self.all_mobs] + [i for i in self.all_objects] + [p for p in self.group_projectile]:
                     tu=self.render.get_coord_tile_matrix(mob.position[0], mob.position[1])
                     mob.coord_map=(tu[-2], tu[-1])
                     
@@ -466,10 +467,19 @@ class Game:
                 group.update()
 
             for object in self.all_objects:
-                if self.collision.mob_collide_object(self.player, object):
+                if self.collision.mob_collide_object([self.player], object, Projectile):
                     self.player.inventory[object.id]+=1
                     self.all_objects.remove(object)
                     self.group.remove(object)
+
+            for projectile in self.group_projectile.sprites():
+                if not projectile.sticked:
+                    mob_hitted=self.collision.mob_collide_object([tuple[0] for tuple in self.get_all_mob()], projectile, Projectile)
+                    if mob_hitted:
+                        projectile.stick_to_mob(mob_hitted, handle_take_damage, self.collision, self.group_projectile)
+                    elif self.collision.projectile_collide_map(projectile):
+                        projectile.stay_put()
+                    
 
             self.group_cooldown.update()
                 
