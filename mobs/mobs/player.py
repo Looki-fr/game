@@ -116,12 +116,13 @@ class Player(MOB):
             "cpt_img_max":6,
             "id":"arrow"
         }
-        self.timer_attack_aim=0
+
+        self.timers["timer_attack_aim"]=0
         self.cooldown_attack_aim=0.5
         self.is_attacking_aim=False
 
         # crouch
-        self.timer_fin_crouch = 0
+        self.timers["timer_fin_crouch"] = 0
         self.cooldown_crouch_pressed=0.25
         self.has_finish_cycle_crouch = False
 
@@ -328,7 +329,7 @@ class Player(MOB):
         if self.action_image=="crouch":
             y+=15*self.zoom
         self.group_projectile.add(Projectile(x, y, self.images[self.weapon]["projectile"], angle, 15*self.zoom, 34, self))
-        self.timer_attack_aim=time.time()
+        self.timers["timer_attack_aim"]=time.time()
         self.is_shooting=True
         self.change_direction(self.action_image, self.direction)
         #self.play_random_sound("attack1", self.sounds["attack1"])
@@ -433,7 +434,7 @@ class Player(MOB):
                 self.change_direction("run", self.direction)
             else:
                 self.change_direction("idle", self.direction)
-            self.timer_fin_crouch=time.time()
+            self.timers["timer_fin_crouch"]=time.time()
   
     def air_hurt(self):
         if self.is_falling:self.chute()

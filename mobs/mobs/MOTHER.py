@@ -191,6 +191,9 @@ class MOB(pygame.sprite.Sprite):
             self.fin_saut_edge()
         if self.is_attacking:
             self.is_attacking=False
+            if "star" in self.id:
+                self.max_speed_run = self.max_speed_run / 2
+                self.timers["fin_attack"]=time.time()
         if self.is_sliding_ground:
             self.fin_slide_ground()
         if self.is_sliding_ground:

@@ -32,7 +32,6 @@ class Game:
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
         self.dt = 1/30
         self.seed=Seed()
-        self.distance_target_bot=500
 
         self.config = Config(self.directory)
         self.audio = Audio(self.directory, self.config.get("playlist"), self.config)
@@ -44,6 +43,7 @@ class Game:
         }
 
         self.render=RenderMap(self.directory, self.seed)
+        self.distance_target_bot=300*self.render.zoom
 
         self.new_game()
 

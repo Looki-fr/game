@@ -179,7 +179,7 @@ def pressed_attack(liste_mob):
                     elif time.time() - mob.timers["timer_attack_aerienne"] > mob.cooldown_attack_aerienne:
                         mob.debut_attack(air=True)
         else:
-            if time.time()-mob.timer_attack_aim > mob.cooldown_attack_aim and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_grabing_edge and not mob.is_parying and not mob.is_dashing_attacking and not "hurt" in mob.action_image:
+            if time.time()-mob.timers["timer_attack_aim"] > mob.cooldown_attack_aim and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_grabing_edge and not mob.is_parying and not mob.is_dashing_attacking and not "hurt" in mob.action_image:
                 mob.lauch_projectile()
 
 def pressed_pary(liste_mob, left, right, collision):
@@ -240,7 +240,7 @@ def pressed_down(liste_mob, collision):
         if mob.action != "Edge_climb" and mob.action != "Wall_slide" and mob.is_grabing_edge and "Wall_slide" in mob.actions:
             mob.debut_wallslide()
         else:
-            if time.time() - mob.timer_fin_crouch >mob.cooldown_crouch_pressed and "crouch" in mob.actions and collision.joueur_sur_sol(mob) and not mob.is_rolling and not mob.is_dashing and not mob.is_dashing_ground and not mob.is_sliding_ground and not mob.is_jumping and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking and not "hurt" in mob.action_image:
+            if time.time() - mob.timers["timer_fin_crouch"] >mob.cooldown_crouch_pressed and "crouch" in mob.actions and collision.joueur_sur_sol(mob) and not mob.is_rolling and not mob.is_dashing and not mob.is_dashing_ground and not mob.is_sliding_ground and not mob.is_jumping and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking and not "hurt" in mob.action_image:
                 if not mob.action=="crouch":
                     mob.debut_crouch(pressed=True)
                 else:

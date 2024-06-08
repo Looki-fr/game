@@ -65,6 +65,8 @@ class Projectile(pygame.sprite.Sprite):
         mob.projectile_sticked.append(self)
         handle_take_damage(mob, collision, group_projectile)
         
+    def update_timers(self, dt):
+        pass    
 
     def update(self):
         if not self.sticked:
