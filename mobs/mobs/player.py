@@ -2,8 +2,9 @@ import pygame
 import time
 from .MOTHER import MOB
 import os
+from sprite.projectiles.Projectile import Projectile
 class Player(MOB):
-    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, Dash_attack_image, group_dash_attack_image_player, group_dash_image_player, Dash_images, audio):
+    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, Dash_attack_image, group_dash_attack_image_player, group_dash_image_player, Dash_images, audio, group_projectile):
         """parametres : 
                 - x : coordonne en x du joueur
                 - y : coordonne en y du joueur
@@ -16,8 +17,11 @@ class Player(MOB):
 
         #"up_to_fall", 
         action=["dash_ground","air_dying","air_hurt","roll","Edge_climb", "Edge_Idle", "Edge_grab", "Wall_slide", "ground_slide", "crouch", "jump_edge", "dash", "attack", "dash_attack"]
+        action_aim=["idle","run","fall","jump","crouch"]
         for a in action:
             self.actions.append(a)
+        for a in action_aim:
+            self.actions_aim.append(a)
 
         self.sounds={
             "ground_slide": 3,
@@ -39,14 +43,18 @@ class Player(MOB):
         }
 
         coefficient=2
-        self.weapon="shotgun"
+        self.weapon="crossbow"
         for w in ["shotgun", "crossbow", "gun"]:
             self._get_images("idle", 8, 5, "Idle", "Idle_", w, coefficient=coefficient)
+            self._get_images("idle-aim", 8, 5, "Idle Aim", "Idle-Aim_", w, coefficient=coefficient)
             self.origin_compteur_image_run=8
             self._get_images('run', 8, self.origin_compteur_image_run, "Run","Run_", w, coefficient=coefficient)
+            self._get_images('run-aim', 8, self.origin_compteur_image_run, "Run Aim","Run-Aim_", w, coefficient=coefficient)
             self.origin_compteur_image_fall = 6
             self._get_images("fall", 3, self.origin_compteur_image_fall, "Fall", "Fall_", w, coefficient=coefficient)
+            self._get_images("fall-aim", 3, self.origin_compteur_image_fall, "Fall Aim", "Fall-Aim_", w, coefficient=coefficient)
             self._get_images("jump", 4, 10, "Jump", "Jump_", w, coefficient=coefficient) 
+            self._get_images("jump-aim", 4, 10, "Jump Aim", "Jump-Aim_", w, coefficient=coefficient, add_again_first=True) 
             self._get_images("hurt", 3, 4, "Hurt", "Hurt_", w, coefficient=coefficient) 
             self._get_images("air_hurt", 3, 4, "Air Hurt", "Air-Hurt_", w, coefficient=coefficient) 
             self._get_images("dying", 7, 4, "Death", "Death_", w, coefficient=coefficient) 
@@ -54,6 +62,7 @@ class Player(MOB):
             self._get_images("ground_slide", 4, 3, "Slide", "Slide_", w, coefficient=coefficient) 
             self._get_images("dash_attack", 10, 3, "Dash Attack", "Dash-Attack_", w, coefficient=coefficient)
             self._get_images("crouch", 5, 2, "Croush", "Croush_", w, coefficient=coefficient) 
+            self._get_images("crouch-aim", 5, 2, "Croush Aim", "Croush-Aim_", w, coefficient=coefficient) 
             self._get_images("Edge_climb", 3, 5, "Edge Climb", "Edge-Climb_", w, coefficient=coefficient) 
             self._get_images("Edge_grab", 4, 5, "Edge Grab", "Edge-Grab_", w, coefficient=coefficient) 
             self._get_images("Wall_slide", 3, 4, "WallSlide", "WallSlide_", w, coefficient=coefficient, reverse=True) 
@@ -62,8 +71,14 @@ class Player(MOB):
             self._get_images("attack2", 6, 3, "Attack2", "Attack_", w, coefficient=coefficient)
             self._get_images("roll", 7, 3, "Roll", "Roll_", w, coefficient=coefficient)
             self._get_images("dash_ground", 8, 3, "Dash", "Dash_", w, coefficient=coefficient)
+            self._get_images("idle-shoot", 3, 3, "Shoot", "Shoot_", w, coefficient=coefficient)
+            self._get_images("crouch-shoot", 3, 3, "Shoot Croush", "Shoot-Croush_", w, coefficient=coefficient)
+            self._get_images("jump-shoot", 3, 3, "Shoot Jump", "Shoot-Jump_", w, coefficient=coefficient)
+            self._get_images("fall-shoot", 3, 3, "Shoot Fall", "Shoot-Fall_", w, coefficient=coefficient)
+            self._get_images("run-shoot", 8, self.origin_compteur_image_run, os.path.join("Shoot-Run-Cycle", "ShootRun 1"), "ShootRun1_", w, coefficient=coefficient)
+
         self._get_images("dash_attack_effect", 3, 0, "Dash-Attack-Effect", "Dash-Attack-Effect", weapon="effect", coefficient=2)
-        
+
         self.image = self.images[self.weapon]["idle"]["right"]["1"]
         
         self.position = [x,y - self.image.get_height()]
@@ -85,9 +100,30 @@ class Player(MOB):
         self.complement_collide_wall_right = self.body.w
         self.complement_collide_wall_left = self.body.w
         self.is_mob=False
-        
+
         # enregistrement de l'ancienne position pour que si on entre en collision avec un element du terrain la position soit permutte avec l'anciene
         self.old_position = self.position.copy()
+
+        self.group_projectile=group_projectile
+
+        # attack aim
+
+        self.images["crossbow"]["projectile"]={
+            "dir_path":os.path.join(directory, "assets","Bounty Hunter","Individual Sprite","effect","Shoot Effect","Arrow"),
+            "img_name":"Arrow_",
+            "nbr_image":1,
+            "coefficient":2,
+            "cpt_img_max":2,
+            "id":"arrow"
+        }
+        self.timer_attack_aim=0
+        self.cooldown_attack_aim=0.5
+        self.is_attacking_aim=False
+
+        # crouch
+        self.timer_fin_crouch = 0
+        self.cooldown_crouch_pressed=0.25
+        self.has_finish_cycle_crouch = False
 
         # jump edge
         self.is_jumping_edge = False
@@ -136,7 +172,7 @@ class Player(MOB):
         self.cooldown_not_collide_dash=0.01
         self.timers["timer_dash"]=0
         self.cooldown_dash=2
-    
+
         # ground slide
         self.compteur_slide_ground_min = -5
         self.compteur_slide_ground = self.compteur_slide_ground_min
@@ -275,7 +311,6 @@ class Player(MOB):
         self.compteur_image = compteur_image
         self.is_sliding = sliding
         
-
     def debut_pary(self):
         self.compteur_pary=0
         self.is_parying = True
@@ -283,6 +318,21 @@ class Player(MOB):
         self.direction_attack=self.direction
         self.timers["timer_pary"]=time.time()
         
+    def lauch_projectile(self):
+        if self.direction=="right":
+            x, y=self.body.topright[0]+5*self.zoom, self.position[1]+32*self.zoom
+            angle=0
+        else:
+            x, y=self.body.topleft[0]-55*self.zoom, self.position[1]+32*self.zoom
+            angle=180
+        if self.action_image=="crouch":
+            y+=15*self.zoom
+        self.group_projectile.add(Projectile(x, y, self.images[self.weapon]["projectile"], angle, 15*self.zoom, 15))
+        self.timer_attack_aim=time.time()
+        self.is_shooting=True
+        self.change_direction(self.action_image, self.direction)
+        #self.play_random_sound("attack1", self.sounds["attack1"])
+
     def debut_attack(self, air=False):
         self.is_attacking = True
         self.a_attaquer2=False
@@ -369,10 +419,21 @@ class Player(MOB):
         self.update_action()
         # on soccupe de reset dash_attack_image dans game
   
-    def debut_crouch(self):
+    def debut_crouch(self, pressed=False):
         """very simple"""
         self.change_direction("crouch", self.direction)
-        self.play_random_sound("crouch", self.sounds["crouch"])
+        self.pressed_crouch=pressed
+        if not pressed:
+            self.play_random_sound("crouch", self.sounds["crouch"])
+        self.has_finish_cycle_crouch = False
+
+    def fin_crouch(self):
+        if self.has_finish_cycle_crouch:
+            if self.is_mouving_x:
+                self.change_direction("run", self.direction)
+            else:
+                self.change_direction("idle", self.direction)
+            self.timer_fin_crouch=time.time()
   
     def air_hurt(self):
         if self.is_falling:self.chute()

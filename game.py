@@ -25,7 +25,7 @@ class Game:
         self.directory = os.path.dirname(os.path.realpath(__file__))
         
         info_screen = pygame.display.Info()
-        self.screen = pygame.display.set_mode((round(info_screen.current_w*1),round(info_screen.current_h*1)))
+        self.screen = pygame.display.set_mode((round(info_screen.current_w*1),round(info_screen.current_h*0.7)))
         self.screen.fill((0,0,0))       
         self.bg = pygame.Surface((self.screen.get_width(), self.screen.get_height()), flags=SRCALPHA)
         self.minimap = pygame.Surface((200,200), flags=SRCALPHA)
@@ -37,7 +37,10 @@ class Game:
         self.audio = Audio(self.directory, self.config.get("playlist"), self.config)
 
         self.menu = Menu(self.directory, self.screen, self.update_ecran, self.update_timers,self.audio, self.set_running_false, self.config, self.new_game, self.seed)
-        self.pressed_escape=False
+        self.pressed_one_time={
+            "escape":False,
+            "aim":False,
+        }
 
         self.render=RenderMap(self.directory, self.seed)
 
@@ -57,7 +60,7 @@ class Game:
         #             i+=1
         
         self.all_controls={}
-        self.all_controls["solo_clavier"]={"perso":[],"touches":[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP,pygame.K_DOWN, pygame.K_q, pygame.K_a, pygame.K_d, pygame.K_z, pygame.K_e]}  
+        self.all_controls["solo_clavier"]={"perso":[],"touches":[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP,pygame.K_DOWN, pygame.K_q, pygame.K_a, pygame.K_d, pygame.K_z, pygame.K_e, pygame.K_r]}  
 
     def new_game(self, seed=None):
         self.menu.is_running=False
@@ -72,7 +75,8 @@ class Game:
         self.group_dash_image_player1=pygame.sprite.Group()
         self.group_dash_attack_image_player1=pygame.sprite.Group()
         self.group_cooldown=pygame.sprite.Group()
-        self.all_groups = [self.group_object,self.group,self.group_dash_image_player1, self.group_dash_attack_image_player1, self.group_particle]
+        self.group_projectile_player1=pygame.sprite.Group()
+        self.all_groups = [self.group_projectile_player1, self.group_object,self.group,self.group_dash_image_player1, self.group_dash_attack_image_player1, self.group_particle]
         self.tab_particule_dead=[]
 
         self.render.init_new_map(self.screen.get_width(), self.screen.get_height(), self.directory, seed)
@@ -100,7 +104,7 @@ class Game:
                 
 
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
-        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio)
+        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio, self.group_projectile_player1)
         
         #self.player=Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
         if "dash_attack" in self.player.actions:
@@ -191,15 +195,15 @@ class Game:
         
         if pressed:
             if pressed[pygame.K_ESCAPE]:
-                if not self.pressed_escape:
+                if not self.pressed_one_time["escape"]:
                     if self.menu.is_running:
                         self.menu.end()
                     else:
                         self.menu.start()
 
-                    self.pressed_escape=True
+                    self.pressed_one_time["escape"]=True
             else:
-                self.pressed_escape=False
+                self.pressed_one_time["escape"]=False
 
             if self.menu.is_running:
                 self.menu._handle_input(pressed)
@@ -228,7 +232,7 @@ class Game:
                         for mob in control["perso"]:
                             handle_input_ralentissement(mob, self.collision)
                     if up:pressed_up(control["perso"], down, left, right, self.pressed_up_bool, self.collision, self.render.zoom)
-                    if down:pressed_down(control["perso"])
+                    if down:pressed_down(control["perso"], self.collision)
                     if pressed[control["touches"][4]]:pressed_dash(control["perso"], left, right, pressed[control["touches"][3]], pressed[control["touches"][2]], self.collision.joueur_sur_sol, self.collision, self.pressed_dash_bool)
                     else: self.pressed_dash_bool[0]=False
                     if pressed[control["touches"][5]]:pressed_attack(control["perso"])
@@ -238,6 +242,12 @@ class Game:
                         id = pressed_interact(control["perso"], self.group_object)
                         if id !=None:
                             self.interact_object_map(id)
+                    if pressed[control["touches"][9]]:
+                        if not self.pressed_one_time["aim"]:
+                            handle_aim(control["perso"])
+                            self.pressed_one_time["aim"]=True
+                    else:
+                        self.pressed_one_time["aim"]=False
                 
         # joystick :
             # down : self.motion[1]>0.1:
@@ -289,7 +299,7 @@ class Game:
                 handle_input_ralentissement(mob, self.collision)
         
         if self.motion[1]>0.8:
-            pressed_down(perso_manette)
+            pressed_down(perso_manette, self.collision)
     
     def suppr_dash_image(self):
         for group in [self.group_dash_image_player1, self.group_dash_attack_image_player1]:

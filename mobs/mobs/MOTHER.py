@@ -17,6 +17,7 @@ class MOB(pygame.sprite.Sprite):
         self.sounds={}
 
         self.actions = ["run", "fall", "jump", "idle", "dying", "hurt"]
+        self.actions_aim=[]
         self.one_animation=False
         self.coord_map=[0,0]
         
@@ -54,6 +55,7 @@ class MOB(pygame.sprite.Sprite):
             "timer_cooldown_next_jump":0,
         }
 
+
         # images
         self.action_image = "idle"
         self.action = "idle"
@@ -69,6 +71,9 @@ class MOB(pygame.sprite.Sprite):
         self.is_mouving_x = False
         self.max_distance_collide=15
         self.increment_left_right=25
+        
+        #crouch
+        self.pressed_crouch=False
         
         # ralentissement
         self.cooldown_ralentissement = 0.2
@@ -113,6 +118,8 @@ class MOB(pygame.sprite.Sprite):
         self.is_rolling=False
         self.is_dashing_ground = False
         self.rect_attack_update_pos=""
+        self.is_aiming=False
+        self.is_shooting=False
         
         self.max_health=100
         self.health=self.max_health
@@ -138,7 +145,7 @@ class MOB(pygame.sprite.Sprite):
             if c >= choice:
                 return i[0]
     
-    def _get_images(self, action, nbr_image, compteur_image_max, directory_name, image_name, weapon="default", coefficient=1, reverse=False):
+    def _get_images(self, action, nbr_image, compteur_image_max, directory_name, image_name, weapon="default", coefficient=1, reverse=False, add_again_first=False):
 
         self.images[weapon][action] = {
             "nbr_image":nbr_image,
@@ -146,11 +153,14 @@ class MOB(pygame.sprite.Sprite):
             "right":{},
             "left":{}
         }
-        for i in range(1,nbr_image+1):
+        for i in range(1,nbr_image+1 if not add_again_first else nbr_image):
             self.images[weapon][action]["right"][str(i)] = pygame.image.load(os.path.join(self.directory,self.directory_assets,f"{weapon if weapon != 'default' else ''}",directory_name,f"{image_name}{i}.png")).convert_alpha()
             self.images[weapon][action]["right"][str(i)] = pygame.transform.scale(self.images[weapon][action]["right"][str(i)], (round(self.images[weapon][action]["right"][str(i)].get_width()*self.zoom*coefficient), round(self.images[weapon][action]["right"][str(i)].get_height()*self.zoom*coefficient))).convert_alpha()
             self.images[weapon][action]["left"][str(i)] = pygame.transform.flip(self.images[weapon][action]["right"][str(i)], True, False).convert_alpha()
             if reverse: self.images[weapon][action]["right"][str(i)], self.images[weapon][action]["left"][str(i)] = self.images[weapon][action]["left"][str(i)], self.images[weapon][action]["right"][str(i)]
+        if add_again_first:
+            self.images[weapon][action]["right"][str(i+1)] = self.images[weapon][action]["right"]["1"]
+            self.images[weapon][action]["left"][str(i+1)] = self.images[weapon][action]["left"]["1"]
 
     def update_timers(self, dt):
         for i in self.timers.keys():
@@ -226,10 +236,14 @@ class MOB(pygame.sprite.Sprite):
                 c=1
             self.speed += (self.speed*0.002 + self.origin_speed_run*0.01)*abs(self.motion[0])*c
             if self.speed > self.max_speed_run*0.6*abs(self.motion[0]):
-                if self.action_image != "idle" and self.action_image != "attack1" and self.action_image != "attack2":
+                if self.action_image != "idle" and self.action_image != "attack1" and self.action_image != "attack2" and self.action_image != "air_attack":
+                    if self.action_image in self.actions_aim:
+                        self.images[self.weapon][self.action_image+"-aim"]["compteur_image_max"] = 6
                     self.images[self.weapon][self.action_image]["compteur_image_max"] = 6
         # vitesse maximal du defilement des images
-        if self.action_image != "idle" and self.action_image != "attack1" and self.action_image != "attack2":
+        if self.action_image != "idle" and self.action_image != "attack1" and self.action_image != "attack2" and self.action_image!="air_attack":
+            if self.action_image in self.actions_aim:
+                self.images[self.weapon][self.action_image+"-aim"]["compteur_image_max"] = 4
             self.images[self.weapon][self.action_image]["compteur_image_max"] = 4                    
         
     def move_right(self, pieds_sur_sol = False, change_image=True, just_run=False): 
@@ -257,13 +271,16 @@ class MOB(pygame.sprite.Sprite):
             if self.action_image in ["crouch", "run", "idle"] and self.direction == "left":
                 self.position[0]+=self.increment_left_right*self.zoom
 
-            if not self.is_rolling and self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
+            if not self.is_rolling and self.action_image != "run" and self.action_image != "jump" and (self.action_image != "crouch" or self.pressed_crouch) and not self.is_attacking and not self.is_parying:
                 self.change_direction("run","right") 
 
         if change_image and self.direction != "right" and not self.is_rolling:
             if self.action_image == "crouch":
+                if self.pressed_crouch:
+                    self.change_direction("run","right")
                 # we dont want the crouch animation du re start from the biggining
-                self.change_direction(self.action_image,"right",compteur_image=self.compteur_image, current_image=self.current_image)
+                else:
+                    self.change_direction(self.action_image,"right",compteur_image=self.compteur_image, current_image=self.current_image)
             elif not self.is_attacking and not self.is_parying:
                 self.change_direction(self.action_image,"right")       
             else:
@@ -292,11 +309,13 @@ class MOB(pygame.sprite.Sprite):
         if pieds_sur_sol:
             if self.action_image in ["crouch", "run", "idle"] and self.direction == "right":
                 self.position[0]-=self.increment_left_right*self.zoom
-            if not self.is_rolling and self.action_image != "run" and self.action_image != "jump" and self.action_image != "crouch" and not self.is_attacking and not self.is_parying:
+            if not self.is_rolling and self.action_image != "run" and self.action_image != "jump" and (self.action_image != "crouch" or self.pressed_crouch) and not self.is_attacking and not self.is_parying:
                 self.change_direction("run","left") 
 
         if change_image and self.direction != "left" and not self.is_rolling:
             if self.action_image == "crouch":
+                if self.pressed_crouch:
+                    self.change_direction("run","left")
                 # we dont want the crouch animation du re start from the biggining
                 self.change_direction(self.action_image,"left",compteur_image=self.compteur_image, current_image=self.current_image)
             elif not self.is_attacking and not self.is_parying:
@@ -378,12 +397,18 @@ class MOB(pygame.sprite.Sprite):
                 if self.speed_gravity > 5:
                     if not self.is_attacking and not self.is_dashing_attacking:
                         self.images[self.weapon][self.action_image]["compteur_image_max"] = 4
+                        if self.action_image in self.actions_aim:
+                            self.images[self.weapon][self.action_image+"-aim"]["compteur_image_max"] = 4
                 elif self.speed_gravity > 6.5:
                     if not self.is_attacking and not self.is_dashing_attacking:
                         self.images[self.weapon][self.action_image]["compteur_image_max"] = 3
+                        if self.action_image in self.actions_aim:
+                            self.images[self.weapon][self.action_image+"-aim"]["compteur_image_max"] = 3
             # vitesse maximal du defilement des images
             elif self.images[self.weapon][self.action_image]["compteur_image_max"] != 2 and not self.is_attacking and not self.is_dashing_attacking:
                 self.images[self.weapon][self.action_image]["compteur_image_max"] = 2  
+                if self.action_image in self.actions_aim:
+                    self.images[self.weapon][self.action_image+"-aim"]["compteur_image_max"] = 2
 
     def debut_ralentissement(self):
         """methode appele quand je joueur arretes de courir"""
@@ -437,7 +462,13 @@ class MOB(pygame.sprite.Sprite):
             dir = self.direction
         else:
             dir=self.direction_attack
-        if self.compteur_image < self.images[self.weapon][self.action_image]["compteur_image_max"]:
+        if self.is_shooting and self.action_image in self.actions_aim:
+            dico=self.images[self.weapon][self.action_image+"-shoot"]
+        elif self.is_aiming and self.action_image in self.actions_aim:
+            dico=self.images[self.weapon][self.action_image+"-aim"]
+        else:
+            dico=self.images[self.weapon][self.action_image]
+        if self.compteur_image < dico["compteur_image_max"] or (self.action_image=="crouch" and self.pressed_crouch and self.current_image>=dico["nbr_image"]-3 and self.compteur_image < dico["compteur_image_max"]*3):
             if self.action_image == "run":
                 self.compteur_image += 1*self.speed_dt * abs(self.motion[0])
             else:
@@ -448,19 +479,31 @@ class MOB(pygame.sprite.Sprite):
             # changement de l'image
             self.compteur_image = 0
             # si l'image en cours est la derniere on re passe a la 1ere, sinon on passe a la suivante
-            if self.current_image < self.images[self.weapon][self.action_image]["nbr_image"]:
+            if self.current_image < dico["nbr_image"]:
                 self.current_image += 1
             else:
                 temp=True
                 # pour ces actions on passe a une autre animation quand l'animation respeective est finis
                 # it doesnt matter if the mob doesnt have these actions
-                if self.action_image == "up_to_fall": self.change_direction("fall", dir)
+                if self.is_shooting and self.action_image=="crouch":
+                    self.is_shooting=False
+                    self.pressed_crouch=True
+                    self.has_finish_cycle_crouch=True
+                    self.change_direction("crouch", dir, current_image=self.current_image-1)
+                elif self.is_shooting and self.action_image in self.actions_aim:
+                    self.is_shooting=False
+                    self.change_direction(self.action_image, dir)
+                elif self.action_image == "up_to_fall": self.change_direction("fall", dir)
                 elif self.action_image == "up_to_attack": self.change_direction("attack1", dir)
                 elif self.action_image == "crouch":
-                    if self.is_mouving_x:
-                        self.change_direction("run", dir)
+                    if not self.pressed_crouch:
+                        if self.is_mouving_x:
+                            self.change_direction("run", dir)
+                        else:
+                            self.change_direction("idle", dir)
                     else:
-                        self.change_direction("idle", dir)
+                        self.has_finish_cycle_crouch=True
+                        self.change_direction("crouch", dir, current_image=self.current_image-3)
                 elif self.action_image == "Edge_grab":
                     self.debut_wallslide()
                 elif (not "star" in self.id and self.action_image == "attack1") or self.action_image == "attack2" or self.action_image=="hurt" or self.action_image=="pary":
@@ -494,7 +537,7 @@ class MOB(pygame.sprite.Sprite):
                     self.current_image = 1
                 self.update_action()
             if not temp:
-                self.image = self.images[self.weapon][self.action_image][dir][str(self.current_image)]
+                self.image = dico[dir][str(self.current_image)]
                 transColor = self.image.get_at((0,0))
                 self.image.set_colorkey(transColor)
                 
@@ -526,20 +569,37 @@ class MOB(pygame.sprite.Sprite):
         elif self.action == "attack2":
             self.a_attaquer2=False
             
+        if self.action_image=="crouch" and self.pressed_crouch:
+            self.timer_fin_crouch=time.time()
+
         # ralentissement si le joueur cours et continue de courir dans lautre sens
         if self.action_image == "run" and action == "run":
             self.speed *= 0.9
         # reset du compteur d'image si le joueur ne va pas chuter, sion il garde sa vitesse
         if self.action_image == "run" and action != "fall" and action != "up_to_fall":
             self.images[self.weapon]["run"]["compteur_image_max"] = self.origin_compteur_image_run
+            if "run" in self.actions_aim:
+                self.images[self.weapon]["run"+"-aim"]["compteur_image_max"] = self.origin_compteur_image_run
         elif self.action_image == "fall":
             self.images[self.weapon]["fall"]["compteur_image_max"] = self.origin_compteur_image_fall
+            if "fall" in self.actions_aim:
+                self.images[self.weapon]["fall"+"-aim"]["compteur_image_max"] = self.origin_compteur_image_fall
         self.action_image = action
         self.direction = direction
         if not self.one_animation:
+            
             self.compteur_image = compteur_image
             self.current_image = current_image
-            self.image = self.images[self.weapon][self.action_image][self.direction]["1"]
+            if self.is_shooting and self.action_image in self.actions_aim:
+                self.image = self.images[self.weapon][self.action_image+"-shoot"][self.direction][str(self.current_image)]
+            elif self.is_aiming and self.action_image in self.actions_aim:
+                if self.current_image > self.images[self.weapon][self.action_image+"-aim"]["nbr_image"]:
+                    self.current_image = 1
+                self.image = self.images[self.weapon][self.action_image+"-aim"][self.direction][str(self.current_image)]
+            else:
+                if self.current_image > self.images[self.weapon][self.action_image]["nbr_image"]:
+                    self.current_image = 1
+                self.image = self.images[self.weapon][self.action_image][self.direction][str(self.current_image)]
             transColor = self.image.get_at((0,0))
             self.image.set_colorkey(transColor)
             self.update_action()
