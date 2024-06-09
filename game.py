@@ -61,7 +61,7 @@ class Game:
         #             i+=1
         
         self.all_controls={}
-        self.all_controls["solo_clavier"]={"perso":[],"touches":[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP,pygame.K_DOWN, pygame.K_q, pygame.K_a, pygame.K_d, pygame.K_z, pygame.K_e, pygame.K_r]}  
+        self.all_controls["solo_clavier"]={"perso":[],"touches":[pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP,pygame.K_DOWN, pygame.K_q, pygame.K_a, pygame.K_d, pygame.K_z, pygame.K_e, pygame.K_r, pygame.K_t]}  
 
     def new_game(self, seed=None):
         self.menu.is_running=False
@@ -76,8 +76,9 @@ class Game:
         self.group_dash_image_player1=pygame.sprite.Group()
         self.group_dash_attack_image_player1=pygame.sprite.Group()
         self.group_cooldown=pygame.sprite.Group()
+        self.group_animation=pygame.sprite.Group()
         self.group_projectile=pygame.sprite.Group()
-        self.all_groups = [self.group_projectile, self.group_object,self.group,self.group_dash_image_player1, self.group_dash_attack_image_player1, self.group_particle]
+        self.all_groups = [self.group_object,self.group_projectile, self.group_animation,self.group,self.group_dash_image_player1, self.group_dash_attack_image_player1, self.group_particle]
         self.tab_particule_dead=[]
 
         self.render.init_new_map(self.screen.get_width(), self.screen.get_height(), self.directory, seed)
@@ -105,7 +106,7 @@ class Game:
                 
 
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
-        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio, self.group_projectile)
+        self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio, self.group_projectile, self.group_animation)
         
         #self.player=Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
         if "dash_attack" in self.player.actions:
@@ -249,6 +250,8 @@ class Game:
                             self.pressed_one_time["aim"]=True
                     else:
                         self.pressed_one_time["aim"]=False
+                    if pressed[control["touches"][10]]:
+                        handle_change_weapon(control["perso"])
                 
         # joystick :
             # down : self.motion[1]>0.1:
@@ -477,8 +480,15 @@ class Game:
                     mob_hitted=self.collision.mob_collide_object([tuple[0] for tuple in self.get_all_mob()], projectile, Projectile)
                     if mob_hitted:
                         projectile.stick_to_mob(mob_hitted, handle_take_damage, self.collision, self.group_projectile)
+                        projectile.sender.add_impact_animation(projectile, mob_sticked=mob_hitted)
+                        if not projectile.need_to_stick:
+                            self.group_projectile.remove(projectile)
                     elif self.collision.projectile_collide_map(projectile):
-                        projectile.stay_put()
+                        projectile.sender.add_impact_animation(projectile)
+                        if not projectile.need_to_stick:
+                            self.group_projectile.remove(projectile)
+                        else:
+                            projectile.stay_put()
                     
 
             self.group_cooldown.update()

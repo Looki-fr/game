@@ -121,6 +121,7 @@ class MOB(pygame.sprite.Sprite):
         self.rect_attack_update_pos=""
         self.is_aiming=False
         self.is_shooting=False
+        self.can_change_weapon=False
         
         self.max_health=100
         self.health=self.max_health
@@ -173,6 +174,7 @@ class MOB(pygame.sprite.Sprite):
             i.sticked=False
             if i in group_projectile:
                 group_projectile.remove(i)
+                del i
         self.reset_actions(ground)
         if ground or not "air_dying" in self.images[self.weapon].keys() : self.change_direction("dying", self.direction)
         else : self.change_direction("air_dying", self.direction)
@@ -248,11 +250,13 @@ class MOB(pygame.sprite.Sprite):
                 if self.action_image != "idle" and self.action_image != "attack1" and self.action_image != "attack2" and self.action_image != "air_attack":
                     if self.action_image in self.actions_aim:
                         self.images[self.weapon][self.action_image+"-aim"]["compteur_image_max"] = 6
+                        self.images[self.weapon][self.action_image+"-shoot"]["compteur_image_max"] = 6
                     self.images[self.weapon][self.action_image]["compteur_image_max"] = 6
         # vitesse maximal du defilement des images
         if self.action_image != "idle" and self.action_image != "attack1" and self.action_image != "attack2" and self.action_image!="air_attack":
             if self.action_image in self.actions_aim:
                 self.images[self.weapon][self.action_image+"-aim"]["compteur_image_max"] = 4
+                self.images[self.weapon][self.action_image+"-shoot"]["compteur_image_max"] = 4
             self.images[self.weapon][self.action_image]["compteur_image_max"] = 4                    
         
     def move_right(self, pieds_sur_sol = False, change_image=True, just_run=False): 
@@ -291,7 +295,7 @@ class MOB(pygame.sprite.Sprite):
                 else:
                     self.change_direction(self.action_image,"right",compteur_image=self.compteur_image, current_image=self.current_image)
             elif not self.is_attacking and not self.is_parying:
-                self.change_direction(self.action_image,"right")       
+                self.change_direction(self.action_image,"right",compteur_image=self.compteur_image, current_image=self.current_image)       
             else:
                 self.direction="right"  
 
@@ -328,7 +332,7 @@ class MOB(pygame.sprite.Sprite):
                 # we dont want the crouch animation du re start from the biggining
                 self.change_direction(self.action_image,"left",compteur_image=self.compteur_image, current_image=self.current_image)
             elif not self.is_attacking and not self.is_parying:
-                self.change_direction(self.action_image,"left")       
+                self.change_direction(self.action_image,"left",compteur_image=self.compteur_image, current_image=self.current_image)       
             else:
                 self.direction="left" 
   

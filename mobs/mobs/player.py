@@ -3,8 +3,10 @@ import time
 from .MOTHER import MOB
 import os
 from sprite.projectiles.Projectile import Projectile
+from sprite.entities.animation import Animation
+
 class Player(MOB):
-    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, Dash_attack_image, group_dash_attack_image_player, group_dash_image_player, Dash_images, audio, group_projectile):
+    def __init__(self, x, y, directory, zoom, id, checkpoint, Particule, update_particle, Dash_attack_image, group_dash_attack_image_player, group_dash_image_player, Dash_images, audio, group_projectile, group_animation):
         """parametres : 
                 - x : coordonne en x du joueur
                 - y : coordonne en y du joueur
@@ -43,7 +45,7 @@ class Player(MOB):
         }
 
         coefficient=2
-        self.weapon="crossbow"
+        self.weapon="shotgun"
         for w in ["shotgun", "crossbow", "gun"]:
             self._get_images("idle", 8, 5, "Idle", "Idle_", w, coefficient=coefficient)
             self._get_images("idle-aim", 8, 5, "Idle Aim", "Idle-Aim_", w, coefficient=coefficient)
@@ -105,8 +107,13 @@ class Player(MOB):
         self.old_position = self.position.copy()
 
         self.group_projectile=group_projectile
+        self.group_animation=group_animation
 
         # attack aim
+
+        self.can_change_weapon=True
+        self.cooldown_change_weapon=0.5
+        self.timers["timer_change_weapon"]=0
 
         self.images["crossbow"]["projectile"]={
             "dir_path":os.path.join(directory, "assets","Bounty Hunter","Individual Sprite","effect","Shoot Effect","Arrow"),
@@ -114,11 +121,92 @@ class Player(MOB):
             "nbr_image":4,
             "coefficient":2,
             "cpt_img_max":6,
-            "id":"arrow"
+            "id":"arrow_crossbow",
+            "angle": [0, 180],
+            "speed": 15*self.zoom,
+            "damage": 34,
+            "angle_diff": 7,
+        }
+
+        self.images["crossbow"]["animation"]=None
+
+        self.images["crossbow"]["impact"]={
+            "dir_path":os.path.join(directory, "assets","Bounty Hunter","Individual Sprite","effect","Shoot Effect","Impact 1"),
+            "img_name":"Impact-1_",
+            "nbr_image":5,
+            "coefficient":2,
+            "cpt_img_max":5,
+            "id":"impact_crossbow",
+        }
+
+        self.images["gun"]["projectile"]={
+            "dir_path":os.path.join(directory, "assets","Bounty Hunter","Individual Sprite","effect","Shoot Effect","Bulet 2"),
+            "img_name":"Bulet-2_",
+            "nbr_image":3,
+            "coefficient":2,
+            "cpt_img_max":4,
+            "id":"bullet_gun",
+            "angle": [0, 180],
+            "speed": 20*self.zoom,
+            "damage": 50,
+            "angle_diff": 2,
+        }
+
+        self.images["gun"]["animation"]={
+            "dir_path":os.path.join(directory, "assets","Bounty Hunter","Individual Sprite","effect","Shoot Effect","Shoot"),
+            "img_name":"Shoot_",
+            "nbr_image":3,
+            "coefficient":2,
+            "cpt_img_max":4,
+            "id":"shoot_animation",
+        }
+
+        self.images["gun"]["impact"]={
+            "dir_path":os.path.join(directory, "assets","Bounty Hunter","Individual Sprite","effect","Shoot Effect","Impact 2"),
+            "img_name":"Impact-2_",
+            "nbr_image":6,
+            "coefficient":2,
+            "cpt_img_max":4,
+            "id":"impact_gun",
+        }
+
+        self.images["shotgun"]["projectile"]={
+            "dir_path":os.path.join(directory, "assets","Bounty Hunter","Individual Sprite","effect","Shoot Effect","Bulet 1"),
+            "img_name":"Bulet-1_",
+            "nbr_image":3,
+            "coefficient":2,
+            "cpt_img_max":4,
+            "id":"bullet_shotgun",
+            "angle": [0, 180],
+            "speed": 20*self.zoom,
+            "damage": 25,
+            "angle_diff": 15,
+        }
+
+        self.images["shotgun"]["animation"]={
+            "dir_path":os.path.join(directory, "assets","Bounty Hunter","Individual Sprite","effect","Shoot Effect","ShotGun Shoot"),
+            "img_name":"ShotGun-Shoot_",
+            "nbr_image":4,
+            "coefficient":2,
+            "cpt_img_max":4,
+            "id":"shoot_animation",
+        }
+
+        self.images["shotgun"]["impact"]={
+            "dir_path":os.path.join(directory, "assets","Bounty Hunter","Individual Sprite","effect","Shoot Effect","Impact 3"),
+            "img_name":"Impact-3_",
+            "nbr_image":5,
+            "coefficient":2,
+            "cpt_img_max":4,
+            "id":"impact_shotgun",
         }
 
         self.timers["timer_attack_aim"]=0
-        self.cooldown_attack_aim=0.5
+        self.cooldown_attack_aim={
+            "crossbow":0.5,
+            "gun":1,
+            "shotgun":1.5,
+        }
         self.is_attacking_aim=False
 
         # crouch
@@ -319,16 +407,55 @@ class Player(MOB):
         self.direction_attack=self.direction
         self.timers["timer_pary"]=time.time()
         
+    def add_impact_animation(self, projectile, mob_sticked=None):
+        x, y=projectile.rect.right, projectile.rect.top
+        if "crossbow" in projectile.id:
+            w="crossbow"
+            # modify the position of the impact so that it is in the front of the arrow, using the angle
+            x=x-50*self.zoom
+            y=y-18*self.zoom
+            if -0.5 <= projectile.angle <= 0.5:
+                x+=25*self.zoom
+        elif "shotgun" in projectile.id:
+            w="shotgun"
+            x=x-33*self.zoom
+            y=y-15*self.zoom
+        else:
+            w="gun"
+            x=x-37*self.zoom
+            y=y-15*self.zoom
+        
+        if mob_sticked:
+            self.group_animation.add(Animation(x, y, self.images[w]["impact"], self.group_animation, mob_sticked, False, angle=projectile.angle))
+        else:
+            self.group_animation.add(Animation(x, y, self.images[w]["impact"], self.group_animation, mob_sticked, False, angle=projectile.angle))
+    
+    def change_weapon(self):
+        if self.weapon=="shotgun":
+            self.weapon="crossbow"
+        elif self.weapon=="crossbow":
+            self.weapon="gun"
+        else:
+            self.weapon="shotgun"
+        self.timers["timer_change_weapon"]=time.time()
+
     def lauch_projectile(self):
         if self.direction=="right":
-            x, y=self.body.topright[0]+15*self.zoom, self.position[1]+45*self.zoom
-            angle=0
+            x, y=self.body.topright[0]+10*self.zoom, self.position[1]+45*self.zoom
+            angle=self.images[self.weapon]["projectile"]["angle"][0]
         else:
-            x, y=self.body.topleft[0]-40*self.zoom, self.position[1]+45*self.zoom
-            angle=180
+            x, y=self.body.topleft[0]-35*self.zoom, self.position[1]+45*self.zoom
+            angle=self.images[self.weapon]["projectile"]["angle"][1]
         if self.action_image=="crouch":
             y+=15*self.zoom
-        self.group_projectile.add(Projectile(x, y, self.images[self.weapon]["projectile"], angle, 15*self.zoom, 34, self))
+
+        if self.weapon=="shotgun":
+            for _ in range(5):
+                self.group_projectile.add(Projectile(x, y, self.images[self.weapon]["projectile"], angle, self,  need_to_stick=self.weapon=="crossbow"))
+        else:    
+            self.group_projectile.add(Projectile(x, y, self.images[self.weapon]["projectile"], angle, self,  need_to_stick=self.weapon=="crossbow"))
+        if self.images[self.weapon]["animation"]:
+            self.group_animation.add(Animation(x-30*self.zoom if self.direction=="left" else x, y-15*self.zoom, self.images[self.weapon]["animation"], self.group_animation, self, self.direction=="left"))
         self.timers["timer_attack_aim"]=time.time()
         self.is_shooting=True
         self.change_direction(self.action_image, self.direction)

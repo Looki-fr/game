@@ -179,7 +179,7 @@ def pressed_attack(liste_mob):
                     elif time.time() - mob.timers["timer_attack_aerienne"] > mob.cooldown_attack_aerienne:
                         mob.debut_attack(air=True)
         else:
-            if time.time()-mob.timers["timer_attack_aim"] > mob.cooldown_attack_aim and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_grabing_edge and not mob.is_parying and not mob.is_dashing_attacking and not "hurt" in mob.action_image:
+            if time.time()-mob.timers["timer_attack_aim"] > mob.cooldown_attack_aim[mob.weapon] and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_grabing_edge and not mob.is_parying and not mob.is_dashing_attacking and not "hurt" in mob.action_image:
                 mob.lauch_projectile()
 
 def pressed_pary(liste_mob, left, right, collision):
@@ -325,3 +325,9 @@ def handle_aim(liste_mob):
     for mob in liste_mob:
         mob.is_aiming=not mob.is_aiming
         mob.change_direction(mob.action_image, mob.direction, compteur_image=mob.compteur_image, current_image=mob.current_image)
+
+def handle_change_weapon(liste_mob):
+    for mob in liste_mob:
+        if mob.can_change_weapon and time.time()-mob.timers["timer_change_weapon"] > mob.cooldown_change_weapon:
+            mob.change_weapon()
+            mob.change_direction(mob.action_image, mob.direction, compteur_image=mob.compteur_image, current_image=mob.current_image)

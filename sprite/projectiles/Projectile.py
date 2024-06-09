@@ -5,7 +5,7 @@ import time
 import random
 
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, x, y, img_dict, angle, speed, damage,sender):
+    def __init__(self, x, y, img_dict, angle, sender, need_to_stick):
         """
         
         img_dict: {
@@ -14,7 +14,7 @@ class Projectile(pygame.sprite.Sprite):
             "nbr_image": int,
             "coefficient": int,
             "cpt_img_max": int,
-            "id":str
+            "id":str,
         }
         
         """
@@ -32,9 +32,10 @@ class Projectile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.compteur_img=0
         self.compteur_max=img_dict["cpt_img_max"]
-        self.damage = damage
-        self.angle = math.radians(angle+random.uniform(-5,5))
-        self.speed = speed
+        self.damage = img_dict["damage"]
+        self.angle = math.radians(angle+random.uniform(-img_dict["angle_diff"],img_dict["angle_diff"]))
+        self.speed = img_dict["speed"]
+        self.need_to_stick=need_to_stick
         self.sticked=False
         self.mob_sticked=None
         self.mob_sticked_d=[0,0]
@@ -57,12 +58,14 @@ class Projectile(pygame.sprite.Sprite):
         self.sticked=True
 
     def stick_to_mob(self, mob, handle_take_damage, collision,group_projectile):
-        self.sticked=True
-        self.mob_sticked=mob
-        self.mob_sticked_d[0]=self.position[0]-mob.position[0]
-        self.mob_sticked_d[1]=self.position[1]-mob.position[1]
+        if self.need_to_stick:
+            self.sticked=True
+            self.mob_sticked=mob
+            self.mob_sticked_d[0]=self.position[0]-mob.position[0]
+            self.mob_sticked_d[1]=self.position[1]-mob.position[1]
+            mob.projectile_sticked.append(self)
+
         mob.health-=self.damage
-        mob.projectile_sticked.append(self)
         handle_take_damage(mob, collision, group_projectile)
         
     def update_timers(self, dt):
