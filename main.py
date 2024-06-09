@@ -12,4 +12,4 @@ if __name__ == "__main__":
 # BUG : piece spawn dans le vide et passe a travers mur
 # BUG : particles qui spawn à l'infini quand on saute puis shoot instant
 
-# BUG damage shotgun des fois ça marche pas
+# TODO : ajouter sons pour les armes

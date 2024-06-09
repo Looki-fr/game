@@ -43,7 +43,7 @@ class Game:
         }
 
         self.render=RenderMap(self.directory, self.seed)
-        self.distance_target_bot=300*self.render.zoom
+        self.distance_target_bot=260*self.render.zoom
 
         self.new_game()
 

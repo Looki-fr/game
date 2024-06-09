@@ -5,6 +5,11 @@ import time
 import random
 
 class Projectile(pygame.sprite.Sprite):
+    n=0
+    @staticmethod
+    def get_id():
+        Projectile.n+=1
+        return str(Projectile.n)
     def __init__(self, x, y, img_dict, angle, sender, need_to_stick):
         """
         
@@ -20,7 +25,7 @@ class Projectile(pygame.sprite.Sprite):
         """
         super().__init__()
         self.sender=sender
-        self.id=img_dict["id"]
+        self.id=img_dict["id"]+Projectile.get_id()
         self.images = []
         for i in range(img_dict["nbr_image"]):
             self.images.append(pygame.image.load(os.path.join(img_dict["dir_path"], img_dict["img_name"]+str(i+1)+".png")).convert_alpha())
