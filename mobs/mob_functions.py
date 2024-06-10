@@ -185,7 +185,7 @@ def pressed_attack(liste_mob):
 def pressed_pary(liste_mob, left, right, collision):
     for mob in liste_mob:
         if "pary" in mob.actions:
-            if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_attacking and not mob.is_grabing_edge and not mob.is_dashing_attacking and time.time()-mob.timers["timer_pary"]>mob.cooldown_pary and not "hurt" in mob.action_image:
+            if not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_jumping_edge and not mob.is_dashing and not mob.is_dashing_ground and not mob.is_attacking and not mob.is_grabing_edge and not mob.is_dashing_attacking and time.time()-mob.timers["timer_pary"]>mob.cooldown_pary and not "hurt" in mob.action_image:
                 if mob.is_sliding_ground:
                     mob.fin_slide_ground()
                 if mob.is_dashing_ground:
@@ -196,7 +196,7 @@ def pressed_pary(liste_mob, left, right, collision):
             if left: dir="left"
             elif right: dir="right"
             else: dir=mob.direction
-            if not collision.stop_if_collide(dir,mob, dontmove=True) and not mob.is_falling and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_dashing and not mob.a_dash and not mob.is_sliding_ground and not mob.is_grabing_edge and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking and time.time() - mob.timers["timer_roll"] > mob.cooldown_roll :
+            if not collision.stop_if_collide(dir,mob, dontmove=True) and not mob.is_falling and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping and not mob.is_dashing and not mob.is_dashing_ground and not mob.a_dash and not mob.is_sliding_ground and not mob.is_grabing_edge and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking and time.time() - mob.timers["timer_roll"] > mob.cooldown_roll :
                 mob.debut_roll(dir)
 
 def pressed_heavy_attack(liste_mob, collision, left, right):

@@ -555,7 +555,6 @@ class Game:
             self.player.is_mouving_x = False
             self.handle_input()
             self.update()
-            
             #self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling")
             pygame.display.update()      
             self.dt = clock.tick(60)
