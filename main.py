@@ -9,7 +9,8 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
-# BUG : piece spawn dans le vide et passe a travers mur
-# BUG : particles qui spawn à l'infini quand on saute puis shoot instant
+# TODO : news mouvement
+
+# BUG : particles qui spawn à l'infini quand on saute puis shoot inastant
 
 # TODO : ajouter sons pour les armes

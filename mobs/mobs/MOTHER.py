@@ -126,7 +126,7 @@ class MOB(pygame.sprite.Sprite):
         self.max_health=100
         self.health=self.max_health
         self.is_dead=False
-        self.is_mob=True
+        self.is_mob=False
         self.is_friendly=False
         
         self.bot=None
@@ -630,6 +630,8 @@ class MOB(pygame.sprite.Sprite):
         self.head.midtop = self.body.midtop
         if "Edge_climb" in self.actions : self.big_head.midtop = self.body.midtop
         if "dash" in self.actions: self.chest.midtop=self.head.midtop
+        if self.is_mob:
+            self.large_rect_spawn_item.center=self.body.center
 
     def update(self):
         """methode appele a chaque tick"""

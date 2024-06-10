@@ -139,9 +139,9 @@ class Game:
             else:
                 self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
 
-    def add_object(self, id, x, y):
+    def add_object(self, id, x, y, dir=""):
         if id == "coin":
-            self.all_objects.append(Object(self.render.zoom, "coin", self.checkpoint.copy(), self.directory, os.path.join("assets","TreasureHunters","Pirate Treasure","Sprites"), self.audio, "Gold Coin", 4, "0", 2, x, y, 5))
+            self.all_objects.append(Object(self.render.zoom, "coin", self.checkpoint.copy(), self.directory, os.path.join("assets","TreasureHunters","Pirate Treasure","Sprites"), self.audio, "Gold Coin", 4, "0", 2, x, y, 5, direction=dir))
             self.group.add(self.all_objects[-1])
 
     def load_object_map(self, c, d):
@@ -362,7 +362,15 @@ class Game:
                     if len(self.group_wave)==1:
                         self.end_wave_map()
                 else:
-                    self.add_object("coin", mob.position[0]+random.randint(0, mob.rect.width), mob.position[1]+mob.rect.height-1)
+                    # all this because otherwise objects spawn throw the wall and go into the void
+                    closest_wall=self.collision.get_closest_wall(mob)
+                    if closest_wall:
+                        if mob.body.x+mob.body.width//2 < closest_wall[0].x+closest_wall[0].width//2:
+                            self.add_object("coin", mob.position[0]+random.randint(0, mob.rect.width), mob.position[1]+mob.rect.height-1, dir="left")
+                        else:
+                            self.add_object("coin", mob.position[0]+random.randint(0, mob.rect.width), mob.position[1]+mob.rect.height-1, dir="right")
+                    else:       
+                        self.add_object("coin", mob.position[0]+random.randint(0, mob.rect.width), mob.position[1]+mob.rect.height-1)
                     self.group.remove(mob)
                     self.all_mobs.remove([mob, "bot"])
         

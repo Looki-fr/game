@@ -397,3 +397,13 @@ class Collision:
                 if projectile.rect.collidelist(ceilling) > -1:
                     return True
         return False
+    
+    def get_closest_wall(self, mob):
+        """
+        /!\ doesnt take into account the walls that are under the player or above
+        """
+        for dico in self.get_dico(mob.coord_map):
+            for wall in dico["wall"]:
+                if mob.large_rect_spawn_item.collidelist(wall) > -1:
+                    return wall
+        return None

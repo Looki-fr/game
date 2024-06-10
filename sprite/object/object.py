@@ -2,7 +2,7 @@ from mobs.mobs.MOTHER import MOB
 import pygame
 import random
 class Object(MOB):
-    def __init__(self, zoom, id, checkpoint, directory, directory_assets, audio, dir_name, nbr_image, img_name, coefficient, x, y, animation_speed):
+    def __init__(self, zoom, id, checkpoint, directory, directory_assets, audio, dir_name, nbr_image, img_name, coefficient, x, y, animation_speed, direction=""):
         super().__init__(zoom, id, checkpoint, None, None, directory,  directory_assets, audio)
 
         self.coefficient=coefficient
@@ -38,9 +38,12 @@ class Object(MOB):
 
         #parabolic
         self.parabolic=True
-        self.direction_parabolic="right"
-        if random.randint(0,1)==0:
-            self.direction_parabolic="left"
+        if direction=="":
+            self.direction_parabolic="right"
+            if random.randint(0,1)==0:
+                self.direction_parabolic="left"
+        else:
+            self.direction_parabolic=direction
         self.speed_coeff=random.random() * 0.8 + 0.15
         self.speed_coeff_jump=1.25-self.speed_coeff
         self.debut_saut()

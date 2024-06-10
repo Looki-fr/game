@@ -42,6 +42,7 @@ class Crab(MOB):
         self.feet = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.1)
         self.head = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.1)
         self.body = pygame.Rect(0,0,self.rect.width * 0.3, self.rect.height*0.8)
+        self.large_rect_spawn_item = pygame.Rect(0,0,self.body.width+2*20*self.zoom, self.rect.height*0.2)
         self.rect_attack = pygame.Rect(0,0,self.rect.width * 1.2, self.rect.height*0.4)
         self.rect_attack_update_pos="mid"
         self.complement_collide_wall_right = self.body.w
@@ -72,6 +73,8 @@ class Crab(MOB):
         
         self.range_attack=self.rect_attack.w
         
+        self.is_mob=True
+
         self.bot=Bot(self, player)
     
     def update_timers(self, dt):

@@ -101,7 +101,6 @@ class Player(MOB):
         self.rect_attack_update_pos="left_right"
         self.complement_collide_wall_right = self.body.w
         self.complement_collide_wall_left = self.body.w
-        self.is_mob=False
 
         # enregistrement de l'ancienne position pour que si on entre en collision avec un element du terrain la position soit permutte avec l'anciene
         self.old_position = self.position.copy()
