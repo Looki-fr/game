@@ -169,17 +169,17 @@ class MOB(pygame.sprite.Sprite):
             self.timers[i]+=dt
 
     def start_dying(self, ground, group_projectile):
-        for i in self.projectile_sticked:
-            i.mob_sticked=None
-            i.sticked=False
-            if i in group_projectile:
-                group_projectile.remove(i)
-                del i
-        self.reset_actions(ground)
-        if ground or not "air_dying" in self.images[self.weapon].keys() : self.change_direction("dying", self.direction)
-        else : self.change_direction("air_dying", self.direction)
-        self.update_action()
-        self.health=self.max_health
+        if not "dying" in self.action_image:
+            for i in self.projectile_sticked:
+                i.mob_sticked=None
+                i.sticked=False
+                if i in group_projectile:
+                    group_projectile.remove(i)
+            self.reset_actions(ground)
+            if ground or not "air_dying" in self.images[self.weapon].keys() : self.change_direction("dying", self.direction)
+            else : self.change_direction("air_dying", self.direction)
+            self.update_action()
+            # self.health=self.max_health
       
     def reset_actions(self, ground,chute=False):
         """reset all actions except the fall"""
@@ -216,16 +216,17 @@ class MOB(pygame.sprite.Sprite):
             self.action="idle"
         
     def take_damage(self):
-        if self.is_falling and "air_hurt" in self.actions: 
-            self.reset_actions(False,chute=False)
-            self.change_direction("air_hurt", self.direction)
-        elif (self.is_jumping or self.is_jumping_edge or self.is_dashing or (self.is_dashing_attacking and self.is_falling)) and "air_hurt" in self.actions:
-            self.reset_actions(False)
-            self.debut_chute(attack=True)
-            self.change_direction("air_hurt", self.direction)
-        else:
-            self.reset_actions(True)
-            self.change_direction("hurt", self.direction)
+        if not "hurt" in self.action_image and not "dying" in self.action_image:
+            if self.is_falling and "air_hurt" in self.actions: 
+                self.reset_actions(False,chute=False)
+                self.change_direction("air_hurt", self.direction)
+            elif (self.is_jumping or self.is_jumping_edge or self.is_dashing or (self.is_dashing_attacking and self.is_falling)) and "air_hurt" in self.actions:
+                self.reset_actions(False)
+                self.debut_chute(attack=True)
+                self.change_direction("air_hurt", self.direction)
+            else:
+                self.reset_actions(True)
+                self.change_direction("hurt", self.direction)
   
     def update_tick(self, dt):
         """i created a multiplicator for the mouvements that based on 60 fps (clock.tick() = 17) because the original
@@ -534,6 +535,8 @@ class MOB(pygame.sprite.Sprite):
                 elif self.action_image == "dash_attack":   
                     self.fin_dash_attack()
                 elif "dying" in self.action_image:
+                    # only happening to the player because the mobs are removed from the groups when they die
+                    self.health=self.max_health
                     self.position=[self.checkpoint[0], self.checkpoint[1]-self.image.get_height()]
                     self.fin_chute()
                     self.change_direction("idle", dir)

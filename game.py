@@ -483,6 +483,7 @@ class Game:
                     self.all_objects.remove(object)
                     self.group.remove(object)
 
+            temp=[]
             for projectile in self.group_projectile.sprites():
                 if not projectile.sticked:
                     mob_hitted=self.collision.mob_collide_object([tuple[0] for tuple in self.get_all_mob()], projectile, Projectile)
@@ -490,13 +491,15 @@ class Game:
                         projectile.stick_to_mob(mob_hitted, handle_take_damage, self.collision, self.group_projectile)
                         projectile.sender.add_impact_animation(projectile, mob_sticked=mob_hitted)
                         if not projectile.need_to_stick:
-                            self.group_projectile.remove(projectile)
+                            temp.append(projectile)
                     elif self.collision.projectile_collide_map(projectile):
                         projectile.sender.add_impact_animation(projectile)
                         if not projectile.need_to_stick:
-                            self.group_projectile.remove(projectile)
+                            temp.append(projectile)
                         else:
                             projectile.stay_put()
+            for p in temp:
+                self.group_projectile.remove(p)
                     
 
             self.group_cooldown.update()

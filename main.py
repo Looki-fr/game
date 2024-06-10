@@ -14,3 +14,7 @@ if __name__ == "__main__":
 # BUG : particles qui spawn à l'infini quand on saute puis shoot inastant
 
 # TODO : ajouter sons pour les armes
+
+# BUG : dash et instant roulade
+#       => soit on reste sur place
+#       => soit grab edge
