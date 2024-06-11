@@ -111,6 +111,97 @@ class MapGeneration:
         self._spawn_island()
 
 
+        self._map_correction()
+
+    def _map_correction(self):
+        """
+        
+        I am always fixing this bug, but it always appears again :(
+        So i am gonna fix it here.
+
+        I will remove all one square space that are in the ground
+        and other ugly things that happens rarely
+        
+        """
+        h=self.room_height//self.tile_width
+        w=self.room_width//self.tile_width
+
+        def get_value(i, j, x, y):
+            if 0 <= i < len(self.all_mat) and 0 <= j < len(self.all_mat[0]):
+                if self.all_mat[i][j] is not None:
+                    return self.all_mat[i][j][x][y]
+            return 1
+
+        for i in range(len(self.graphe)*(self.room_height//self.tile_width)):
+            next=None
+            curr=None
+            for y in range(1,len(self.graphe[0])*w-1):
+                if self.all_mat[i // h][y // w] is None:
+                    y += w
+                    continue
+                if curr!=None:
+                    prev=curr
+                else:
+                    prev = get_value(i // h, (y // w) - 1, i % h, w - 1) if y % w == 0 else get_value(i // h, y // w, i % h, (y % w) - 1)
+
+                if next is not None:
+                    curr = next
+                else:
+                    curr = get_value(i // h, y // w, i % h, y % w)
+                
+                next = get_value(i // h, (y // w) + 1, i % h, 0) if y % w == w - 1 else get_value(i // h, y // w, i % h, (y % w) + 1)
+                top = get_value((i // h) - 1, y // w, h - 1, y % w) if i % h == 0 else get_value(i // h, y // w, (i % h) - 1, y % w)
+                bot = get_value((i // h) + 1, y // w, 0, y % w) if i % h == h - 1 else get_value(i // h, y // w, (i % h) + 1, y % w)
+                
+                botright = 1
+                if i % h < h - 1 and y % w < w - 1:
+                    botright = get_value(i // h, y // w, (i % h) + 1, (y % w) + 1)
+                elif i % h == h - 1 and y % w == w - 1:
+                    botright = get_value((i // h) + 1, (y // w) + 1, 0, 0)
+                elif i % h < h - 1 and y % w == w - 1:
+                    botright = get_value(i // h, (y // w) + 1, (i % h) + 1, 0)
+                elif i % h == h - 1 and y % w < w - 1:
+                    botright = get_value((i // h) + 1, y // w, 0, (y % w) + 1)
+                
+                botleft = 1
+                if i % h < h - 1 and y % w > 0:
+                    botleft = get_value(i // h, y // w, (i % h) + 1, (y % w) - 1)
+                elif i % h == h - 1 and y % w == 0:
+                    botleft = get_value((i // h) + 1, (y // w) - 1, 0, w - 1)
+                elif i % h < h - 1 and y % w == 0:
+                    botleft = get_value(i // h, (y // w) - 1, (i % h) + 1, w - 1)
+                elif i % h == h - 1 and y % w > 0:
+                    botleft = get_value((i // h) + 1, y // w, 0, (y % w) - 1)
+
+                topright = 1
+                if i % h > 0 and y % w < w - 1:
+                    topright = get_value(i // h, y // w, (i % h) - 1, (y % w) + 1)
+                elif i % h == 0 and y % w == w - 1:
+                    topright = get_value((i // h) - 1, (y // w) + 1, h - 1, 0)
+                elif i % h > 0 and y % w == w - 1:
+                    topright = get_value(i // h, (y // w) + 1, (i % h) - 1, 0)
+                elif i % h == 0 and y % w < w - 1:
+                    topright = get_value((i // h) - 1, y // w, h - 1, (y % w) + 1)
+                
+                topleft = 1
+                if i % h > 0 and y % w > 0:
+                    topleft = get_value(i // h, y // w, (i % h) - 1, (y % w) - 1)
+                elif i % h == 0 and y % w == 0:
+                    topleft = get_value((i // h) - 1, (y // w) - 1, h - 1, w - 1)
+                elif i % h > 0 and y % w == 0:
+                    topleft = get_value(i // h, (y // w) - 1, (i % h) - 1, w - 1)
+                elif i % h == 0 and y % w > 0:
+                    topleft = get_value((i // h) - 1, y // w, h - 1, (y % w) - 1)
+
+                if self.all_mat[i//h][y//w]:
+                    if ((curr==0 and prev==1 and next==1) or \
+                    (curr==0 and prev==1 and bot==1 and botright==0 and topleft==0) or\
+                    (curr==0 and next==1 and bot==1 and botleft==0 and topright==0)) :
+                        self.all_mat[i//h][y//w][i%h][y%w]=1
+
+                    if (curr==1 and prev==0 and next==0):
+                        self.all_mat[i//h][y//w][i%h][y%w]=0
+
     def clear_memory(self):
         del self.all_mat
         del self.all_island

@@ -1,6 +1,6 @@
 {
-    "sound": "False",
-    "music": "False",
+    "sound": "True",
+    "music": "True",
     "playlist": "TECHNO",
     "maps": {
         "1700345499.171078": "dfdsfdsf",
@@ -13,6 +13,9 @@
         "1717235614.4603539": "super cool map",
         "1717236031.725973": "cool map",
         "1717236650.0143895": "sympa",
-        "1717884331.8400974": "bug en bas \u00e0 droite passage impossible"
+        "1717884331.8400974": "bug en bas \u00e0 droite passage impossible",
+        "1718125210.571408": "carre tt seul a droite",
+        "1718143253.8816957": "tp \u00e0 travers le mur pilier fin d\u00e9but",
+        "1718143754.2405393": "testeuuuu"
     }
 }

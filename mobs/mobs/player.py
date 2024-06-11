@@ -14,7 +14,7 @@ class Player(MOB):
         # initialisation de la classe mere permettant de faire de cette classe un sprite
         MOB.__init__(self, zoom, f"player{id}", checkpoint, Particule,update_particle, directory, os.path.join("assets","Bounty Hunter","Individual Sprite"), audio)
 
-        self.max_health=100
+        self.max_health=10000
         self.health=self.max_health
 
         #"up_to_fall", 
@@ -287,7 +287,7 @@ class Player(MOB):
         #attack
         self.attack_damage={}
         self.attack_damage["attack1"]=([6,7,8], 100)
-        self.attack_damage["attack2"]=([2,3,4],100)
+        self.attack_damage["attack2"]=([2,3,4], 100)
         self.dash_attack_damage=100
         self.attack_damage["air attack"]=([3,4,5],100)
 
