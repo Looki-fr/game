@@ -15,6 +15,7 @@ def pressed_left(liste_mob, collision):
                     mob.move_left()
                 if collision.stop_if_collide("left", mob) and not bool and not mob.is_jumping:
                     collision.check_grab(mob, "left")
+                
 
 def pressed_right(liste_mob, collision):
     for mob in liste_mob:
@@ -30,15 +31,11 @@ def pressed_right(liste_mob, collision):
                 # si le joueur ne dash pas et est en lair
                 else:
                     mob.move_right()
-                if collision.stop_if_collide("right", mob) and not bool and not mob.is_jumping:
+
+                if collision.stop_if_collide("right", mob, debug="player" in mob.id and mob.is_attacking) and not bool and not mob.is_jumping:
                     collision.check_grab(mob, "right")
+                # if "player" in mob.id and mob.is_attacking and mob.direction_attack == "right" and mob.
 
-
-                #     if collide and not bool and not mob.is_jumping:
-                #     collision.check_grab(mob)
-                # elif collide:
-                #     if "ground_slide" in mob.actions and mob.is_sliding_ground: mob.fin_slide_ground()
-                #     if "roll" in mob.actions and mob.is_rolling: mob.fin_roll()
                 
 def jump_edge(mob, pressed_up_bool, left, right,down, collision, pieds, zoom):
     if "jump_edge" in mob.actions:

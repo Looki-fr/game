@@ -620,10 +620,10 @@ class MOB(pygame.sprite.Sprite):
             self.image.set_colorkey(transColor)
             self.update_action()
         
-    def update_rect(self):
+    def update_rect(self, inverse=False):
         self.rect.topleft = self.position
         self.body.midbottom = self.rect.midbottom
-        if self.direction=="right": self.body.x-=self.increment_x_body*self.zoom
+        if (self.direction=="right" and not inverse) or (self.direction=="left" and inverse): self.body.x-=self.increment_x_body*self.zoom
         else: self.body.x+=self.increment_x_body*self.zoom
         if 'Wall_slide' in self.actions:
             self.body_wallslide.midbottom = self.body.midbottom
@@ -646,8 +646,8 @@ class MOB(pygame.sprite.Sprite):
             
         self.update_animation()
         
-        # update des coordonees des rect
-        self.update_rect()
+        self.update_rect(inverse="player" in self.id and self.direction != self.direction_attack and self.is_attacking)
+
         if self.is_attacking and self.rect_attack_update_pos=="mid":
             self.rect_attack.center = self.rect.center
         elif self.is_attacking and self.rect_attack_update_pos=="left_right":

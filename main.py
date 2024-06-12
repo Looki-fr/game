@@ -14,5 +14,3 @@ if __name__ == "__main__":
 # BUG : particles qui spawn à l'infini quand on saute puis shoot inastant
 
 # TODO : ajouter sons pour les armes
-
-# BUG on peut passer à travers les murs en attaquant de dos

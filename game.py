@@ -473,9 +473,10 @@ class Game:
                 for mob in [tuple[0] for tuple in self.all_mobs] + [i for i in self.all_objects] + [p for p in self.group_projectile]:
                     tu=self.render.get_coord_tile_matrix(mob.position[0], mob.position[1])
                     mob.coord_map=(tu[-2], tu[-1])
-                    
+
             for group in self.all_groups:
                 group.update()
+
 
             for object in self.all_objects:
                 if self.collision.mob_collide_object([self.player], object, Projectile):
@@ -541,6 +542,7 @@ class Game:
             s = pygame.Surface((self.screen.get_width(),self.screen.get_height()), pygame.SRCALPHA)
             s.fill((255,255,255,64))                       
             self.bg.blit(s, (0,0))
+
         self.screen.blit(self.bg, (0,0))
         
     def set_running_false(self):
@@ -555,7 +557,7 @@ class Game:
             self.player.is_mouving_x = False
             self.handle_input()
             self.update()
-            #self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling")
+            # self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling")
             pygame.display.update()      
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:
