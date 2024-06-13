@@ -43,7 +43,6 @@ class Game:
         }
 
         self.render=RenderMap(self.directory, self.seed)
-        print("HELLo")
         self.distance_target_bot=260*self.render.zoom
 
         self.new_game()
@@ -415,7 +414,6 @@ class Game:
         # after because if slide ground we need to cancel the grab wall before we see it on screen
         # slide on wall
         if temp_ground or (mob.is_sliding and self.collision.joueur_sur_sol(mob, wallslide=True)):
-            print("b", temp_ground, mob.is_sliding)
             mob.fin_grab_edge(change_dir=temp_ground)
             if mob.direction == "right":
                 mob.change_direction("run", "left")
@@ -565,9 +563,9 @@ class Game:
             self.player.is_mouving_x = False
             self.handle_input()
             self.update()
-            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling-closed_room")
-            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ground-closed_room")
-            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "wall-closed_room")
+            # self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling-closed_room")
+            # self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ground-closed_room")
+            # self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "wall-closed_room")
             pygame.display.update()      
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:

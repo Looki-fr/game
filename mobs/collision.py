@@ -95,7 +95,7 @@ class Collision:
                 for ground in dico["ground"] + [a[0:1] for a in dico["ground-closed_room"]]:
                     if rect.collidelist(ground) > -1:
                         continuer=True
-                        if not wallslide:
+                        if not wallslide and "player" in mob.id:
                             for wall__ in [a[0:1] for a in dico["wall-closed_room"]]:
                                 if mob.body.collidelist(wall__) > -1 and ((wall__[0].x==ground[0].x and mob.body.x) or (ground[0].x+ground[0].w==wall__[0].x+wall__[0].w and mob.body.x+mob.body.w<ground[0].x+ground[0].w)):
                                     continuer=False

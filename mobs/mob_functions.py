@@ -82,7 +82,6 @@ def pressed_up(liste_mob, down, left, right, pressed_up_bool, collision, zoom):
                 wall, w = collision.stop_if_collide(mob.direction, mob, dontmove=True, get_pos=True, dash=True, big_head=True)  
                 sol, s=collision.check_head_collide_ground(mob, changing_y=False, get_pos=mob.direction)
                 wall_added, w2=collision.stop_if_collide(mob.direction, mob, dontmove=True, get_pos=True, dash=True, big_head=True, closed_room=True)  
-                print(wall, sol, w, s, wall_added, mob.position)
                 if not wall_added and wall and sol and w in s:
                     mob.fin_grab_edge()
                     collision.check_head_collide_ground(mob, changing_y=True, x=w)
