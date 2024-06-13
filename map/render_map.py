@@ -174,14 +174,20 @@ class RenderMap:
                 self.all_pic.append(pic)
             except:
                 self.all_pic.append(None)
-            for n in range(2,3+1):
+            for n in range(2,4+1):
                 if n-1==len(self.all_pics):
                     self.all_pics.append([])
                 try:
-                    pic=pygame.image.load(os.path.join(directory,"assets","TreasureHunters","PalmTreeIsland","Sprites","Terrain",f"{str(n)}_{str(i)}.png"))
-                    pic=pygame.transform.scale(pic, (self.tile_width,self.tile_width))
-                    self.all_pics[n-1].append(pic)
-                except:
+                    if n==4:
+                        pic=self.all_pic[i].copy()
+                        # add opacity
+                        pic.set_alpha(100)
+                        self.all_pics[n-1].append(pic)
+                    else:
+                        pic=pygame.image.load(os.path.join(directory,"assets","TreasureHunters","PalmTreeIsland","Sprites","Terrain",f"{str(n)}_{str(i)}.png"))
+                        pic=pygame.transform.scale(pic, (self.tile_width,self.tile_width))
+                        self.all_pics[n-1].append(pic)
+                except Exception as e:
                     self.all_pics[n-1].append(None)
 
         # pic=pygame.Surface((self.map_generation.tile_width, self.map_generation.tile_width))
@@ -226,40 +232,59 @@ class RenderMap:
         self.map_generation.matrix_map[i][z]["wall"].append([pygame.Rect(z*self.map_generation.room_width+y_*(self.map_generation.tile_width), i*self.map_generation.room_height+(tmp)*self.map_generation.tile_width+self.increment, self.map_generation.tile_width, self.map_generation.tile_width*(i_-tmp) - 2*+self.increment)])
                 
     def complete_picture_matrix(self, i, z, node, mat=None):
+        """
+        
+        
+        
+        /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ 
+        /!\ /!\ 
+        /!\ /!\ 
+        /!\ /!\  weird things incoming with the number 4 ('mat[i][y]!=4')
+        /!\ /!\  its because number 4 corresponds to the tiles that have opacities
+        /!\ /!\  and we don't want to add collisions objects on them
+        /!\ /!\ 
+        /!\ /!\ 
+        /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ 
+        
+        
+        
+        
+        
+        """
         if not mat : mat=self.map_generation.all_mat[i][z]
+
         g=0
         d=len(mat[0])
         if node == [False, False, False, False]:
             h=len(mat)-2
         else:h=0
         b=len(mat)
-
         for i_ in range(h, b):
             tmp=-1
             tmp2=-1
             for y_ in range(g, d):
                 if mat[i_][y_]:
                     self.matrix_picture[i][z].append({"x":z*self.map_generation.room_width+y_*self.map_generation.tile_width,"y":i*self.map_generation.room_height+i_*self.map_generation.tile_width,"img":0,"type_image":mat[i_][y_]})
-
+                    if mat[i_][y_]==4:
+                        continue
                     if node != [False, False, False, False]:
-                    
                         
                         #adding little ground if there is a change of 
                         # left
-                        if (y_>g and not mat[i_][y_-1] and i_<len(mat)-1 and mat[i_+1][y_-1] and i_>0 and not mat[i_-1][y_]) or (y_==g and z>0 and self.map_generation.all_mat[i][z-1] and not self.map_generation.all_mat[i][z-1][i_][-1] and i_<len(mat)-1 and self.map_generation.all_mat[i][z-1][i_+1][-1] and i_>0 and not mat[i_-1][y_]):
+                        if (y_>g and (not mat[i_][y_-1] or mat[i_][y_-1]==4) and i_<len(mat)-1 and mat[i_+1][y_-1] and mat[i_+1][y_-1]!=4 and i_>0 and (not mat[i_-1][y_] or mat[i_-1][y_]==4)) or (y_==g and z>0 and self.map_generation.all_mat[i][z-1] and (not self.map_generation.all_mat[i][z-1][i_][-1] or self.map_generation.all_mat[i][z-1][i_][-1]==4) and i_<len(mat)-1 and self.map_generation.all_mat[i][z-1][i_+1][-1] and self.map_generation.all_mat[i][z-1][i_+1][-1]!=4 and i_>0 and (not mat[i_-1][y_] or mat[i_-1][y_]==4)):
                             self.matrix_picture[i][z].append({"x":z*self.map_generation.room_width+(y_-0.5)*self.map_generation.tile_width,"y":i*self.map_generation.room_height+(i_+0.5)*self.map_generation.tile_width,"img":len(self.all_pic)-1,"type_image":1})
                             self.map_generation.matrix_map[i][z]["little_ground"].append([pygame.Rect(z*self.map_generation.room_width+(y_-0.6)*self.map_generation.tile_width, i*self.map_generation.room_height+(i_+0.5)*self.map_generation.tile_width, self.map_generation.tile_width/4, self.map_generation.tile_width/2)])
                         #  or (y==d-1 and self.last_mat and not self.last_mat[i_][0])
                         # right
-                        if ((y_<d-1 and not mat[i_][y_+1] and i_<len(mat)-1 and mat[i_+1][y_+1] and i_>0 and not mat[i_-1][y_]) or (y_==d-1 and node[1] and (self.map_generation.gen_current_width==0 or (z<len(self.map_generation.all_mat[i])-1 and self.map_generation.all_mat[i][z+1] and not self.map_generation.all_mat[i][z+1][i_][0] and self.map_generation.all_mat[i][z+1][i_+1][0])))):
+                        if ((y_<d-1 and (not mat[i_][y_+1] or mat[i_][y_+1]==4) and i_<len(mat)-1 and mat[i_+1][y_+1] and mat[i_+1][y_+1]!=4 and i_>0 and (not mat[i_-1][y_] or mat[i_-1][y_]==4)) or (y_==d-1 and node[1] and (self.map_generation.gen_current_width==0 or (z<len(self.map_generation.all_mat[i])-1 and self.map_generation.all_mat[i][z+1] and (not self.map_generation.all_mat[i][z+1][i_][0] or self.map_generation.all_mat[i][z+1][i_][0]==4) and self.map_generation.all_mat[i][z+1][i_+1][0] and self.map_generation.all_mat[i][z+1][i_+1][0]!=4)))):
                             self.matrix_picture[i][z].append({"x":z*self.map_generation.room_width+(y_+1)*self.map_generation.tile_width,"y":i*self.map_generation.room_height+(i_+0.5)*self.map_generation.tile_width,"img":len(self.all_pic)-2,"type_image":1})
                             self.map_generation.matrix_map[i][z]["little_ground"].append([pygame.Rect(z*self.map_generation.room_width+(y_+1.1)*self.map_generation.tile_width, i*self.map_generation.room_height+(i_+0.5)*self.map_generation.tile_width, self.map_generation.tile_width/4, self.map_generation.tile_width/2)])
 
                         # ground
-                        if tmp == -1 and ((i_>0 and not mat[i_-1][y_]) or (i_==0 and i>0 and self.map_generation.all_mat[i-1][z] and not self.map_generation.all_mat[i-1][z][-1][y_])) :
+                        if tmp == -1 and ((i_>0 and (not mat[i_-1][y_] or mat[i_-1][y_]==4)) or (i_==0 and i>0 and self.map_generation.all_mat[i-1][z] and (not self.map_generation.all_mat[i-1][z][-1][y_] or self.map_generation.all_mat[i-1][z][-1][y_]==4))) :
                             tmp=y_
                         # not elif because if lenght is 1
-                        if tmp != -1 and (y_ == d-1 or not mat[i_][y_+1] or ((i_>0 and mat[i_-1][y_+1]) or (i_==0 and i>0 and self.map_generation.all_mat[i-1][z] and self.map_generation.all_mat[i-1][z][-1][y_+1]))):
+                        if tmp != -1 and (y_ == d-1 or (not mat[i_][y_+1] or mat[i_][y_+1]==4) or ((i_>0 and mat[i_-1][y_+1] and mat[i_-1][y_+1]!=4) or (i_==0 and i>0 and self.map_generation.all_mat[i-1][z] and self.map_generation.all_mat[i-1][z][-1][y_+1]  and self.map_generation.all_mat[i-1][z][-1][y_+1]!=4))):
                             # or self.map_generation.graphe[i][z][0] or
 
 
@@ -275,19 +300,19 @@ class RenderMap:
 
                     # ceillings
                     if i_<len(mat)-1 or (i_==len(mat)-1 and not node[3]):
-                        if tmp2 == -1 and ( i_==len(mat)-1 or not mat[i_+1][y_]) :tmp2=y_
+                        if tmp2 == -1 and ( i_==len(mat)-1 or (not mat[i_+1][y_] or mat[i_+1][y_]==4)) :tmp2=y_
                         # not elif because if lenght is 1
-                        if tmp2 != -1 and (y_ == d-1 or not mat[i_][y_+1] or (i_<len(mat)-1 and ( mat[i_+1][y_+1] or mat[i_+1][y_]))):
+                        if tmp2 != -1 and (y_ == d-1 or (not mat[i_][y_+1] or mat[i_][y_+1]==4) or (i_<len(mat)-1 and ( (mat[i_+1][y_+1] and mat[i_+1][y_+1]!=4) or (mat[i_+1][y_] and mat[i_+1][y_]!=4)))):
                             plus1=plus2=0
-                            if (tmp2==0 and z>0 and self.map_generation.all_mat[i][z-1] and self.map_generation.all_mat[i][z-1][i_][-1]) or ( tmp2>0 and mat[i_][tmp2-1]): plus1=1
-                            if (y_==d-1 and z<len(self.map_generation.all_mat)-1 and self.map_generation.all_mat[i][z+1] and self.map_generation.all_mat[i][z+1][i_][0]) or (y_<len(mat[i_])-1 and mat[i_][y_+1]): plus2=1
+                            if (tmp2==0 and z>0 and self.map_generation.all_mat[i][z-1] and self.map_generation.all_mat[i][z-1][i_][-1] and self.map_generation.all_mat[i][z-1][i_][-1]!=4) or ( tmp2>0 and mat[i_][tmp2-1] and mat[i_][tmp2-1]!=4): plus1=1
+                            if (y_==d-1 and z<len(self.map_generation.all_mat)-1 and self.map_generation.all_mat[i][z+1] and self.map_generation.all_mat[i][z+1][i_][0]  and self.map_generation.all_mat[i][z+1][i_][0]!=4) or (y_<len(mat[i_])-1 and mat[i_][y_+1] and mat[i_][y_+1]!=4): plus2=1
                             self._spawn_big_ceilling(i, z, i_, y_+1+plus2, tmp2-plus1)
                             tmp2=-1
         if i>0:
             tmp=-1
             for y_ in range(g, d):
-                if tmp==-1 and not mat[0][y_] and self.map_generation.all_mat[i-1][z] and self.map_generation.all_mat[i-1][z][-1][y_] and not mat[1][y_]: tmp=y_
-                if tmp != -1 and (y_==d-1 or mat[1][y_+1] or mat[0][y_+1] or not self.map_generation.all_mat[i-1][z][-1][y_+1]):
+                if tmp==-1 and (not mat[0][y_] or mat[0][y_]==4) and self.map_generation.all_mat[i-1][z] and self.map_generation.all_mat[i-1][z][-1][y_] and self.map_generation.all_mat[i-1][z][-1][y_]!=4 and (not mat[1][y_] or mat[1][y_]==4): tmp=y_
+                if tmp != -1 and (y_==d-1 or (mat[1][y_+1] and mat[1][y_+1]!=4) or (mat[0][y_+1] and mat[0][y_+1]!=4) or (not self.map_generation.all_mat[i-1][z][-1][y_+1] or self.map_generation.all_mat[i-1][z][-1][y_+1]==4)):
                     self._spawn_big_ceilling(i-1, z, len(mat)-1, y_+1, tmp)
                     tmp=-1
         if node != [False, False, False, False]:
@@ -296,22 +321,22 @@ class RenderMap:
                 tmp=-1
                 type_=0
                 for i_ in range(h, b):
-                    if mat[i_][y_]:
+                    if mat[i_][y_] and mat[i_][y_]!=4:
                         #if tmp == -1 and  (((y_==0 and (not mat[i_][1] or (z>0 and self.map_generation.all_mat[i][z-1] and not self.map_generation.all_mat[i][z-1][i_][-1]))) or (y_==len(mat[0])-1 and (not mat[i_][-2] or (z<len(self.map_generation.all_mat[i])-1 and not self.map_generation.all_mat[i][z+1] and self.map_generation.all_mat[i][z+1][i_][0])))) or ((y_>0 and y_<len(mat[0])-1) and (not mat[i_][y_-1] or not mat[i_][y_+1]))):
-                        if tmp == -1 and not(y_==0 and mat[i_][1] and z>0 and self.map_generation.all_mat[i][z-1] and self.map_generation.all_mat[i][z-1][i_][-1]) and not(y_==len(mat[0])-1 and mat[i_][-2] and z<len(self.map_generation.all_mat[i])-1 and self.map_generation.all_mat[i][z+1] and self.map_generation.all_mat[i][z+1][i_][0]) and ((y_==0 or y_==len(mat[0])-1) or ((y_>0 and y_<len(mat[0])-1) and (not mat[i_][y_-1] or not mat[i_][y_+1]))):
-                            if ((y_!=len(mat[0])-1 or not mat[i_][y_-1]) or (y_==len(mat[0])-1 and z<len(self.map_generation.all_mat[0])-1 and (not self.map_generation.all_mat[i][z+1] or not self.map_generation.all_mat[i][z+1][i_][0]))) and ((y_>0 or not mat[i_][y_+1]) or (y_==0 and z>0 and (not self.map_generation.all_mat[i][z-1] or not self.map_generation.all_mat[i][z-1][i_][-1]))):
-                                if (y_==0 and mat[i_][y_+1]) or (y_>0 and not mat[i_][y_-1]): type_=1
+                        if tmp == -1 and not(y_==0 and mat[i_][1] and mat[i_][1]!=4 and z>0 and self.map_generation.all_mat[i][z-1] and self.map_generation.all_mat[i][z-1][i_][-1] and self.map_generation.all_mat[i][z-1][i_][-1]!=4) and not(y_==len(mat[0])-1 and mat[i_][-2] and mat[i_][-2]!=4 and z<len(self.map_generation.all_mat[i])-1 and self.map_generation.all_mat[i][z+1] and self.map_generation.all_mat[i][z+1]!=4 and self.map_generation.all_mat[i][z+1][i_][0]  and self.map_generation.all_mat[i][z+1][i_][0]!=4) and ((y_==0 or y_==len(mat[0])-1) or ((y_>0 and y_<len(mat[0])-1) and ((not mat[i_][y_-1] or mat[i_][y_-1]==4) or (not mat[i_][y_+1] or mat[i_][y_+1]==4)))):
+                            if ((y_!=len(mat[0])-1 or (not mat[i_][y_-1] or mat[i_][y_-1]==4)) or (y_==len(mat[0])-1 and z<len(self.map_generation.all_mat[0])-1 and (not self.map_generation.all_mat[i][z+1] or (not self.map_generation.all_mat[i][z+1][i_][0] or self.map_generation.all_mat[i][z+1][i_][0]==4)))) and ((y_>0 or (not mat[i_][y_+1] or mat[i_][y_+1]==4)) or (y_==0 and z>0 and (not self.map_generation.all_mat[i][z-1] or (not self.map_generation.all_mat[i][z-1][i_][-1] or self.map_generation.all_mat[i][z-1][i_][-1]==4)))):
+                                if (y_==0 and mat[i_][y_+1]  and mat[i_][y_+1]!=4) or (y_>0 and (not mat[i_][y_-1] or mat[i_][y_-1]==4)): type_=1
                                 tmp=i_
                             
                             # not elif because if lenght is 1
-                        if tmp != -1 and type_ == 1 and (i_ == b-1 or not mat[i_+1][y_] or ((y_>0 and mat[i_][y_-1]) or (y_==0 and z>0 and (self.map_generation.all_mat[i][z-1] and self.map_generation.all_mat[i][z-1][i_][-1])))):
+                        if tmp != -1 and type_ == 1 and (i_ == b-1 or not mat[i_+1][y_] or mat[i_+1][y_]==4 or ((y_>0 and mat[i_][y_-1]  and mat[i_][y_-1]!=4) or (y_==0 and z>0 and (self.map_generation.all_mat[i][z-1] and self.map_generation.all_mat[i][z-1][i_][-1]  and self.map_generation.all_mat[i][z-1][i_][-1]!=4)))):
                             if i_-tmp>=0 : self._spawn_big_walls(i, z, i_+1, y_, tmp)
-                            elif (i_>0 and mat[i_-1][y_]) or (i_==0 and i>0 and self.map_generation.all_mat[i-1][z] and self.map_generation.all_mat[i-1][z][-1][y_]) :  self._spawn_big_walls(i, z, i_+1, y_, tmp-1)
+                            elif (i_>0 and mat[i_-1][y_]  and mat[i_-1][y_]!=4) or (i_==0 and i>0 and self.map_generation.all_mat[i-1][z] and self.map_generation.all_mat[i-1][z][-1][y_] and self.map_generation.all_mat[i-1][z][-1][y_]!=4) :  self._spawn_big_walls(i, z, i_+1, y_, tmp-1)
                             tmp=-1
                             
-                        elif tmp != -1 and type_ == 0 and (i_ == b-1 or not mat[i_+1][y_] or ((not y_==len(mat[0])-1 and mat[i_][y_+1]) or (y_==len(mat[0])-1 and z<len(self.map_generation.all_mat[0])-1 and (self.map_generation.all_mat[i][z+1] and self.map_generation.all_mat[i][z+1][i_][0])))):
+                        elif tmp != -1 and type_ == 0 and (i_ == b-1 or not mat[i_+1][y_] or mat[i_+1][y_]==4 or ((not y_==len(mat[0])-1 and mat[i_][y_+1]  and mat[i_][y_+1]!=4) or (y_==len(mat[0])-1 and z<len(self.map_generation.all_mat[0])-1 and (self.map_generation.all_mat[i][z+1] and self.map_generation.all_mat[i][z+1][i_][0]  and self.map_generation.all_mat[i][z+1][i_][0]!=4)))):
                             if i_-tmp>=0 : self._spawn_big_walls(i, z, i_+1, y_, tmp)
-                            elif (i_>0 and mat[i_-1][y_]) or (i_==0 and i>0 and self.map_generation.all_mat[i-1][z] and self.map_generation.all_mat[i-1][z][-1][y_]) :  self._spawn_big_walls(i, z, i_+1, y_, tmp-1)
+                            elif (i_>0 and mat[i_-1][y_]  and mat[i_-1][y_]!=4) or (i_==0 and i>0 and self.map_generation.all_mat[i-1][z] and self.map_generation.all_mat[i-1][z][-1][y_]  and self.map_generation.all_mat[i-1][z][-1][y_]!=4) :  self._spawn_big_walls(i, z, i_+1, y_, tmp-1)
                             tmp=-1
 
     def load_map(self, node, i, z, empty=False):
@@ -395,8 +420,7 @@ class RenderMap:
                     for img in self.matrix_picture[ligne][tab]:
                         # if img["img"] == len(self.all_pic)-3 or visible[f"({ligne},{tab})"]:
                         if img["type_image"]==1:img_=self.all_pic[img["img"]]
-                        elif img["type_image"]==2:img_=self.all_pics[1][img["img"]]
-                        elif img["type_image"]==3:img_=self.all_pics[2][img["img"]]
+                        else:img_=self.all_pics[img["type_image"]-1][img["img"]]
                         if not img_:img_=self.all_pics[img["type_image"]-1][0]
                         surface.blit(img_, (self.map_generation.screen_width/2 + img["x"] - cam_x, self.map_generation.screen_height/2 + img["y"] - cam_y))
 

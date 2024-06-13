@@ -17,6 +17,7 @@ class MapGeneration:
         self.graphe=self.g.get_matrix()
         self.mat_room=self.g.get_matrix_room(self.graphe)
         self.g.printTab(self.graphe, valMat=self.mat_room)
+        
         new_graph=[]
         new_graph.insert(0, [[] for _ in range(len(self.graphe[0])+2)])
         
@@ -110,8 +111,60 @@ class MapGeneration:
 
         self._spawn_island()
 
-
         self._map_correction()
+
+        self._close_rooms()
+
+    def _get_all_neightboors_and_path_recur(self, i, z, neightboors, _type, seen_same_type):
+        # [g, d, h, b]
+        for i_, z_, index in [(i+1,z, 3),(i-1,z, 2),(i,z+1, 1),(i,z-1, 0)]:
+            if 0<=i_<len(self.mat_room) and 0<=z_<len(self.mat_room[0]):
+                if self.mat_room[i_][z_]==_type and (i_,z_) not in seen_same_type:
+                    seen_same_type.add((i_,z_))
+                    self._get_all_neightboors_and_path_recur(i_, z_, neightboors, _type, seen_same_type)
+                elif self.graphe[i+1][z+1] and self.graphe[i+1][z+1][index] and self.mat_room[i_][z_]!=_type:
+                    neightboors[self.mat_room[i_][z_]]=neightboors.get(self.mat_room[i_][z_],[])+[(i_,z_,index)]
+
+
+    def _get_all_neightboors_and_path(self, i, z):
+        neightboors=dict()
+        _type=self.mat_room[i][z]
+        seen_same_type=set()
+        seen_same_type.add((i,z))
+        self._get_all_neightboors_and_path_recur(i, z, neightboors, _type, seen_same_type)
+        return neightboors
+
+    def _remove_path_from_rooms(self, neightboors):
+        for room_id, path in neightboors.items():
+            for i, z, index in path:
+                # [g, d, h, b]
+                if index==0:
+                    for i_ in range(self.room_height//self.tile_width):
+                        if self.all_mat[i+1][z+1][i_][-1]==0:
+                            self.all_mat[i+1][z+1][i_][-1]=4
+                elif index==1:
+                    for i_ in range(self.room_height//self.tile_width):
+                        if self.all_mat[i+1][z+1][i_][0]==0:
+                            self.all_mat[i+1][z+1][i_][0]=4
+                elif index==2:
+                    for z_ in range(self.room_width//self.tile_width):
+                        if self.all_mat[i+1][z+1][-1][z_]==0:
+                            self.all_mat[i+1][z+1][-1][z_]=4
+                elif index==3:
+                    for z_ in range(self.room_width//self.tile_width):
+                        if self.all_mat[i+1][z+1][0][z_]==0:
+                            self.all_mat[i+1][z+1][0][z_]=4
+
+    def _close_rooms(self):
+        seen=set()
+        self.all_neightboors_and_path=dict()
+        for i, line in enumerate(self.mat_room):
+            for y, room_id in enumerate(line):
+                if room_id!=0 and room_id not in seen:
+                    seen.add(room_id)
+                    self.all_neightboors_and_path[room_id]=self._get_all_neightboors_and_path(i, y)
+                    self._remove_path_from_rooms(self.all_neightboors_and_path[room_id])
+
 
     def _map_correction(self):
         """
