@@ -191,18 +191,19 @@ class Graph:
     
         return mat
 
-    def get_matrix_room_recur(self, mat, mat_room_bal, i, y, vu, cur, cur_length):
+    def get_matrix_room_recur(self, mat, mat_room_bal, i, y, vu, cur, cur_length, dico):
         if mat[i][y]:
             if cur_length[0] > 2 or (cur_length[0]==2 and random.randint(0,1)==0):
                 cur_length[0]=0
                 cur[0]+=1
             vu.add((i,y))
             mat_room_bal[i][y]=self.get_letter(cur)
+            dico[self.get_letter(cur)]=dico.get(self.get_letter(cur),[])+[(i,y)]
             cur_length[0]+=1
             tab=self.get_all_neighboors(i, y, mat, vu)
             for node in tab:
                 if node not in vu:
-                    self.get_matrix_room_recur(mat, mat_room_bal, node[0], node[1], vu, cur, cur_length)
+                    self.get_matrix_room_recur(mat, mat_room_bal, node[0], node[1], vu, cur, cur_length, dico)
             if len(tab)==0:
                 cur_length[0]=0
                 cur[0]+=1
@@ -234,6 +235,7 @@ class Graph:
 
     def get_matrix_room(self, mat):
         mat_room_bal=[[0 for _ in range(len(mat[0]))] for _ in range(len(mat))]
+        dico={}
         cur=[1]
         vu=set()
         cur_length=[0]
@@ -241,20 +243,23 @@ class Graph:
             for y in range(len(mat[0])):
                 if len(mat[i][y])>0 and mat[i][y][1] and mat[i][y][3] and mat[i][y+1][3] and mat[i+1][y][1]:
                     mat_room_bal[i][y]=self.get_letter(cur)
+                    dico[self.get_letter(cur)]=dico.get(self.get_letter(cur),[])+[(i,y)]
                     vu.add((i,y))
                     mat_room_bal[i][y+1]=self.get_letter(cur)
+                    dico[self.get_letter(cur)]=dico.get(self.get_letter(cur),[])+[(i,y+1)]
                     vu.add((i,y+1))
                     mat_room_bal[i+1][y]=self.get_letter(cur)
+                    dico[self.get_letter(cur)]=dico.get(self.get_letter(cur),[])+[(i+1,y)]
                     vu.add((i+1,y))
                     mat_room_bal[i+1][y+1]=self.get_letter(cur)
+                    dico[self.get_letter(cur)]=dico.get(self.get_letter(cur),[])+[(i+1,y+1)]
                     vu.add((i+1,y+1))
                     cur[0]+=1
         for i in range(len(mat)):
             for y in range(len(mat[0])):
                 if len(mat[i][y])>0 and (i,y) not in vu:
-                    self.get_matrix_room_recur(mat, mat_room_bal, i, y, vu,cur, cur_length)
-        print(self.get_all_neighboors_rooms(0,0,mat,mat_room_bal))
-        return mat_room_bal
+                    self.get_matrix_room_recur(mat, mat_room_bal, i, y, vu,cur, cur_length, dico)
+        return mat_room_bal, dico
 
                     
 

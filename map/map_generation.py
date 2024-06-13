@@ -15,8 +15,10 @@ class MapGeneration:
         self.g = Graph(5,5,3,1, seed)
 
         self.graphe=self.g.get_matrix()
-        self.mat_room=self.g.get_matrix_room(self.graphe)
+        self.mat_room, self.dict_mat_room=self.g.get_matrix_room(self.graphe)
         self.g.printTab(self.graphe, valMat=self.mat_room)
+        for items in self.dict_mat_room.items():
+            print(items)
         
         new_graph=[]
         new_graph.insert(0, [[] for _ in range(len(self.graphe[0])+2)])

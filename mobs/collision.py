@@ -64,7 +64,7 @@ class Collision:
                 if mob.feet.collidelist(little_ground) > -1:
                     return True
 
-    def joueur_sur_sol(self, mob, platform_only=False, dash=False, change_pos=True, chest=False, get_pos=None):
+    def joueur_sur_sol(self, mob, platform_only=False, dash=False, change_pos=True, chest=False, get_pos=None, wallslide=False):
         """renvoie True si les pieds du joueur est sur une plateforme ou sur le sol.
         De plus, place la coordonee en y du joueur juste au dessus de la plateforme / du sol"""
         passage_a_travers = time.time() - mob.timers["t1_passage_a_travers_plateforme"] < mob.cooldown_passage_a_travers_plateforme
@@ -95,10 +95,12 @@ class Collision:
                 for ground in dico["ground"] + [a[0:1] for a in dico["ground-closed_room"]]:
                     if rect.collidelist(ground) > -1:
                         continuer=True
-                        for wall in [a[0:1] for a in dico["wall-closed_room"]]:
-                            if mob.body.collidelist(wall) > -1 and wall[0].x==ground[0].x or ground[0].x+ground[0].w==wall[0].x+wall[0].w:
-                                continuer=False
-                                break
+                        if not wallslide:
+                            for wall__ in [a[0:1] for a in dico["wall-closed_room"]]:
+                                if mob.body.collidelist(wall__) > -1 and ((wall__[0].x==ground[0].x and mob.body.x) or (ground[0].x+ground[0].w==wall__[0].x+wall__[0].w and mob.body.x+mob.body.w<ground[0].x+ground[0].w)):
+                                    continuer=False
+                                    print("BREAK IN JOUEUR SUR SOL", wallslide)
+                                    break
 
                         if continuer:
                             if not change_pos and not platform_only  and get_pos==None: return True

@@ -369,7 +369,6 @@ class RenderMap:
             self.map_generation.all_mat[i][z]=mat[::]
             self.map_generation.re_initialize_gen_var()
 
-
     def is_current_map_beated(self, cam_x, cam_y):
         # y_min, y_max, x_min, x_max, a, b, c, d = self.get_coord_tile_matrix(cam_x, cam_y)
         # if self.map_generation.matrix_map[d][c]!=None:

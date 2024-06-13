@@ -704,9 +704,9 @@ class Player(MOB):
         if mouvement:
             # petit decalage necessaires pour eviter des bug a causes des images d'animations ou des collision
             if self.direction == "right":
-                self.position[0] -= 15*self.zoom
+                self.position[0] -= 20*self.zoom
             elif self.direction == "left":
-                self.position[0] += 15*self.zoom
+                self.position[0] += 20*self.zoom
         if change_dir:
             if self.direction=="right":
                 self.direction="left"

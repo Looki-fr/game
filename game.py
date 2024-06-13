@@ -89,25 +89,23 @@ class Game:
             for y, map in enumerate(line):
                 self.load_object_map(y, i)
 
-        positions=[]
-        cpt=0
+        player_position=None
+        self.current_room_id=None
         for i in range(len(self.render.map_generation.matrix_map)):
+            if player_position:
+                break
             for y in range(len(self.render.map_generation.matrix_map[i])):
                 if self.render.map_generation.matrix_map[i][y]!=None:
-                    if cpt==0:
+                    if player_position==None:
                         player_position=self.render.get_random_spawn(i, y)
                         if player_position!=None:
-                            cpt+=1
-                            positions.append(player_position)
-                    else:
-                        for _ in range(2):
-                            pos=self.render.get_random_spawn(i, y)
-                            if pos!=None:
-                                positions.append(pos)
-                
+                            self.current_room_id=self.render.map_generation.mat_room[i-1][y-1]
+
+        print("PLAYER SPAWNS IN :", self.current_room_id)
 
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
         self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio, self.group_projectile, self.group_animation)
+        self.spawn_mobs_room()
         
         #self.player=Star(player_position[0], player_position[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, None, self.audio)
         if "dash_attack" in self.player.actions:
@@ -134,11 +132,19 @@ class Game:
         self.add_mob_to_game(self.player, "solo_clavier")
         self.add_mob_to_game(self.player, "solo_clavier", group="wave")
 
+    def spawn_mobs_room(self):
+        positions=[]
+        for i, y in self.render.map_generation.dict_mat_room[self.current_room_id]:
+            for _ in range(1):
+                pos=self.render.get_random_spawn(i+1, y+1)
+                positions.append(pos)
+
         for i,pos in enumerate(positions):
-            if random.randint(1,2)==1:
-                self.add_mob_to_game(Star(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
-            else:
-                self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), self.checkpoint.copy(), Particule,self.add_particule_to_group, self.player, self.audio), "bot")
+            if pos:
+                if random.randint(1,2)==1:
+                    self.add_mob_to_game(Star(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), pos, Particule,self.add_particule_to_group, self.player, self.audio), "bot")
+                else:
+                    self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), pos, Particule,self.add_particule_to_group, self.player, self.audio), "bot")
 
     def add_object(self, id, x, y, dir=""):
         if id == "coin":
@@ -408,7 +414,8 @@ class Game:
         
         # after because if slide ground we need to cancel the grab wall before we see it on screen
         # slide on wall
-        if temp_ground or (mob.is_sliding and self.collision.joueur_sur_sol(mob)):
+        if temp_ground or (mob.is_sliding and self.collision.joueur_sur_sol(mob, wallslide=True)):
+            print("b", temp_ground, mob.is_sliding)
             mob.fin_grab_edge(change_dir=temp_ground)
             if mob.direction == "right":
                 mob.change_direction("run", "left")
