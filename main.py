@@ -14,3 +14,7 @@ if __name__ == "__main__":
 # BUG : particles qui spawn à l'infini quand on saute puis shoot inastant
 
 # TODO : ajouter sons pour les armes
+
+# TODO : add platformes qui ne collide rien (ni quand == 4)
+
+# BUG edge climb throw wall when attaking spam (cf map : island too close)

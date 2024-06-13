@@ -341,8 +341,10 @@ class RenderMap:
 
     def load_map(self, node, i, z, empty=False):
         """call load_objects_map if the map is not empty and load all tiles for the map widht the coordinates i and z""" 
-
-        self.map_generation.matrix_map[i][z]={"wall":[], "ground":[], "little_ground":[], "ceilling":[], "platform":[],"bot":{"platform_right":[], "platform_left":[], "platform_go_right":[], "platform_go_left":[]}, "spawn_player":(), "object_map":(), "object_map":(), "spawn_crab":[], "info":{"beated":True, "type":node}}
+        if self.map_generation.matrix_map[i][z]:
+            self.map_generation.matrix_map[i][z]["info"]["type"]=node
+        else:
+            self.map_generation.matrix_map[i][z]={"wall":[],"wall-closed_room":[], "ground":[],"ground-closed_room":[], "little_ground":[], "ceilling":[], "ceilling-closed_room":[], "platform":[],"bot":{"platform_right":[], "platform_left":[], "platform_go_right":[], "platform_go_left":[]}, "spawn_player":(), "object_map":(), "object_map":(), "spawn_crab":[], "info":{"beated":True, "type":node}}
         # [g, d, h, b]
         if node:
             self.complete_picture_matrix(i, z, node)

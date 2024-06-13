@@ -87,6 +87,7 @@ class MapGeneration:
         # spawn of object 
         for i,line in enumerate(self.graphe):
             for z,node in enumerate(line):
+                self.matrix_map[i][z]={"wall":[],"wall-closed_room":[], "ground":[],"ground-closed_room":[], "little_ground":[], "ceilling":[], "ceilling-closed_room":[], "platform":[],"bot":{"platform_right":[], "platform_left":[], "platform_go_right":[], "platform_go_left":[]}, "spawn_player":(), "object_map":(), "object_map":(), "spawn_crab":[], "info":{"beated":True}}
                 
                 if node : self._get_hills(i,z,node, after_island=True)
                 
@@ -142,18 +143,23 @@ class MapGeneration:
                     for i_ in range(self.room_height//self.tile_width):
                         if self.all_mat[i+1][z+1][i_][-1]==0:
                             self.all_mat[i+1][z+1][i_][-1]=4
+                    self.matrix_map[i+1][z+1]["wall-closed_room"].append([pygame.Rect((z+2)*self.room_width-self.tile_width, (i+1)*self.room_height, self.tile_width, self.room_height), room_id])
                 elif index==1:
                     for i_ in range(self.room_height//self.tile_width):
                         if self.all_mat[i+1][z+1][i_][0]==0:
                             self.all_mat[i+1][z+1][i_][0]=4
+                    self.matrix_map[i+1][z+1]["wall-closed_room"].append([pygame.Rect((z+1)*self.room_width, (i+1)*self.room_height, self.tile_width, self.room_height), room_id])
                 elif index==2:
                     for z_ in range(self.room_width//self.tile_width):
                         if self.all_mat[i+1][z+1][-1][z_]==0:
                             self.all_mat[i+1][z+1][-1][z_]=4
+                    self.matrix_map[i+1][z+1]["ground-closed_room"].append([pygame.Rect((z+1)*self.room_width, (i+2)*self.room_height-self.tile_width, self.room_width, self.tile_width), room_id])
+                
                 elif index==3:
                     for z_ in range(self.room_width//self.tile_width):
                         if self.all_mat[i+1][z+1][0][z_]==0:
                             self.all_mat[i+1][z+1][0][z_]=4
+                    self.matrix_map[i+1][z+1]["ceilling-closed_room"].append([pygame.Rect((z+1)*self.room_width, (i+1)*self.room_height, self.room_width, self.tile_width), room_id])
 
     def _close_rooms(self):
         seen=set()
@@ -164,8 +170,7 @@ class MapGeneration:
                     seen.add(room_id)
                     self.all_neightboors_and_path[room_id]=self._get_all_neightboors_and_path(i, y)
                     self._remove_path_from_rooms(self.all_neightboors_and_path[room_id])
-
-
+                
     def _map_correction(self):
         """
         

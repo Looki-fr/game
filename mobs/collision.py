@@ -92,25 +92,32 @@ class Collision:
                                 mob.a_dash = False
                             bool= True
                 
-                for ground in dico["ground"]:
+                for ground in dico["ground"] + [a[0:1] for a in dico["ground-closed_room"]]:
                     if rect.collidelist(ground) > -1:
-                        if not change_pos and not platform_only  and get_pos==None: return True
-                        if not mob.is_jumping_edge and not mob.is_jumping:
-                            if get_pos!=None:
-                                if get_pos=="left":
-                                    if pos==None:pos=ground[0].x+ground[0].w
-                                    elif ground[0].x+ground[0].w>pos:pos=ground[0].x+ground[0].w
-                                elif get_pos=="right":
-                                    if pos==None:pos=ground[0].x
-                                    elif ground[0].x<pos:pos=ground[0].x
-                            elif not gd:
-                                gd=ground
-                            elif gd[0].y>ground[0].y:
-                                gd=ground
-                            # comme le joueur est sur le sol, il peut de nouveau dash / sauter
-                            mob.a_sauter = False
-                            mob.a_dash = False
-                        bool= True
+                        continuer=True
+                        for wall in [a[0:1] for a in dico["wall-closed_room"]]:
+                            if mob.body.collidelist(wall) > -1 and wall[0].x==ground[0].x or ground[0].x+ground[0].w==wall[0].x+wall[0].w:
+                                continuer=False
+                                break
+
+                        if continuer:
+                            if not change_pos and not platform_only  and get_pos==None: return True
+                            if not mob.is_jumping_edge and not mob.is_jumping:
+                                if get_pos!=None:
+                                    if get_pos=="left":
+                                        if pos==None:pos=ground[0].x+ground[0].w
+                                        elif ground[0].x+ground[0].w>pos:pos=ground[0].x+ground[0].w
+                                    elif get_pos=="right":
+                                        if pos==None:pos=ground[0].x
+                                        elif ground[0].x<pos:pos=ground[0].x
+                                elif not gd:
+                                    gd=ground
+                                elif gd[0].y>ground[0].y:
+                                    gd=ground
+                                # comme le joueur est sur le sol, il peut de nouveau dash / sauter
+                                mob.a_sauter = False
+                                mob.a_dash = False
+                            bool= True
             for plateforme in dico["platform"]:
                 # and not sprite.is_sliding
                 if not passage_a_travers:
@@ -142,7 +149,7 @@ class Collision:
         else: rect=mob.head
         if get_pos!=None: pos=None
         for dico in self.get_dico(mob.coord_map):
-            for ceilling in dico["ceilling"]:
+            for ceilling in dico["ceilling"] + [a[0:1] for a in dico["ceilling-closed_room"]]:
                 if rect.collidelist(ceilling) > -1:
                     if get_pos==None:return True
                     elif get_pos=="left":
@@ -175,7 +182,7 @@ class Collision:
         mob.speed=temp_speed
 
         
-    def stop_if_collide(self, direction,mob, head = False, move_back=True, dash=False, dontmove=False, chest=False, stick=False,get_pos=False,big_head=False, debug=False):
+    def stop_if_collide(self, direction,mob, head = False, move_back=True, dash=False, dontmove=False, chest=False, stick=False,get_pos=False,big_head=False, debug=False, closed_room=False):
         """fait en sorte que le joueur avance plus lorsque qu'il avance dans un mur
         /!\           /!\          /!\        /!\ 
         
@@ -190,7 +197,7 @@ class Collision:
         else:rect = mob.body
         if dash or stick: temp=None
         for dico in self.get_dico(mob.coord_map):
-            for wall in dico["wall"]:
+            for wall in dico["wall"] + [a[0:1] for a in dico["wall-closed_room"]] if not closed_room else [a[0:1] for a in dico["wall-closed_room"]] :
                 if rect.collidelist(wall) > -1:
                     # si le joueur va a droite en etant a gauche du mur
                     # limage est plus grande que la partie visible du joueur, d'où mob.image.get_width()/2
@@ -248,7 +255,7 @@ class Collision:
                 mob.position[0] -= 2*self.zoom
         temp=None
         for dico in self.get_dico(mob.coord_map):
-            for wall in dico["wall"]:
+            for wall in dico["wall"] + [a[0:1] for a in dico["wall-closed_room"]]:
                 if mob.body.collidelist(wall) > -1:
                     if temp==None: temp=wall[0]
                     else:
@@ -261,7 +268,7 @@ class Collision:
     def check_grab(self, mob, direction, chest=False, dash=False):
         """Grab SSI head collide"""
         for dico in self.get_dico(mob.coord_map):
-            for wall in dico["wall"]:
+            for wall in dico["wall"] + [a[0:1] for a in dico["wall-closed_room"]]:
                 # check method collide wall pour la collision
                 #  and ((mob.direction == 'right' and wall[0].x < mob.body.x + mob.body.w  and mob.body.x + mob.body.w-wall[0].x < mob.max_distance_collide) or (mob.direction == 'left' and wall[0].x + wall[0].w > mob.body.x and wall[0].x + wall[0].w-mob.body.x < mob.max_distance_collide))
                 if mob.body.collidelist(wall) > -1 and ((dash and  mob.body.collidelist(wall) > -1)or(chest and mob.chest.collidelist(wall) > -1) or mob.head.collidelist(wall) > -1):
@@ -275,7 +282,7 @@ class Collision:
                           
     def check_pieds_collide_wall(self, mob):
         for dico in self.get_dico(mob.coord_map):
-            for wall in dico["wall"]:
+            for wall in dico["wall"] + [a[0:1] for a in dico["wall-closed_room"]]:
                 if mob.feet.collidelist(wall) > -1:
                     return True
         return False
@@ -284,7 +291,7 @@ class Collision:
         lst=[]
         pos=None
         for dico in self.get_dico(mob.coord_map):
-            for ground in dico["ground"]:
+            for ground in dico["ground"] + [a[0:1] for a in dico["ground-closed_room"]]:
                 if mob.big_head.collidelist(ground) > -1 or (body and mob.body.collidelist(ground) > -1):
                     if changing_y==True:
                         if (pos == None or ground[0].y < pos) and (x==None or ground[0].x+ground[0].w==x or ground[0].x==x) : pos = ground[0].y
@@ -302,7 +309,7 @@ class Collision:
     def check_tombe_ou_grab(self, mob):
         """stop le grab edge si on est plus en collision avce un mur"""
         for dico in self.get_dico(mob.coord_map):
-            for wall in dico["wall"]:
+            for wall in dico["wall"] +[a[0:1] for a in dico["wall-closed_room"]]:
                 if (mob.body.collidelist(wall) > -1 or mob.head.collidelist(wall) > -1 or mob.body_wallslide.collidelist(wall) > -1) and mob.is_sliding:
                     return
         mob.fin_grab_edge()
@@ -310,7 +317,7 @@ class Collision:
     def ground_above_wall(self,mob,direction):
         gd=None
         for dico in self.get_dico(mob.coord_map):
-            for ground in dico["ground"]:
+            for ground in dico["ground"] +[a[0:1] for a in dico["ground-closed_room"]]:
                     if mob.body.collidelist(ground) > -1:
                         if not mob.is_jumping_edge and not mob.is_jumping:
                             if not gd:
@@ -322,7 +329,7 @@ class Collision:
                             mob.a_dash = False
         temp=None
         for dico in self.get_dico(mob.coord_map):
-            for wall in dico["wall"]:
+            for wall in dico["wall"] + [a[0:1] for a in dico["wall-closed_room"]]:
                 if mob.body.collidelist(wall) > -1:
                     
                     # si le joueur va a droite en etant a gauche du mur
@@ -388,7 +395,7 @@ class Collision:
             for wall in dico["wall"]:
                 if projectile.rect.collidelist(wall) > -1:
                     return True
-            for ground in dico["ground"]:
+            for ground in dico["ground"] + [a[0:1] for a in dico["ground-closed_room"]] :
                 if projectile.rect.collidelist(ground) > -1:
                     return True
             for platform in dico["platform"]:
@@ -404,7 +411,8 @@ class Collision:
         /!\ doesnt take into account the walls that are under the player or above
         """
         for dico in self.get_dico(mob.coord_map):
-            for wall in dico["wall"]:
+            for wall in dico["wall"] + [a[0:1] for a in dico["wall-closed_room"]]:
                 if mob.large_rect_spawn_item.collidelist(wall) > -1:
                     return wall
         return None
+    

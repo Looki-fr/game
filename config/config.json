@@ -3,12 +3,10 @@
     "music": "True",
     "playlist": "TECHNO",
     "maps": {
-        "1700345499.171078": "dfdsfdsf",
         "1700346096.4254174": "file name",
         "1700346350.2511003": "yep",
         "1700346541.011556": "trap dans un coin",
         "1700348576.304043": "double square map only top",
-        "1700348730.4495163": "test2",
         "1701545668.160071": "both square map",
         "1717235614.4603539": "super cool map",
         "1717236031.725973": "cool map",
@@ -16,9 +14,8 @@
         "1717884331.8400974": "bug en bas \u00e0 droite passage impossible",
         "1718125210.571408": "carre tt seul a droite",
         "1718143253.8816957": "tp \u00e0 travers le mur pilier fin d\u00e9but",
-        "1718143754.2405393": "testeuuuu",
-        "1718222988.893447": "debugg",
-        "1718227416.053287": "BUG WITH opacity walls",
-        "1718288457.0932057": "impossible path"
+        "1718288457.0932057": "impossible path",
+        "1718304233.3857443": "passage impossible pilier",
+        "1718304801.371323": "island too close"
     }
 }

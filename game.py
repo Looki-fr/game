@@ -558,7 +558,9 @@ class Game:
             self.player.is_mouving_x = False
             self.handle_input()
             self.update()
-            # self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling")
+            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling-closed_room")
+            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ground-closed_room")
+            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "wall-closed_room")
             pygame.display.update()      
             self.dt = clock.tick(60)
             for mob in [tuple[0] for tuple in self.get_all_mob()]:
