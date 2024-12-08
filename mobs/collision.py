@@ -99,7 +99,6 @@ class Collision:
                             for wall__ in [a[0:1] for a in dico["wall-closed_room"]]:
                                 if mob.body.collidelist(wall__) > -1 and ((wall__[0].x==ground[0].x and mob.body.x) or (ground[0].x+ground[0].w==wall__[0].x+wall__[0].w and mob.body.x+mob.body.w<ground[0].x+ground[0].w)):
                                     continuer=False
-                                    print("BREAK IN JOUEUR SUR SOL", wallslide)
                                     break
 
                         if continuer:
@@ -182,8 +181,7 @@ class Collision:
         mob.position=temp.copy()
         mob.update_rect()
         mob.speed=temp_speed
-
-        
+    
     def stop_if_collide(self, direction,mob, head = False, move_back=True, dash=False, dontmove=False, chest=False, stick=False,get_pos=False,big_head=False, debug=False, closed_room=False):
         """fait en sorte que le joueur avance plus lorsque qu'il avance dans un mur
         /!\           /!\          /!\        /!\ 
@@ -418,3 +416,37 @@ class Collision:
                     return wall
         return None
     
+    def get_closed_room_object(self, mob):
+        returned=[]
+        for dico in self.get_dico(mob.coord_map):
+            for ground in dico["ground-closed_room"]:
+                if mob.rect_attack.collidelist([ground[0]]) > -1:
+                    dico["ground-closed_room"].remove(ground)
+                    returned.append((ground, "ground"))
+                    for dico_ in self.get_dico(mob.coord_map):
+                        for ceiling_ in dico_["ceilling-closed_room"]:
+                            if (ceiling_[1] == ground[2] and ceiling_[2] == ground[1]) or (ceiling_[1] == ground[1] and ceiling_[2] == ground[2]):
+                                dico_["ceilling-closed_room"].remove(ceiling_)
+                                returned.append((ceiling_, "ceilling"))
+                    return returned
+            for wall in dico["wall-closed_room"]:
+                if mob.rect_attack.collidelist([wall[0]]) > -1:
+                    dico["wall-closed_room"].remove(wall)
+                    returned.append((wall, "wall"))
+                    for dico_ in self.get_dico(mob.coord_map):
+                        for wall_ in dico_["wall-closed_room"]:
+                            if (wall_[1] == wall[2] and wall_[2] == wall[1]) or (wall_[1] == wall[1] and wall_[2] == wall[2]):
+                                dico_["wall-closed_room"].remove(wall_)
+                                returned.append((wall_, "wall"))
+                    return returned
+            for ceilling in dico["ceilling-closed_room"]:
+                if mob.rect_attack.collidelist([ceilling[0]]) > -1 or mob.body.collidelist([ceilling[0]]) > -1:
+                    dico["ceilling-closed_room"].remove(ceilling)
+                    returned.append((ceilling, "ceilling"))
+                    for dico_ in self.get_dico(mob.coord_map):
+                        for ground_ in dico_["ground-closed_room"]:
+                            if (ground_[1] == ceilling[2] and ground_[2] == ceilling[1]) or (ground_[1] == ceilling[1] and ground_[2] == ceilling[2]):
+                                dico_["ground-closed_room"].remove(ground_)
+                                returned.append((ground_, "ground"))
+                    return returned
+        return returned

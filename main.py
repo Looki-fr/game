@@ -9,6 +9,9 @@ if __name__ == "__main__":
     game = Game()
     game.run()
 
+# DOING 
+
+
 # TODO : news mouvement
 
 # BUG : particles qui spawn à l'infini quand on saute puis shoot inastant
@@ -17,6 +20,8 @@ if __name__ == "__main__":
 
 # TODO : add platformes qui ne collide rien (ni quand == 4)
 
-# BUG edge climb throw wall when attaking spam (cf map : island too close)
+# BUG quand on edge climb into sauter dans un pilier on se tp
 
-# BUG des fois le star ne meurt pas
+# BUG quand on reste appuyé sur bas l'animation bloque sur la 1ere frame
+
+# BUG quand slide down un closed room wall on tombe dans le vide

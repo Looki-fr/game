@@ -90,7 +90,7 @@ class Game:
 
         player_position=None
         self.current_room_id=None
-        for i in range(len(self.render.map_generation.matrix_map)):
+        for i in range(len(self.render.map_generation.matrix_map)-1, -1,-1):
             if player_position:
                 break
             for y in range(len(self.render.map_generation.matrix_map[i])):
@@ -101,7 +101,10 @@ class Game:
                             self.current_room_id=self.render.map_generation.mat_room[i-1][y-1]
 
         print("PLAYER SPAWNS IN :", self.current_room_id)
+        self.done_maps=[self.current_room_id]
 
+        for values in self.render.map_generation.dict_mat_room.values():
+            values["mobs"]=[]
         self.checkpoint=[player_position[0], player_position[1]+1] # the plus one is because the checkpoints are 1 pixel above the ground
         self.player=Player(player_position[0], player_position[1]+1, self.directory, self.render.zoom, "1", self.checkpoint.copy(), Particule, self.add_particule_to_group, Dash_attack_image,self.group_dash_attack_image_player1, self.group_dash_image_player1, Dash_images, self.audio, self.group_projectile, self.group_animation)
         self.spawn_mobs_room()
@@ -133,7 +136,7 @@ class Game:
 
     def spawn_mobs_room(self):
         positions=[]
-        for i, y in self.render.map_generation.dict_mat_room[self.current_room_id]:
+        for i, y in self.render.map_generation.dict_mat_room[self.current_room_id]["maps"]:
             for _ in range(1):
                 pos=self.render.get_random_spawn(i+1, y+1)
                 positions.append(pos)
@@ -141,9 +144,11 @@ class Game:
         for i,pos in enumerate(positions):
             if pos:
                 if random.randint(1,2)==1:
-                    self.add_mob_to_game(Star(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), pos, Particule,self.add_particule_to_group, self.player, self.audio), "bot")
+                    mob=Star(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), pos, Particule,self.add_particule_to_group, self.player, self.audio)
                 else:
-                    self.add_mob_to_game(Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), pos, Particule,self.add_particule_to_group, self.player, self.audio), "bot")
+                    mob=Crab(pos[0], pos[1]+1, self.directory, self.render.zoom, str(i), pos, Particule,self.add_particule_to_group, self.player, self.audio)
+                self.add_mob_to_game(mob, "bot")
+                self.render.map_generation.dict_mat_room[self.current_room_id]["mobs"].append(mob)
 
     def add_object(self, id, x, y, dir=""):
         if id == "coin":
@@ -379,6 +384,7 @@ class Game:
                         self.add_object("coin", mob.position[0]+random.randint(0, mob.rect.width), mob.position[1]+mob.rect.height-1)
                     self.group.remove(mob)
                     self.all_mobs.remove([mob, "bot"])
+                    self.render.map_generation.dict_mat_room[self.current_room_id]["mobs"].remove(mob)
         
         # gestion collision avec les murs
         
@@ -454,6 +460,9 @@ class Game:
         
         if (mob.is_attacking or mob.is_dashing_attacking) and mob.action_image!="up_to_attack":
             handle_is_attacking(mob, self.get_all_mob, self.collision, self.group_projectile)
+        if "player" in mob.id :
+            self._finish_room(mob)
+                
         
         if mob.is_sliding:
             self.collision.check_tombe_ou_grab(mob)
@@ -463,7 +472,25 @@ class Game:
         #         self.load_wave()
         
         mob.update_action()
-    
+
+    def _finish_room(self, mob):
+        if len(self.render.map_generation.dict_mat_room[self.current_room_id]["mobs"])==0:
+            objects_ = self.collision.get_closed_room_object(mob)
+            if len(objects_) == 0:
+                return
+            self.render.remove_closed_object(objects_)
+            map_id_1, map_id_2 = objects_[0][0][1], objects_[0][0][2]
+            if map_id_1 not in self.done_maps:
+                self.current_room_id = map_id_1
+                self.done_maps.append(map_id_1)
+            elif map_id_2 not in self.done_maps:
+                self.current_room_id = map_id_2
+                self.done_maps.append(map_id_2)
+            else:
+                return
+            self.spawn_mobs_room()
+       
+
     def get_all_mob(self):
         if not self.render.current_map_is_wave:
             return self.all_mobs

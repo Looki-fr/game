@@ -17,9 +17,11 @@ class MapGeneration:
         self.graphe=self.g.get_matrix()
         self.mat_room, self.dict_mat_room=self.g.get_matrix_room(self.graphe)
         self.g.printTab(self.graphe, valMat=self.mat_room)
-        for items in self.dict_mat_room.items():
-            print(items)
-        
+        print("MAT ROOM")
+        for key, value in self.dict_mat_room.items():
+            print(key, value)
+            self.dict_mat_room[key]={"maps":value, "mobs":[]}
+
         new_graph=[]
         new_graph.insert(0, [[] for _ in range(len(self.graphe[0])+2)])
         
@@ -141,27 +143,33 @@ class MapGeneration:
         for room_id, path in neightboors.items():
             for i, z, index in path:
                 # [g, d, h, b]
+                other_room_id=None
                 if index==0:
+                    if z<len(self.mat_room[i])-1: other_room_id=self.mat_room[i][z+1]
                     for i_ in range(self.room_height//self.tile_width):
                         if self.all_mat[i+1][z+1][i_][-1]==0:
                             self.all_mat[i+1][z+1][i_][-1]=4
-                    self.matrix_map[i+1][z+1]["wall-closed_room"].append([pygame.Rect((z+2)*self.room_width-self.tile_width, (i+1)*self.room_height, self.tile_width, self.room_height), room_id])
+                    self.matrix_map[i+1][z+1]["wall-closed_room"].append([pygame.Rect((z+2)*self.room_width-self.tile_width, (i+1)*self.room_height, self.tile_width, self.room_height), room_id, other_room_id, i+1, z+1])
                 elif index==1:
+                    if z>0: other_room_id=self.mat_room[i][z-1]
                     for i_ in range(self.room_height//self.tile_width):
                         if self.all_mat[i+1][z+1][i_][0]==0:
                             self.all_mat[i+1][z+1][i_][0]=4
-                    self.matrix_map[i+1][z+1]["wall-closed_room"].append([pygame.Rect((z+1)*self.room_width, (i+1)*self.room_height, self.tile_width, self.room_height), room_id])
+                    self.matrix_map[i+1][z+1]["wall-closed_room"].append([pygame.Rect((z+1)*self.room_width, (i+1)*self.room_height, self.tile_width, self.room_height), room_id, other_room_id, i+1, z+1])
                 elif index==2:
+                    if i<len(self.mat_room)-1: other_room_id=self.mat_room[i+1][z]
                     for z_ in range(self.room_width//self.tile_width):
                         if self.all_mat[i+1][z+1][-1][z_]==0:
                             self.all_mat[i+1][z+1][-1][z_]=4
-                    self.matrix_map[i+1][z+1]["ground-closed_room"].append([pygame.Rect((z+1)*self.room_width, (i+2)*self.room_height-self.tile_width, self.room_width, self.tile_width), room_id])
+                    self.matrix_map[i+1][z+1]["ground-closed_room"].append([pygame.Rect((z+1)*self.room_width, (i+2)*self.room_height-self.tile_width, self.room_width, self.tile_width), room_id, other_room_id, i+1, z+1])
                 
                 elif index==3:
+                    if i>0:
+                        other_room_id=self.mat_room[i-1][z]
                     for z_ in range(self.room_width//self.tile_width):
                         if self.all_mat[i+1][z+1][0][z_]==0:
                             self.all_mat[i+1][z+1][0][z_]=4
-                    self.matrix_map[i+1][z+1]["ceilling-closed_room"].append([pygame.Rect((z+1)*self.room_width, (i+1)*self.room_height, self.room_width, self.tile_width), room_id])
+                    self.matrix_map[i+1][z+1]["ceilling-closed_room"].append([pygame.Rect((z+1)*self.room_width, (i+1)*self.room_height, self.room_width, self.tile_width), room_id, other_room_id, i+1, z+1])
 
     def _close_rooms(self):
         seen=set()
@@ -684,7 +692,6 @@ class MapGeneration:
                 for i_ in range(i, -1, -1):
                     for y in range(start,max_height):
                         mat[y][i_]=texture
-
 
     def _generate_relief_ground(self,start, end, node, mat, additionnal_height=0, hill=0,start_height=0, debug=False, noderight=None, island=False, not_right=True, complete=None):
         if debug:

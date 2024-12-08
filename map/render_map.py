@@ -162,8 +162,17 @@ class RenderMap:
     def get_random_spawn(self, i, z):
         grounds_platforms=self.map_generation.matrix_map[i][z]["ground"]+self.map_generation.matrix_map[i][z]["platform"]
         if len(grounds_platforms)==0:return None
-        c = random.choice(grounds_platforms)
-        return [random.randint(c[0].x, c[0].x+c[0].width), c[0].y]
+        temp_list=[]
+        # do not spawn at 100 distance from the border of the room
+        for g in grounds_platforms:
+            left=max(g[0].x, z*self.map_generation.room_width+100*self.zoom)
+            right=min(g[0].x+g[0].width, z*self.map_generation.room_width+self.map_generation.room_width-100*self.zoom)
+            if left<right:
+                temp_list.append((left, right, g[0].y))
+        if len(temp_list)==0:return None
+        c = random.choice(temp_list)
+        
+        return [random.randint(c[0], c[1]), c[2]]
 
     def _init_all_pics(self, directory):
 
@@ -339,6 +348,33 @@ class RenderMap:
                             elif (i_>0 and mat[i_-1][y_]  and mat[i_-1][y_]!=4) or (i_==0 and i>0 and self.map_generation.all_mat[i-1][z] and self.map_generation.all_mat[i-1][z][-1][y_]  and self.map_generation.all_mat[i-1][z][-1][y_]!=4) :  self._spawn_big_walls(i, z, i_+1, y_, tmp-1)
                             tmp=-1
 
+    def remove_closed_object(self, objects_):
+        for o in objects_:
+            object_, type_=o
+            i = object_[3]
+            z = object_[4]
+            indexes=[(i, z)]
+            # if i>0:
+            #     indexes.append((i-1, z))
+            # if z>0:
+            #     indexes.append((i, z-1))
+            # if i>0 and z>0:
+            #     indexes.append((i-1, z-1))
+            # if i<len(self.matrix_picture)-1:
+            #     indexes.append((i+1, z))
+            # if z<len(self.matrix_picture[0])-1:
+            #     indexes.append((i, z+1))
+            # if i<len(self.matrix_picture)-1 and z<len(self.matrix_picture[0])-1:
+            #     indexes.append((i+1, z+1))
+            temp=[]
+            for i_, z_ in indexes:
+                for img in self.matrix_picture[i_][z_]:
+                    if object_[0].colliderect(img["x"], img["y"], self.map_generation.tile_width, self.map_generation.tile_width) and img["type_image"]==4:
+                        temp.append((i_, z_, img))
+            for i_, z_, img in temp:
+                self.matrix_picture[i_][z_].remove(img)
+            
+
     def load_map(self, node, i, z, empty=False):
         """call load_objects_map if the map is not empty and load all tiles for the map widht the coordinates i and z""" 
         if self.map_generation.matrix_map[i][z]:
@@ -418,12 +454,18 @@ class RenderMap:
             #visible=self._not_visible(d,c)
             for ligne in [d_ for d_ in range((d-1 if d>0 else d),(d+2 if d<len(self.matrix_picture)-1 else d+3))]:
                 for tab in [c_ for c_ in range((c-1 if c>0 else c),(c+2 if c<len(self.matrix_picture[0])-1 else c+3))]:
-                    for img in self.matrix_picture[ligne][tab]:
-                        # if img["img"] == len(self.all_pic)-3 or visible[f"({ligne},{tab})"]:
-                        if img["type_image"]==1:img_=self.all_pic[img["img"]]
-                        else:img_=self.all_pics[img["type_image"]-1][img["img"]]
-                        if not img_:img_=self.all_pics[img["type_image"]-1][0]
-                        surface.blit(img_, (self.map_generation.screen_width/2 + img["x"] - cam_x, self.map_generation.screen_height/2 + img["y"] - cam_y))
+            # for ligne in [d]:
+            #     for tab in [c]:
+                    try :
+                        for img in self.matrix_picture[ligne][tab]:
+                            # if img["img"] == len(self.all_pic)-3 or visible[f"({ligne},{tab})"]:
+                            if img["type_image"]==1:img_=self.all_pic[img["img"]]
+                            else:img_=self.all_pics[img["type_image"]-1][img["img"]]
+                            if not img_:img_=self.all_pics[img["type_image"]-1][0]
+                            surface.blit(img_, (self.map_generation.screen_width/2 + img["x"] - cam_x, self.map_generation.screen_height/2 + img["y"] - cam_y))
+                    except IndexError as e:
+                        # crash when spawing in the void
+                        pass
 
             # loading of the minimap
             for i, line in enumerate(self.map_generation.graphe):

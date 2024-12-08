@@ -16,7 +16,6 @@ def pressed_left(liste_mob, collision):
                 if collision.stop_if_collide("left", mob) and not bool and not mob.is_jumping:
                     collision.check_grab(mob, "left")
                 
-
 def pressed_right(liste_mob, collision):
     for mob in liste_mob:
         if not "hurt" in mob.action_image and not ("star" in mob.id and mob.is_attacking):
@@ -35,8 +34,7 @@ def pressed_right(liste_mob, collision):
                 if collision.stop_if_collide("right", mob, debug="player" in mob.id and mob.is_attacking) and not bool and not mob.is_jumping:
                     collision.check_grab(mob, "right")
                 # if "player" in mob.id and mob.is_attacking and mob.direction_attack == "right" and mob.
-
-                
+              
 def jump_edge(mob, pressed_up_bool, left, right,down, collision, pieds, zoom):
     if "jump_edge" in mob.actions:
         if not pressed_up_bool[0]:

@@ -1,7 +1,7 @@
 {
     "sound": "True",
     "music": "True",
-    "playlist": "TECHNO",
+    "playlist": "SSBM",
     "maps": {
         "1700346096.4254174": "file name",
         "1700346350.2511003": "yep",
@@ -19,6 +19,9 @@
         "1718304801.371323": "island too close",
         "1718308302.3055692": "test",
         "1718309281.4550126": "test2",
-        "1718309793.2714934": "bug last"
+        "1718309793.2714934": "bug last",
+        "1718382346.1108925": "island too close to ground",
+        "1733665218.9473822": "bug spawn in wrong room",
+        "1733668678.7385533": "maubais spawn"
     }
 }
