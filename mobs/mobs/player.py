@@ -210,7 +210,7 @@ class Player(MOB):
 
         # crouch
         self.timers["timer_fin_crouch"] = 0
-        self.cooldown_crouch_pressed=0.25
+        self.cooldown_crouch_pressed=1
         self.has_finish_cycle_crouch = False
 
         # jump edge
@@ -547,12 +547,13 @@ class Player(MOB):
         # on soccupe de reset dash_attack_image dans game
   
     def debut_crouch(self, pressed=False):
-        """very simple"""
-        self.change_direction("crouch", self.direction)
-        self.pressed_crouch=pressed
-        if not pressed:
-            self.play_random_sound("crouch", self.sounds["crouch"])
-        self.has_finish_cycle_crouch = False
+        if time.time() - self.timers["timer_fin_crouch"] > self.cooldown_crouch_pressed:
+            self.change_direction("crouch", self.direction)
+            self.pressed_crouch=pressed
+            if not pressed:
+                self.play_random_sound("crouch", self.sounds["crouch"])
+            self.has_finish_cycle_crouch = False
+            self.timers["timer_fin_crouch"]=time.time()
 
     def fin_crouch(self):
         if self.has_finish_cycle_crouch:

@@ -95,11 +95,16 @@ class Collision:
                 for ground in dico["ground"] + [a[0:1] for a in dico["ground-closed_room"]]:
                     if rect.collidelist(ground) > -1:
                         continuer=True
-                        if not wallslide and "player" in mob.id:
-                            for wall__ in [a[0:1] for a in dico["wall-closed_room"]]:
-                                if mob.body.collidelist(wall__) > -1 and ((wall__[0].x==ground[0].x and mob.body.x) or (ground[0].x+ground[0].w==wall__[0].x+wall__[0].w and mob.body.x+mob.body.w<ground[0].x+ground[0].w)):
-                                    continuer=False
-                                    break
+
+                        # UPDATE du 26/09/2025 : CEST QUOI DE CODE DE CON ???? PK CEST LA ???
+
+                        # Je l'ai comment car cela causait des bugs où on passait à travers le sol et on grabait un mur close wall
+
+                        # if not wallslide and "player" in mob.id:
+                        #     for wall__ in [a[0:1] for a in dico["wall-closed_room"]]:
+                        #         if mob.body.collidelist(wall__) > -1 and ((wall__[0].x==ground[0].x and mob.body.x) or (ground[0].x+ground[0].w==wall__[0].x+wall__[0].w and mob.body.x+mob.body.w<ground[0].x+ground[0].w)):
+                        #             continuer=False
+                        #             break
 
                         if continuer:
                             if not change_pos and not platform_only  and get_pos==None: return True
@@ -248,6 +253,19 @@ class Collision:
         if get_pos: return False, None
         return False
 
+    def is_colliding_wall(self, mob, move_back_on_wall=False):
+        """check if the mob is colliding with a wall"""
+        for dico in self.get_dico(mob.coord_map):
+            for wall in dico["wall"] + [a[0:1] for a in dico["wall-closed_room"]]:
+                if mob.body.collidelist(wall) > -1:
+                    if move_back_on_wall:
+                        if mob.direction == "right":
+                            mob.position[0] = wall[0].x + wall[0].w - 1.26 * mob.body.w
+                        elif mob.direction == "left":
+                            mob.position[0] = wall[0].x - 2.11 * mob.body.w 
+                    return True
+        return False
+
     def stick_to_wall(self, mob, direction):
         if mob.direction == "right":
                 mob.position[0] += 2*self.zoom
@@ -261,6 +279,7 @@ class Collision:
                     else:
                         if direction== 'right' and wall[0].x < temp.x: temp=wall[0]
                         elif direction == 'left' and wall[0].x+wall[0].w > temp.x+temp.w : temp=wall[0]
+        if temp==None: return False
         if direction=="left": mob.position[0] = temp.x + temp.w - 1.26 * mob.body.w
         else: mob.position[0] = temp.x - 2.11 * mob.body.w
         return True 
@@ -363,7 +382,10 @@ class Collision:
             if wall : self.stop_if_collide(direction, mob, dash=True)
             dashing_attacking=mob.is_dashing_attacking ; pieds=self.joueur_sur_sol(mob, change_pos=False)
             fin_dash()
-            if not direction=="": self.check_grab(mob, direction, dash=True)
+            if not direction=="": 
+                print("E")
+                self.check_grab(mob, direction, dash=True)
+                print(mob.action)
             if pieds and dashing_attacking and mob.is_grabing_edge: 
                 mob.fin_grab_edge()
                 mob.change_direction("idle", mob.direction)

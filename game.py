@@ -385,9 +385,7 @@ class Game:
                     self.group.remove(mob)
                     self.all_mobs.remove([mob, "bot"])
                     self.render.map_generation.dict_mat_room[self.current_room_id]["mobs"].remove(mob)
-        
-        # gestion collision avec les murs
-        
+
         mob.save_location()    
 
         if type(mob)==Object and mob.parabolic and not mob.is_jumping and self.collision.joueur_sur_sol(mob, change_pos=False):
@@ -490,7 +488,6 @@ class Game:
                 return
             self.spawn_mobs_room()
        
-
     def get_all_mob(self):
         if not self.render.current_map_is_wave:
             return self.all_mobs
@@ -590,8 +587,9 @@ class Game:
             self.player.is_mouving_x = False
             self.handle_input()
             self.update()
-            # self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling-closed_room")
-            # self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ground-closed_room")
+            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ceilling-closed_room")
+            # self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ground")
+            self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "ground-closed_room")
             # self.collision.draw(self.player, self.screen, self.blit.scroll_rect, "wall-closed_room")
             pygame.display.update()      
             self.dt = clock.tick(60)

@@ -1,7 +1,7 @@
 {
     "sound": "True",
     "music": "True",
-    "playlist": "SSBM",
+    "playlist": "TECHNO",
     "maps": {
         "1700346096.4254174": "file name",
         "1700346350.2511003": "yep",
@@ -22,6 +22,9 @@
         "1718309793.2714934": "bug last",
         "1718382346.1108925": "island too close to ground",
         "1733665218.9473822": "bug spawn in wrong room",
-        "1733668678.7385533": "maubais spawn"
+        "1733668678.7385533": "maubais spawn",
+        "1753710439.7692795": "BUG _ marche a droite tombe pilier",
+        "1758917241.5583997": "test grab closed wall",
+        "1758917354.6120083": "test fall grab closed wall"
     }
 }

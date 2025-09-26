@@ -11,6 +11,7 @@ if __name__ == "__main__":
 
 # DOING 
 
+# BUG => tp a travers un mur quand attaque dans autre direction
 
 # TODO : news mouvement
 
@@ -21,7 +22,5 @@ if __name__ == "__main__":
 # TODO : add platformes qui ne collide rien (ni quand == 4)
 
 # BUG quand on edge climb into sauter dans un pilier on se tp
-
-# BUG quand on reste appuyé sur bas l'animation bloque sur la 1ere frame
 
 # BUG quand slide down un closed room wall on tombe dans le vide

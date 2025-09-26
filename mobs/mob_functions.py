@@ -3,6 +3,7 @@ import time
 def pressed_left(liste_mob, collision):
     for mob in liste_mob:
         if not "hurt" in mob.action_image and not ("star" in mob.id and mob.is_attacking):
+            direction = mob.direction
             if "ground_slide" in mob.actions and mob.is_sliding_ground and mob.slide_ground_direction_x == 'right':
                 mob.fin_slide_ground()
             if not mob.is_dashing_ground and not mob.is_rolling and mob.action != "Edge_climb" and not mob.is_jumping_edge and not mob.is_grabing_edge and not mob.is_sliding_ground and not mob.is_dashing and not mob.is_dashing_attacking:
@@ -15,10 +16,13 @@ def pressed_left(liste_mob, collision):
                     mob.move_left()
                 if collision.stop_if_collide("left", mob) and not bool and not mob.is_jumping:
                     collision.check_grab(mob, "left")
+                if ("player" in mob.id and direction == "right" and not bool):
+                    mob.update_rect()
                 
 def pressed_right(liste_mob, collision):
     for mob in liste_mob:
         if not "hurt" in mob.action_image and not ("star" in mob.id and mob.is_attacking):
+            direction = mob.direction
             if "ground_slide" in mob.actions:
                 if mob.is_sliding_ground and mob.slide_ground_direction_x == 'left':
                     mob.fin_slide_ground()
@@ -31,9 +35,10 @@ def pressed_right(liste_mob, collision):
                 else:
                     mob.move_right()
 
-                if collision.stop_if_collide("right", mob, debug="player" in mob.id and mob.is_attacking) and not bool and not mob.is_jumping:
+                if collision.stop_if_collide("right", mob) and not bool and not mob.is_jumping:
                     collision.check_grab(mob, "right")
-                # if "player" in mob.id and mob.is_attacking and mob.direction_attack == "right" and mob.
+                if ("player" in mob.id and direction == "left" and not bool):
+                    mob.update_rect()
               
 def jump_edge(mob, pressed_up_bool, left, right,down, collision, pieds, zoom):
     if "jump_edge" in mob.actions:
@@ -236,7 +241,7 @@ def pressed_down(liste_mob, collision):
         if mob.action != "Edge_climb" and mob.action != "Wall_slide" and mob.is_grabing_edge and "Wall_slide" in mob.actions:
             mob.debut_wallslide()
         else:
-            if time.time() - mob.timers["timer_fin_crouch"] >mob.cooldown_crouch_pressed and "crouch" in mob.actions and collision.joueur_sur_sol(mob) and not mob.is_rolling and not mob.is_dashing and not mob.is_dashing_ground and not mob.is_sliding_ground and not mob.is_jumping and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking and not "hurt" in mob.action_image:
+            if time.time() - mob.timers["timer_fin_crouch"] >mob.cooldown_crouch_pressed and "crouch" in mob.actions and collision.joueur_sur_sol(mob) and not mob.is_rolling and not mob.is_dashing and not mob.is_dashing_ground and not mob.is_sliding_ground and not mob.is_jumping and not mob.is_jumping_edge and not mob.is_attacking and not mob.is_dashing_attacking and not "hurt" in mob.action_image and mob.action!='run':
                 if not mob.action=="crouch":
                     mob.debut_crouch(pressed=True)
                 else:
